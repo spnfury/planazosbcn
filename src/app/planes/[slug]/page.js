@@ -33,6 +33,12 @@ export default async function PlanDetailPage({ params }) {
     (p) => p.category === plan.category && p.id !== plan.id
   ).slice(0, 3);
 
+  // If it's an evento type, render the dark FourVenues layout
+  if (plan.type === 'evento') {
+    return <EventLayout plan={plan} relatedPlans={relatedPlans} />;
+  }
+
+  // Default plan layout (light theme)
   return (
     <div className={styles.page}>
       {/* Breadcrumb */}
@@ -169,6 +175,226 @@ export default async function PlanDetailPage({ params }) {
           </div>
         </section>
       )}
+    </div>
+  );
+}
+
+/* =============================================
+   EventLayout — Dark FourVenues-style component
+   ============================================= */
+function EventLayout({ plan, relatedPlans }) {
+  const posterSrc = plan.posterImage || plan.image;
+
+  return (
+    <div className={styles.eventPage}>
+      <div className="container">
+        {/* Back link */}
+        <Link href="/planes" className={styles.eventBack}>
+          <span className={styles.eventBackIcon}>←</span>
+          {plan.venue || 'Volver'}
+        </Link>
+
+        {/* Header: Poster + Title */}
+        <div className={styles.eventHeader}>
+          {/* Poster */}
+          <div className={styles.eventPoster}>
+            <img
+              src={posterSrc}
+              alt={plan.title}
+              className={styles.eventPosterImg}
+            />
+          </div>
+
+          {/* Content */}
+          <div className={styles.eventHeaderContent}>
+            {/* Date & Time */}
+            <div className={styles.eventDateTime}>
+              <span className={styles.eventDateText}>{plan.date}</span>
+              {plan.timeStart && (
+                <>
+                  <span className={styles.eventTimeSep}>/</span>
+                  <span className={styles.eventTimeText}>{plan.timeStart}</span>
+                  {plan.timeEnd && (
+                    <>
+                      <span className={styles.eventTimeArrow}>→</span>
+                      <span className={styles.eventTimeText}>{plan.timeEnd}</span>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Title */}
+            <h1 className={styles.eventTitle}>{plan.title}</h1>
+
+            {/* Tags */}
+            {plan.tags && plan.tags.length > 0 && (
+              <div className={styles.eventTags}>
+                {plan.tags.map((tag, i) => (
+                  <span key={i} className={styles.eventTag}>
+                    <span className={styles.eventTagIcon}>
+                      {i === 0 ? '👔' : '🎵'}
+                    </span>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ---- ENTRADAS ---- */}
+        {plan.tickets && plan.tickets.length > 0 && (
+          <section className={styles.eventSection}>
+            <h2 className={styles.eventSectionTitle}>
+              <span className={styles.eventSectionAccent} />
+              ENTRADAS
+            </h2>
+
+            {plan.tickets.map((ticket, i) => (
+              <div
+                key={i}
+                className={`${styles.ticketCard} ${ticket.soldOut ? styles.ticketCardSoldOut : ''}`}
+              >
+                <div className={styles.ticketInfo}>
+                  <div className={styles.ticketName}>{ticket.name}</div>
+                  {ticket.description && (
+                    <div className={styles.ticketDesc}>{ticket.description}</div>
+                  )}
+                </div>
+                <div className={styles.ticketRight}>
+                  <span className={styles.ticketPrice}>
+                    {ticket.price === 'Gratis' ? 'Gratis' : `${ticket.price}€`}
+                  </span>
+                  {ticket.soldOut ? (
+                    <span className={styles.soldOutBadge}>Agotadas</span>
+                  ) : (
+                    <button className={styles.ticketBtn} aria-label="Comprar entrada" id={`ticket-${i}`}>
+                      →
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* ---- LISTAS ---- */}
+        {plan.guestList && plan.guestList.length > 0 && (
+          <section className={styles.eventSection}>
+            <h2 className={styles.eventSectionTitle}>
+              <span className={styles.eventSectionAccent} />
+              LISTAS
+            </h2>
+
+            {plan.guestList.map((list, i) => (
+              <div key={i} className={styles.guestListCard}>
+                <div className={styles.guestListHeader}>
+                  <span className={styles.guestListName}>{list.name}</span>
+                  <div className={styles.guestListRight}>
+                    <span className={styles.guestListPrice}>
+                      {list.price === 'Gratis' ? 'Gratis' : `${list.price}€`}
+                    </span>
+                    <div className={styles.guestListBtnWrap}>
+                      {list.soldOut ? (
+                        <span className={styles.soldOutBadge}>Agotadas</span>
+                      ) : (
+                        <button className={styles.ticketBtn} aria-label="Apuntarse a lista" id={`list-${i}`}>
+                          →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {list.description && (
+                  <div className={styles.guestListDesc}>{list.description}</div>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* ---- INFORMACIÓN ---- */}
+        <section className={styles.eventSection}>
+          <div className={styles.eventInfoGrid}>
+            {/* Left: Info text */}
+            <div className={styles.eventInfoLeft}>
+              <h3>Información</h3>
+              <div className={styles.eventInfoText}>
+                {plan.description}
+              </div>
+
+              {plan.ageRestriction && (
+                <div className={styles.eventAgeNote}>
+                  🔞 Evento recomendado para {plan.ageRestriction}
+                </div>
+              )}
+            </div>
+
+            {/* Right: Schedule + details */}
+            <div>
+              {plan.schedule && plan.schedule.length > 0 && (
+                <>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', color: 'var(--event-text)', marginBottom: 'var(--space-4)' }}>
+                    Horario
+                  </h3>
+                  <div className={styles.eventSchedule} style={{ borderTop: 'none', paddingTop: 0 }}>
+                    {plan.schedule.map((item, i) => (
+                      <div key={i} className={styles.scheduleItem}>
+                        <span className={styles.scheduleTime}>{item.time}</span>
+                        <span className={styles.scheduleDesc}>{item.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ---- UBICACIÓN ---- */}
+        {(plan.venue || plan.address) && (
+          <section className={styles.eventSection}>
+            <h2 className={styles.eventSectionTitle}>
+              <span className={styles.eventSectionAccent} />
+              UBICACIÓN
+            </h2>
+
+            <div className={styles.locationCard}>
+              {plan.venue && (
+                <div className={styles.locationVenue}>{plan.venue}</div>
+              )}
+              {plan.address && (
+                <div className={styles.locationAddress}>{plan.address}</div>
+              )}
+              <a
+                className={styles.locationMapBtn}
+                id="event-map"
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(plan.address || plan.venue)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                📍 Ver mapa
+              </a>
+            </div>
+          </section>
+        )}
+
+        {/* ---- Related Plans ---- */}
+        {relatedPlans.length > 0 && (
+          <div className={styles.eventRelated}>
+            <h2 className={styles.eventRelatedTitle}>
+              <span className={styles.eventSectionAccent} />
+              PLANES SIMILARES
+            </h2>
+            <div className={styles.relatedGrid}>
+              {relatedPlans.map((rp) => (
+                <PlanCard key={rp.id} plan={rp} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

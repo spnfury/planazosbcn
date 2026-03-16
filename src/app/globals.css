@@ -95,6 +95,21 @@
   --max-width: 1200px;
   --max-width-narrow: 800px;
   --header-height: 72px;
+
+  /* Event Dark Theme */
+  --event-bg: #16162a;
+  --event-bg-alt: #1e1e38;
+  --event-surface: #232342;
+  --event-surface-hover: #2a2a4a;
+  --event-border: rgba(255, 255, 255, 0.08);
+  --event-border-accent: rgba(255, 255, 255, 0.15);
+  --event-text: #FFFFFF;
+  --event-text-secondary: rgba(255, 255, 255, 0.7);
+  --event-text-muted: rgba(255, 255, 255, 0.45);
+  --event-accent: #8B5CF6;
+  --event-accent-light: #A78BFA;
+  --event-success: #22C55E;
+  --event-danger: #EF4444;
 }
 
 /* ===== RESET ===== */
