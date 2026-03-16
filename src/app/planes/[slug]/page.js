@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
+import CapacityBar from '@/components/CapacityBar/CapacityBar';
 import { PLANS, getPlanBySlug } from '@/data/plans';
 import styles from './page.module.css';
 
@@ -132,9 +133,22 @@ export default async function PlanDetailPage({ params }) {
               )}
             </div>
 
-            <button className="btn btn--primary btn--large" style={{ width: '100%' }} id="plan-reserve">
+            {plan.capacity > 0 && (
+              <CapacityBar
+                capacity={plan.capacity}
+                spotsTaken={plan.spots_taken || 0}
+                size="large"
+              />
+            )}
+
+            <Link
+              href={`/planes/${plan.slug}#reservar`}
+              className="btn btn--primary btn--large"
+              style={{ width: '100%', textAlign: 'center' }}
+              id="plan-reserve"
+            >
               Reservar ahora
-            </button>
+            </Link>
 
             <button className="btn btn--secondary btn--large" style={{ width: '100%' }} id="plan-info">
               Más información
