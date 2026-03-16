@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/components/Auth/AuthProvider';
 import styles from './Header.module.css';
 
 const NAV_LINKS = [
@@ -13,6 +14,7 @@ const NAV_LINKS = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -48,7 +50,49 @@ export default function Header() {
           >
             Ver todos los planes
           </Link>
+
+          {/* Auth section — mobile only (inside nav) */}
+          <div className={styles.navAuthMobile}>
+            {!loading && (
+              user ? (
+                <Link
+                  href="/cuenta"
+                  className={styles.navAuthLink}
+                  onClick={() => setMenuOpen(false)}
+                  id="mobile-account"
+                >
+                  👤 Mi cuenta
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className={styles.navAuthLink}
+                  onClick={() => setMenuOpen(false)}
+                  id="mobile-login"
+                >
+                  Iniciar sesión
+                </Link>
+              )
+            )}
+          </div>
         </nav>
+
+        {/* Auth section — desktop */}
+        <div className={styles.authDesktop}>
+          {!loading && (
+            user ? (
+              <Link href="/cuenta" className={styles.userBtn} id="desktop-account">
+                <span className={styles.userAvatar}>
+                  {(user.user_metadata?.full_name || user.email)?.[0]?.toUpperCase() || '?'}
+                </span>
+              </Link>
+            ) : (
+              <Link href="/login" className={styles.loginBtn} id="desktop-login">
+                Iniciar sesión
+              </Link>
+            )
+          )}
+        </div>
 
         <button
           className={`${styles.burger} ${menuOpen ? styles.burgerOpen : ''}`}

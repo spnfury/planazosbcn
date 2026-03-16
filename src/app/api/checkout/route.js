@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { planId, ticketId, quantity = 1, customerEmail } = body;
+    const { planId, ticketId, quantity = 1, customerEmail, userId } = body;
 
     if (!planId || !customerEmail) {
       return NextResponse.json(
@@ -74,6 +74,9 @@ export async function POST(request) {
       }
     }
 
+    // Generate unique QR code token
+    const qrCode = crypto.randomUUID();
+
     // If free, create reservation directly
     if (unitPrice === 0) {
       const { data: reservation, error: resError } = await supabaseAdmin
@@ -81,11 +84,13 @@ export async function POST(request) {
         .insert({
           plan_id: planId,
           ticket_id: ticketId || null,
+          user_id: userId || null,
           customer_email: customerEmail,
           quantity,
           total_amount: 0,
           status: 'paid',
           stripe_session_id: `free_${Date.now()}`,
+          qr_code: qrCode,
         })
         .select()
         .single();
@@ -138,15 +143,17 @@ export async function POST(request) {
       },
     });
 
-    // Create pending reservation
+    // Create pending reservation with QR code
     await supabaseAdmin.from('reservations').insert({
       plan_id: planId,
       ticket_id: ticketId || null,
+      user_id: userId || null,
       customer_email: customerEmail,
       quantity,
       total_amount: Math.round(unitPrice * 100 * quantity),
       stripe_session_id: session.id,
       status: 'pending',
+      qr_code: qrCode,
     });
 
     return NextResponse.json({ url: session.url });
@@ -158,3 +165,4 @@ export async function POST(request) {
     );
   }
 }
+

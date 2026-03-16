@@ -73,18 +73,31 @@ CREATE TABLE IF NOT EXISTS plan_schedule (
   sort_order INTEGER DEFAULT 0
 );
 
+-- User profiles
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  phone TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Reservations (ticket purchases)
 CREATE TABLE IF NOT EXISTS reservations (
   id BIGSERIAL PRIMARY KEY,
   plan_id BIGINT REFERENCES plans(id) ON DELETE SET NULL,
   ticket_id BIGINT REFERENCES plan_tickets(id) ON DELETE SET NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   customer_email TEXT NOT NULL,
   customer_name TEXT,
   quantity INTEGER DEFAULT 1,
   total_amount INTEGER DEFAULT 0, -- in cents
   stripe_session_id TEXT UNIQUE,
   stripe_payment_intent TEXT,
+  qr_code TEXT UNIQUE, -- unique token for QR entrance
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'cancelled', 'refunded')),
+  validated_at TIMESTAMPTZ, -- when the QR was scanned/validated
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -107,6 +120,9 @@ CREATE INDEX IF NOT EXISTS idx_plan_tickets_plan_id ON plan_tickets(plan_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_plan_id ON reservations(plan_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status);
 CREATE INDEX IF NOT EXISTS idx_reservations_stripe_session ON reservations(stripe_session_id);
+CREATE INDEX IF NOT EXISTS idx_reservations_qr_code ON reservations(qr_code);
+CREATE INDEX IF NOT EXISTS idx_reservations_user_id ON reservations(user_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_id ON profiles(id);
 
 -- ============================================
 -- RLS Policies
@@ -118,6 +134,7 @@ ALTER TABLE plan_guest_lists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE plan_schedule ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reservations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 -- Public read for published plans
 CREATE POLICY "Public can read published plans" ON plans
@@ -142,6 +159,20 @@ CREATE POLICY "Public can read plan schedule" ON plan_schedule
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM plans WHERE plans.id = plan_schedule.plan_id AND plans.published = true)
   );
+
+-- Profiles: users can read/update their own profile
+CREATE POLICY "Users can read own profile" ON profiles
+  FOR SELECT USING (id = auth.uid());
+
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE USING (id = auth.uid());
+
+CREATE POLICY "Users can insert own profile" ON profiles
+  FOR INSERT WITH CHECK (id = auth.uid());
+
+-- Reservations: users can read their own reservations
+CREATE POLICY "Users can read own reservations" ON reservations
+  FOR SELECT USING (user_id = auth.uid());
 
 -- Admin full access (via service role, bypasses RLS anyway)
 -- These policies are for admin users using the anon key through the browser
@@ -192,3 +223,24 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER plans_updated_at
   BEFORE UPDATE ON plans
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER profiles_updated_at
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- Auto-create profile on user signup
+-- ============================================
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
