@@ -89,7 +89,7 @@ export default function AdminPlanesPage() {
 
               return (
                 <tr key={plan.id}>
-                  <td>
+                  <td data-label="Plan">
                     <div className={styles.planRow}>
                       {plan.image && (
                         <img
@@ -104,16 +104,16 @@ export default function AdminPlanesPage() {
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Tipo">
                     <span className={`${styles.badge} ${plan.type === 'evento' ? styles.badgeEvento : styles.badgePlan}`}>
                       {plan.type === 'evento' ? '🎉 Evento' : '📍 Plan'}
                     </span>
                   </td>
-                  <td>{plan.category_label || plan.category}</td>
-                  <td style={{ fontWeight: 600 }}>
+                  <td data-label="Categoría">{plan.category_label || plan.category}</td>
+                  <td data-label="Precio" style={{ fontWeight: 600 }}>
                     {plan.price === 'Gratis' ? 'Gratis' : `${plan.price}€`}
                   </td>
-                  <td>
+                  <td data-label="Aforo">
                     <div className={styles.capacityBar}>
                       <div className={styles.capacityBarTrack}>
                         <div
@@ -126,7 +126,7 @@ export default function AdminPlanesPage() {
                       </span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Publicado">
                     <button
                       className={`${styles.toggle} ${plan.published ? styles.toggleActive : ''}`}
                       onClick={() => togglePublished(plan)}
@@ -135,7 +135,7 @@ export default function AdminPlanesPage() {
                       <span className={styles.toggleDot} />
                     </button>
                   </td>
-                  <td>
+                  <td data-label="Acciones">
                     <div className={styles.actions}>
                       <Link
                         href={`/admin/planes/${plan.id}`}

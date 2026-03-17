@@ -639,7 +639,66 @@
   padding-right: 2.5rem;
 }
 
-/* Responsive */
+/* ===== MOBILE UI COMPONENTS ===== */
+
+/* Mobile header — hidden on desktop */
+.mobileHeader {
+  display: none;
+}
+
+.mobileLogoGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobileMenuBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms;
+  letter-spacing: 2px;
+}
+
+.mobileMenuBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* Mobile dropdown menu */
+.mobileDropdown {
+  display: none;
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 199;
+  animation: fadeIn 200ms ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Bottom tab bar — hidden on desktop */
+.bottomTabBar {
+  display: none;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
@@ -647,20 +706,398 @@
 }
 
 @media (max-width: 768px) {
+  /* ===== APP-LIKE MOBILE HEADER ===== */
+  .mobileHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    padding: 0 0.75rem;
+    background: #161625;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 150;
+  }
+
+  /* Mobile dropdown for secondary actions */
+  .mobileDropdown {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 52px;
+    right: 0.5rem;
+    min-width: 200px;
+    background: #1e1e32;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.4rem;
+    z-index: 210;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    animation: slideDown 180ms ease;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .mobileDropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 120ms;
+    text-decoration: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .mobileDropdownItem:hover,
+  .mobileDropdownItem:active {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+
+  /* ===== BOTTOM TAB BAR ===== */
+  .bottomTabBar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #161625;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    z-index: 150;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .bottomTab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.35);
+    transition: all 150ms;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+
+  .bottomTab:active {
+    transform: scale(0.92);
+  }
+
+  .bottomTabActive {
+    color: var(--color-primary, #E85D26);
+  }
+
+  .bottomTabActive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 3px;
+    background: var(--color-primary, #E85D26);
+    border-radius: 0 0 3px 3px;
+  }
+
+  .bottomTabIcon {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+
+  .bottomTabLabel {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ===== SIDEBAR HIDDEN ON MOBILE ===== */
   .sidebar {
     display: none;
   }
 
+  /* ===== MAIN CONTENT — FULL SCREEN APP FEEL ===== */
   .mainContent {
     margin-left: 0;
-    padding: 1rem;
+    padding: 0.75rem;
+    padding-top: calc(52px + 0.75rem);
+    padding-bottom: calc(64px + 0.75rem + env(safe-area-inset-bottom, 0px));
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
+  /* Stats — compact grid */
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .statCard {
+    padding: 0.85rem;
+    border-radius: 12px;
+  }
+
+  .statValue {
+    font-size: 1.4rem;
+  }
+
+  .statLabel {
+    font-size: 0.65rem;
+  }
+
+  /* Page header — tight */
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.25rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.8rem;
+  }
+
+  .btnPrimary {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+  }
+
+  /* ===== TABLE → APP-LIKE CARDS ===== */
+  .table {
+    background: none;
+    border: none;
+    border-radius: 0;
+  }
+
+  .tableHead {
+    display: none;
+  }
+
+  .tableBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .tableBody tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    background: #161625;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 0.85rem;
+    position: relative;
+    transition: background 100ms;
+  }
+
+  .tableBody tr:active {
+    background: #1a1a2e;
+  }
+
+  .tableBody td {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .tableBody td::before {
+    content: attr(data-label);
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    min-width: fit-content;
+  }
+
+  /* Plan cell — full-width header of each card */
+  .tableBody td[data-label="Plan"],
+  .tableBody td:first-child {
+    width: 100%;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 0.15rem;
+  }
+
+  .tableBody td[data-label="Plan"]::before,
+  .tableBody td:first-child::before {
+    display: none;
+  }
+
+  .planRow {
+    width: 100%;
+  }
+
+  .planThumb {
+    width: 48px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .planTitle {
+    font-size: 0.9rem;
+  }
+
+  /* Info cells — stacked with labels */
+  .tableBody td[data-label="Tipo"],
+  .tableBody td[data-label="Categoría"],
+  .tableBody td[data-label="Precio"],
+  .tableBody td[data-label="Aforo"],
+  .tableBody td[data-label="Email"],
+  .tableBody td[data-label="Cantidad"],
+  .tableBody td[data-label="Total"],
+  .tableBody td[data-label="Estado"],
+  .tableBody td[data-label="Fecha"],
+  .tableBody td[data-label="ID"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    min-width: calc(50% - 0.5rem);
+  }
+
+  .capacityBar {
+    max-width: 110px;
+  }
+
+  /* Published + Actions — full width action bar at bottom */
+  .tableBody td[data-label="Publicado"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .tableBody td[data-label="Acciones"] {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+
+  .tableBody td:last-child {
+    width: 100%;
+    padding-top: 0.6rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 0.15rem;
+  }
+
+  /* Actions — big touch-friendly buttons */
+  .actions {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .actions .actionBtn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    padding: 0.65rem 0.75rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 42px;
+  }
+
+  .toggle {
+    transform: scale(0.95);
+  }
+
+  /* ===== FORMS — APP-LIKE ===== */
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formSection {
+    padding: 0.85rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .formInput {
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  .formSelect {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .formLabel {
+    font-size: 0.7rem;
+  }
+
+  .listItemFields {
+    grid-template-columns: 1fr;
+  }
+
+  .listItem {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .removeBtn {
+    align-self: flex-end;
+    margin-top: 0;
+    min-height: 36px;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .loginCard {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
   .statsGrid {
     grid-template-columns: 1fr;
   }
 
-  .formGrid {
-    grid-template-columns: 1fr;
+  .statValue {
+    font-size: 1.3rem;
+  }
+
+  .pageTitle {
+    font-size: 1.15rem;
+  }
+
+  .tableBody td[data-label="Tipo"],
+  .tableBody td[data-label="Categoría"],
+  .tableBody td[data-label="Precio"],
+  .tableBody td[data-label="Aforo"],
+  .tableBody td[data-label="Email"],
+  .tableBody td[data-label="Cantidad"],
+  .tableBody td[data-label="Total"],
+  .tableBody td[data-label="Estado"],
+  .tableBody td[data-label="Fecha"],
+  .tableBody td[data-label="ID"] {
+    min-width: 100%;
   }
 }
+

@@ -102,13 +102,13 @@ export default function AdminDashboard() {
             <tbody className={styles.tableBody}>
               {recentReservations.map((r) => (
                 <tr key={r.id}>
-                  <td style={{ fontWeight: 600, color: '#fff' }}>
+                  <td data-label="Plan" style={{ fontWeight: 600, color: '#fff' }}>
                     {r.plans?.title || `Plan #${r.plan_id}`}
                   </td>
-                  <td>{r.customer_email}</td>
-                  <td>{r.quantity}</td>
-                  <td>{(r.total_amount / 100).toFixed(2)}€</td>
-                  <td>
+                  <td data-label="Email">{r.customer_email}</td>
+                  <td data-label="Cantidad">{r.quantity}</td>
+                  <td data-label="Total">{(r.total_amount / 100).toFixed(2)}€</td>
+                  <td data-label="Estado">
                     <span className={`${styles.badge} ${
                       r.status === 'paid' ? styles.badgePaid
                       : r.status === 'pending' ? styles.badgePending
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
                       {r.status === 'paid' ? 'Pagado' : r.status === 'pending' ? 'Pendiente' : 'Cancelado'}
                     </span>
                   </td>
-                  <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
+                  <td data-label="Fecha" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
                     {new Date(r.created_at).toLocaleDateString('es-ES')}
                   </td>
                 </tr>

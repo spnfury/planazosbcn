@@ -17,9 +17,14 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Close menu on navigation
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
-    // Skip auth check on login page
     if (pathname === '/admin/login') {
       setLoading(false);
       return;
@@ -33,7 +38,6 @@ export default function AdminLayout({ children }) {
         return;
       }
 
-      // Verify admin role
       const { data: adminUser } = await supabase
         .from('admin_users')
         .select('*')
@@ -58,7 +62,12 @@ export default function AdminLayout({ children }) {
     router.push('/admin/login');
   }
 
-  // Login page — no layout wrapper
+  // Check if a nav item is active (exact match or starts with for sub-pages)
+  function isActive(href) {
+    if (href === '/admin') return pathname === '/admin';
+    return pathname.startsWith(href);
+  }
+
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
@@ -75,7 +84,45 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className={styles.adminLayout}>
-      {/* Sidebar */}
+      {/* Mobile top header — compact */}
+      <header className={styles.mobileHeader}>
+        <div className={styles.mobileLogoGroup}>
+          <span className={styles.sidebarLogoIcon}>🔥</span>
+          <span className={styles.sidebarLogoText}>
+            Planazos<span>BCN</span>
+          </span>
+          <span className={styles.sidebarBadge}>Admin</span>
+        </div>
+        <button
+          className={styles.mobileMenuBtn}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Más opciones"
+          id="mobile-more-menu"
+        >
+          ⋯
+        </button>
+      </header>
+
+      {/* Mobile dropdown menu for secondary actions */}
+      {menuOpen && (
+        <>
+          <div className={styles.overlay} onClick={() => setMenuOpen(false)} />
+          <div className={styles.mobileDropdown}>
+            <Link href="/" className={styles.mobileDropdownItem} target="_blank">
+              🌐 Ver web pública
+            </Link>
+            <button
+              className={styles.mobileDropdownItem}
+              onClick={handleLogout}
+              id="mobile-logout"
+            >
+              🚪 Cerrar sesión
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Desktop sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
           <span className={styles.sidebarLogoIcon}>🔥</span>
@@ -90,7 +137,7 @@ export default function AdminLayout({ children }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`${styles.navItem} ${pathname === item.href ? styles.navItemActive : ''}`}
+              className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ''}`}
             >
               <span className={styles.navIcon}>{item.icon}</span>
               {item.label}
@@ -114,6 +161,21 @@ export default function AdminLayout({ children }) {
       <main className={styles.mainContent}>
         {children}
       </main>
+
+      {/* Mobile bottom tab bar — app-like navigation */}
+      <nav className={styles.bottomTabBar} id="bottom-tab-bar">
+        {NAV_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`${styles.bottomTab} ${isActive(item.href) ? styles.bottomTabActive : ''}`}
+          >
+            <span className={styles.bottomTabIcon}>{item.icon}</span>
+            <span className={styles.bottomTabLabel}>{item.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }
+

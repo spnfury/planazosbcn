@@ -43,7 +43,7 @@ export default function AdminReservasPage() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         {['all', 'paid', 'pending', 'cancelled'].map((f) => (
           <button
             key={f}
@@ -80,14 +80,14 @@ export default function AdminReservasPage() {
           <tbody className={styles.tableBody}>
             {filtered.map((r) => (
               <tr key={r.id}>
-                <td style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>#{r.id}</td>
-                <td style={{ fontWeight: 600, color: '#fff' }}>{r.plans?.title || `Plan #${r.plan_id}`}</td>
-                <td>{r.customer_email}</td>
-                <td>{r.quantity}</td>
-                <td style={{ fontWeight: 600 }}>
+                <td data-label="ID" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>#{r.id}</td>
+                <td data-label="Plan" style={{ fontWeight: 600, color: '#fff' }}>{r.plans?.title || `Plan #${r.plan_id}`}</td>
+                <td data-label="Email">{r.customer_email}</td>
+                <td data-label="Cantidad">{r.quantity}</td>
+                <td data-label="Total" style={{ fontWeight: 600 }}>
                   {r.total_amount === 0 ? 'Gratis' : `${(r.total_amount / 100).toFixed(2)}€`}
                 </td>
-                <td>
+                <td data-label="Estado">
                   <span className={`${styles.badge} ${
                     r.status === 'paid' ? styles.badgePaid
                     : r.status === 'pending' ? styles.badgePending
@@ -96,7 +96,7 @@ export default function AdminReservasPage() {
                     {r.status === 'paid' ? '✓ Pagado' : r.status === 'pending' ? '⏳ Pendiente' : '✕ Cancelado'}
                   </span>
                 </td>
-                <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
+                <td data-label="Fecha" style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>
                   {new Date(r.created_at).toLocaleString('es-ES', {
                     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
                   })}
