@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import ImageUploader from '@/components/ImageUploader';
 import styles from '../../admin.module.css';
 
 const CATEGORIES = [
@@ -221,26 +222,20 @@ export default function NuevoPlanPage() {
         <div className={styles.formSection}>
           <h3 className={styles.formSectionTitle}>🖼️ Imágenes</h3>
           <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Imagen principal (URL)</label>
-              <input
-                type="url"
-                className={styles.formInput}
+            <div className={styles.formGridFull}>
+              <ImageUploader
                 value={form.image}
-                onChange={(e) => updateForm('image', e.target.value)}
-                placeholder="https://..."
+                onChange={(url) => updateForm('image', url)}
+                label="Imagen principal"
                 id="form-image"
               />
             </div>
             {form.type === 'evento' && (
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Poster vertical (URL)</label>
-                <input
-                  type="url"
-                  className={styles.formInput}
+              <div className={styles.formGridFull}>
+                <ImageUploader
                   value={form.poster_image}
-                  onChange={(e) => updateForm('poster_image', e.target.value)}
-                  placeholder="https://..."
+                  onChange={(url) => updateForm('poster_image', url)}
+                  label="Poster vertical"
                   id="form-poster"
                 />
               </div>

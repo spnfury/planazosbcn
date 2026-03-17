@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import ImageUploader from '@/components/ImageUploader';
 import styles from '../../admin.module.css';
 
 const CATEGORIES = [
@@ -227,14 +228,22 @@ export default function EditPlanPage({ params }) {
         <div className={styles.formSection}>
           <h3 className={styles.formSectionTitle}>🖼️ Imágenes</h3>
           <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Imagen principal (URL)</label>
-              <input type="url" className={styles.formInput} value={form.image} onChange={(e) => updateForm('image', e.target.value)} id="edit-image" />
+            <div className={styles.formGridFull}>
+              <ImageUploader
+                value={form.image}
+                onChange={(url) => updateForm('image', url)}
+                label="Imagen principal"
+                id="edit-image"
+              />
             </div>
             {form.type === 'evento' && (
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Poster vertical (URL)</label>
-                <input type="url" className={styles.formInput} value={form.poster_image} onChange={(e) => updateForm('poster_image', e.target.value)} id="edit-poster" />
+              <div className={styles.formGridFull}>
+                <ImageUploader
+                  value={form.poster_image}
+                  onChange={(url) => updateForm('poster_image', url)}
+                  label="Poster vertical"
+                  id="edit-poster"
+                />
               </div>
             )}
           </div>
