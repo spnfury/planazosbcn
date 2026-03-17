@@ -1,16 +1,47 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PlanCard from '@/components/PlanCard/PlanCard';
-import { PLANS, CATEGORIES } from '@/data/plans';
+import { CATEGORIES } from '@/data/plans';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
+
+// Helper function to map snake_case from DB to camelCase for PlanCard
+const mapPlanData = (plan) => ({
+  ...plan,
+  categoryLabel: plan.category_label,
+  posterImage: plan.poster_image,
+  timeStart: plan.time_start,
+  timeEnd: plan.time_end,
+  ageRestriction: plan.age_restriction,
+});
 
 export default function PlanesPage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [plans, setPlans] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPlans() {
+      const { data, error } = await supabase
+        .from('plans')
+        .select('*')
+        .order('date', { ascending: true });
+        
+      if (error) {
+        console.error('Error fetching plans:', error);
+      } else {
+        setPlans((data || []).map(mapPlanData));
+      }
+      setIsLoading(false);
+    }
+    
+    fetchPlans();
+  }, []);
 
   const filteredPlans = useMemo(() => {
-    let result = PLANS;
+    let result = plans;
     if (activeCategory !== 'all') {
       result = result.filter((p) => p.category === activeCategory);
     }
@@ -18,13 +49,13 @@ export default function PlanesPage() {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.excerpt.toLowerCase().includes(q) ||
+          p.title?.toLowerCase().includes(q) ||
+          p.excerpt?.toLowerCase().includes(q) ||
           p.zone?.toLowerCase().includes(q)
       );
     }
     return result;
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, plans]);
 
   return (
     <div className={styles.page}>
@@ -87,7 +118,11 @@ export default function PlanesPage() {
             {filteredPlans.length} {filteredPlans.length === 1 ? 'plan encontrado' : 'planes encontrados'}
           </p>
 
-          {filteredPlans.length > 0 ? (
+          {isLoading ? (
+            <div className={styles.empty}>
+              <p>Cargando planes...</p>
+            </div>
+          ) : filteredPlans.length > 0 ? (
             <div className={`${styles.grid} stagger-children`}>
               {filteredPlans.map((plan) => (
                 <PlanCard key={plan.id} plan={plan} />

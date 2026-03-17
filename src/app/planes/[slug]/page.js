@@ -2,16 +2,33 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
-import { PLANS, getPlanBySlug } from '@/data/plans';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
-export function generateStaticParams() {
-  return PLANS.map((plan) => ({ slug: plan.slug }));
+// Helper function to map snake_case from DB to camelCase
+const mapPlanData = (plan) => ({
+  ...plan,
+  categoryLabel: plan.category_label,
+  posterImage: plan.poster_image,
+  timeStart: plan.time_start,
+  timeEnd: plan.time_end,
+  ageRestriction: plan.age_restriction,
+});
+
+export async function generateStaticParams() {
+  const { data: plans } = await supabase.from('plans').select('slug');
+  return (plans || []).map((plan) => ({ slug: plan.slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const plan = getPlanBySlug(slug);
+  
+  const { data: plan } = await supabase
+    .from('plans')
+    .select('title, excerpt, image')
+    .eq('slug', slug)
+    .single();
+    
   if (!plan) return {};
 
   return {
@@ -27,12 +44,43 @@ export async function generateMetadata({ params }) {
 
 export default async function PlanDetailPage({ params }) {
   const { slug } = await params;
-  const plan = getPlanBySlug(slug);
-  if (!plan) notFound();
+  
+  const { data: rawPlan, error } = await supabase
+    .from('plans')
+    .select(`
+      *,
+      plan_tickets (name, price, description, sold_out, sort_order),
+      plan_guest_lists (name, time_range, price, description, sold_out, sort_order),
+      plan_schedule (time, description, sort_order),
+      plan_tags (tag)
+    `)
+    .eq('slug', slug)
+    .single();
 
-  const relatedPlans = PLANS.filter(
-    (p) => p.category === plan.category && p.id !== plan.id
-  ).slice(0, 3);
+  if (!rawPlan || error) notFound();
+
+  // Sort related data
+  const tickets = (rawPlan.plan_tickets || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const guestList = (rawPlan.plan_guest_lists || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const schedule = (rawPlan.plan_schedule || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const tags = (rawPlan.plan_tags || []).map(t => t.tag);
+
+  const plan = {
+    ...mapPlanData(rawPlan),
+    tickets: tickets.length > 0 ? tickets : undefined,
+    guestList: guestList.length > 0 ? guestList : undefined,
+    schedule: schedule.length > 0 ? schedule : undefined,
+    tags: tags.length > 0 ? tags : undefined
+  };
+
+  const { data: relatedPlansData } = await supabase
+    .from('plans')
+    .select('*')
+    .eq('category', plan.category)
+    .neq('id', plan.id)
+    .limit(3);
+    
+  const relatedPlans = (relatedPlansData || []).map(mapPlanData);
 
   // If it's an evento type, render the dark FourVenues layout
   if (plan.type === 'evento') {

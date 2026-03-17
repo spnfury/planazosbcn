@@ -1,11 +1,33 @@
 import Link from 'next/link';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import Newsletter from '@/components/Newsletter/Newsletter';
-import { PLANS, CATEGORIES, getFeaturedPlans } from '@/data/plans';
+import { CATEGORIES } from '@/data/plans';
+import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
-export default function Home() {
-  const featuredPlans = getFeaturedPlans();
+// Helper function to map snake_case from DB to camelCase for PlanCard
+const mapPlanData = (plan) => ({
+  ...plan,
+  categoryLabel: plan.category_label,
+  posterImage: plan.poster_image,
+  timeStart: plan.time_start,
+  timeEnd: plan.time_end,
+  ageRestriction: plan.age_restriction,
+});
+
+export default async function Home() {
+  // Fetch all active plans from Supabase
+  const { data: plansData, error } = await supabase
+    .from('plans')
+    .select('*')
+    .order('date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching plans:', error);
+  }
+
+  const allPlans = (plansData || []).map(mapPlanData);
+  const featuredPlans = allPlans.filter(p => p.featured);
 
   return (
     <>
@@ -117,7 +139,7 @@ export default function Home() {
           </div>
 
           <div className={`${styles.planGrid} ${styles.planGridFull} stagger-children`}>
-            {PLANS.map((plan) => (
+            {allPlans.map((plan) => (
               <PlanCard key={plan.id} plan={plan} />
             ))}
           </div>
