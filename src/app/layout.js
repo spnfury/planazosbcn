@@ -1,5 +1,4 @@
-import Header from '@/components/Header/Header';
-import Footer from '@/components/Footer/Footer';
+import LayoutShell from '@/components/LayoutShell';
 import AuthProvider from '@/components/Auth/AuthProvider';
 import './globals.css';
 
@@ -28,9 +27,7 @@ export default function RootLayout({ children }) {
     <html lang="es">
       <body>
         <AuthProvider>
-          <Header />
-          <main style={{ paddingTop: 'var(--header-height)' }}>{children}</main>
-          <Footer />
+          <LayoutShell>{children}</LayoutShell>
         </AuthProvider>
       </body>
     </html>
