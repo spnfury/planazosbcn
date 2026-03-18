@@ -6,7 +6,7 @@ import styles from '@/app/admin/admin.module.css';
 
 /**
  * ImageUploader — Upload images from camera, gallery, or paste a URL.
- * Uploads to Supabase Storage bucket "plan-images".
+ * Uploads via /api/admin/upload (server-side, bypasses storage RLS).
  *
  * Props:
  *   value: string (current image URL)
@@ -28,27 +28,25 @@ export default function ImageUploader({ value, onChange, label, id }) {
     setUploading(true);
 
     try {
-      // Generate unique filename
-      const ext = file.name.split('.').pop() || 'jpg';
-      const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const filePath = `plans/${filename}`;
+      // Get current session token for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No has iniciado sesión');
 
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from('plan-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
+      const formData = new FormData();
+      formData.append('file', file);
 
-      if (uploadError) throw uploadError;
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: formData,
+      });
 
-      // Get public URL
-      const { data } = supabase.storage
-        .from('plan-images')
-        .getPublicUrl(filePath);
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Error al subir imagen');
 
-      onChange(data.publicUrl);
+      onChange(result.url);
       setMode('preview');
     } catch (err) {
       console.error('Upload error:', err);
