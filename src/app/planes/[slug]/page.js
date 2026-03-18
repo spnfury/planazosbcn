@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
 import { supabase } from '@/lib/supabase';
+import ReserveButton from '@/components/ReserveButton/ReserveButton';
+import ShareButtons from './ShareButtons';
 import styles from './page.module.css';
 
 // Helper function to map snake_case from DB to camelCase
@@ -131,11 +133,20 @@ export default async function PlanDetailPage({ params }) {
           <h1 className={styles.title}>{plan.title}</h1>
 
           <div className={styles.infoCards}>
-            {plan.date && (
+            {plan.date && plan.type !== 'sorpresa' && (
               <div className={styles.infoCard}>
                 <span className={styles.infoIcon}>🗓️</span>
                 <div>
                   <span className={styles.infoLabel}>Fecha</span>
+                  <span className={styles.infoValue}>{plan.date}</span>
+                </div>
+              </div>
+            )}
+            {plan.date && plan.type === 'sorpresa' && (
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>🗓️</span>
+                <div>
+                  <span className={styles.infoLabel}>Validez / Fecha</span>
                   <span className={styles.infoValue}>{plan.date}</span>
                 </div>
               </div>
@@ -162,7 +173,7 @@ export default async function PlanDetailPage({ params }) {
                 </div>
               </div>
             )}
-            {plan.zone && (
+            {plan.zone && plan.type !== 'sorpresa' && (
               <div className={styles.infoCard}>
                 <span className={styles.infoIcon}>📍</span>
                 <div>
@@ -171,9 +182,18 @@ export default async function PlanDetailPage({ params }) {
                 </div>
               </div>
             )}
+             {plan.type === 'sorpresa' && (
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>🎁</span>
+                <div>
+                  <span className={styles.infoLabel}>Envío a domicilio</span>
+                  <span className={styles.infoValue}>Disponible</span>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className={styles.description}>
+          <div className={styles.description} id="info">
             <h2 className={styles.descTitle}>Sobre este plan</h2>
             <p>{plan.description}</p>
           </div>
@@ -188,7 +208,7 @@ export default async function PlanDetailPage({ params }) {
               ) : (
                 <>
                   <span className={styles.ctaPriceValue}>{plan.precio_reserva > 0 ? plan.precio_reserva : plan.price}€</span>
-                  <span className={styles.ctaPriceLabel}>{plan.precio_reserva > 0 ? 'Reserva online' : 'por persona'}</span>
+                  <span className={styles.ctaPriceLabel}>{plan.precio_reserva > 0 ? (plan.type === 'sorpresa' ? 'Pago inicial' : 'Reserva online') : (plan.type === 'sorpresa' ? 'precio base' : 'por persona')}</span>
                 </>
               )}
             </div>
@@ -207,34 +227,32 @@ export default async function PlanDetailPage({ params }) {
               />
             )}
 
-            <Link
-              href={`/planes/${plan.slug}#reservar`}
-              className="btn btn--primary btn--large"
-              style={{ width: '100%', textAlign: 'center' }}
-              id="plan-reserve"
-            >
-              Reservar ahora
-            </Link>
+            <ReserveButton 
+              plan={plan} 
+              tickets={plan.tickets}
+              label={plan.type === 'sorpresa' ? 'Regalar ahora' : 'Reservar ahora'}
+            />
 
-            <button className="btn btn--secondary btn--large" style={{ width: '100%' }} id="plan-info">
+            <a href="#info" className="btn btn--secondary btn--large" style={{ width: '100%', display: 'inline-block', textAlign: 'center' }} id="plan-info">
               Más información
-            </button>
+            </a>
 
             <p className={styles.ctaNote}>
-              ¿Tienes dudas? Escríbenos por WhatsApp
+              ¿Tienes dudas?{' '}
+              <a 
+                href={`https://wa.me/34600000000?text=${encodeURIComponent('Hola! Tengo dudas sobre el plan "' + plan.title + '"')}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'underline' }}
+              >
+                Escríbenos por WhatsApp
+              </a>
             </p>
           </div>
 
           <div className={styles.shareCard}>
             <h4 className={styles.shareTitle}>Comparte este plan</h4>
-            <div className={styles.shareButtons}>
-              <button className={styles.shareBtn} aria-label="Compartir en WhatsApp" id="share-whatsapp">
-                📱 WhatsApp
-              </button>
-              <button className={styles.shareBtn} aria-label="Copiar enlace" id="share-link">
-                🔗 Copiar link
-              </button>
-            </div>
+            <ShareButtons planTitle={plan.title} />
           </div>
         </aside>
       </div>

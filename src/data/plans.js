@@ -50,6 +50,22 @@ export const CATEGORIES = [
     color: '#1B1464',
     count: 4,
   },
+  {
+    id: 'servicios',
+    label: 'Servicios',
+    emoji: '🛠️',
+    description: 'Servicios, actividades especiales y más',
+    color: '#EC4899',
+    count: 0,
+  },
+  {
+    id: 'bienestar',
+    label: 'Bienestar',
+    emoji: '💆‍♀️',
+    description: 'Spa, clínicas de estética y cuidado personal',
+    color: '#14B8A6',
+    count: 0,
+  },
 ];
 
 export const PLANS = [

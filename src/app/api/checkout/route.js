@@ -5,7 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { planId, ticketId, quantity = 1, customerEmail, userId } = body;
+    const { planId, ticketId, quantity = 1, customerEmail, userId, customerName, shippingData, shippingCost } = body;
 
     if (!planId || !customerEmail) {
       return NextResponse.json(
@@ -104,6 +104,11 @@ export async function POST(request) {
           stripe_session_id: `free_${Date.now()}`,
           qr_code: qrCode,
           localizador: localizador,
+          shipping_name: shippingData?.name || null,
+          shipping_address: shippingData?.address || null,
+          shipping_phone: shippingData?.phone || null,
+          shipping_date: shippingData?.date || null,
+          shipping_message: shippingData?.message || null,
         })
         .select()
         .single();
@@ -129,23 +134,38 @@ export async function POST(request) {
     // Create Stripe Checkout Session
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
+    const lineItems = [
+      {
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: itemName,
+            description: plan.excerpt || undefined,
+            images: plan.image ? [plan.image] : undefined,
+          },
+          unit_amount: Math.round(unitPrice * 100), // Stripe uses cents
+        },
+        quantity,
+      },
+    ];
+
+    if (shippingCost && parseFloat(shippingCost) > 0) {
+      lineItems.push({
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: 'Gastos de envío a domicilio',
+          },
+          unit_amount: Math.round(parseFloat(shippingCost) * 100),
+        },
+        quantity: 1, // Shipping cost applies once per order, not per quantity
+      });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: customerEmail,
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: itemName,
-              description: plan.excerpt || undefined,
-              images: plan.image ? [plan.image] : undefined,
-            },
-            unit_amount: Math.round(unitPrice * 100), // Stripe uses cents
-          },
-          quantity,
-        },
-      ],
+      line_items: lineItems,
       mode: 'payment',
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/checkout/cancel?plan=${plan.slug}`,
@@ -163,11 +183,16 @@ export async function POST(request) {
       user_id: userId || null,
       customer_email: customerEmail,
       quantity,
-      total_amount: Math.round(unitPrice * 100 * quantity),
+      total_amount: Math.round((unitPrice * 100 * quantity) + (parseFloat(shippingCost || 0) * 100)),
       stripe_session_id: session.id,
       status: 'pending',
       qr_code: qrCode,
       localizador: localizador,
+      shipping_name: shippingData?.name || null,
+      shipping_address: shippingData?.address || null,
+      shipping_phone: shippingData?.phone || null,
+      shipping_date: shippingData?.date || null,
+      shipping_message: shippingData?.message || null,
     });
 
     return NextResponse.json({ url: session.url });

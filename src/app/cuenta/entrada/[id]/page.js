@@ -142,13 +142,27 @@ export default function EntradaPage({ params }) {
                     className={styles.qrImage}
                   />
                 </div>
-                <p className={styles.qrHint}>
-                  Muestra este QR en la entrada del evento
+                {reservation.localizador && (
+                  <div className="mt-4 text-center">
+                    <p className="text-zinc-400 text-xs uppercase tracking-wider mb-1">Localizador</p>
+                    <p className="font-mono text-2xl font-bold tracking-widest text-primary bg-zinc-900 px-4 py-2 rounded-xl border border-zinc-800 inline-block">{reservation.localizador}</p>
+                  </div>
+                )}
+                <p className={styles.qrHint} style={{ marginTop: reservation.localizador ? '12px' : '20px' }}>
+                  {reservation.localizador ? 'Muestra este QR o el localizador en la entrada del evento' : 'Muestra este QR en la entrada del evento'}
                 </p>
               </>
+            ) : reservation.localizador ? (
+              <div className="flex flex-col items-center justify-center p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800">
+                <p className="text-zinc-400 text-xs uppercase tracking-wider mb-2">Localizador</p>
+                <p className="font-mono text-3xl font-bold tracking-widest text-white">{reservation.localizador}</p>
+                <p className="text-zinc-500 text-sm mt-4 text-center">
+                  Muestra este código en la entrada del evento
+                </p>
+              </div>
             ) : (
               <div className={styles.qrPlaceholder}>
-                <span>QR no disponible</span>
+                <span>Entrada no disponible</span>
               </div>
             )}
           </div>
@@ -168,8 +182,8 @@ export default function EntradaPage({ params }) {
               </span>
             </div>
             <div className={styles.ticketDetail}>
-              <span className={styles.detailLabel}>ID</span>
-              <span className={styles.detailValue}>#{reservation.id}</span>
+              <span className={styles.detailLabel}>Nº Reserva</span>
+              <span className={styles.detailValue}>#{reservation.id.toString().padStart(5, '0')}</span>
             </div>
           </div>
         </div>

@@ -19,6 +19,13 @@ export default function ReserveButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
+  const [shippingData, setShippingData] = useState({
+    name: '',
+    address: '',
+    phone: '',
+    date: '',
+    message: ''
+  });
 
   // Pre-fill email if user is logged in
   useEffect(() => {
@@ -67,7 +74,8 @@ export default function ReserveButton({
   };
 
   const unitPrice = getUnitPrice();
-  const totalPrice = unitPrice * quantity;
+  const shippingCost = plan?.type === 'sorpresa' ? parseFloat(plan.shipping_cost || 0) : 0;
+  const totalPrice = (unitPrice * quantity) + shippingCost;
   const isFree = totalPrice === 0;
 
   // Max available spots
@@ -106,6 +114,16 @@ export default function ReserveButton({
         customerEmail: email,
         customerName: name || undefined,
       };
+
+      if (plan.type === 'sorpresa') {
+        if (!shippingData.name || !shippingData.address || !shippingData.phone || !shippingData.date) {
+          setError('Por favor completa todos los datos de envío obligatorios (Nombre, Dirección, Teléfono, Fecha)');
+          setLoading(false);
+          return;
+        }
+        body.shippingData = shippingData;
+        body.shippingCost = shippingCost;
+      }
 
       if (selectedTicketId) {
         body.ticketId = selectedTicketId;
@@ -261,6 +279,85 @@ export default function ReserveButton({
                 />
               </div>
 
+              {/* Shipping Data (for sorpresa plans) */}
+              {plan?.type === 'sorpresa' && (
+                <div className={styles.shippingForm}>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                    📦 Datos de Envío
+                  </h3>
+                  
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Nombre y Apellidos del destinatario <span style={{ color: 'var(--color-error)' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      value={shippingData.name}
+                      onChange={(e) => setShippingData({ ...shippingData, name: e.target.value })}
+                      placeholder="Para quién es el regalo"
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Dirección de entrega <span style={{ color: 'var(--color-error)' }}>*</span>
+                    </label>
+                    <textarea
+                      className={styles.input}
+                      value={shippingData.address}
+                      onChange={(e) => setShippingData({ ...shippingData, address: e.target.value })}
+                      placeholder="Calle, número, piso, puerta, código postal y ciudad..."
+                      rows="3"
+                      style={{ resize: 'vertical' }}
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Teléfono de contacto (importante para mensajero) <span style={{ color: 'var(--color-error)' }}>*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      className={styles.input}
+                      value={shippingData.phone}
+                      onChange={(e) => setShippingData({ ...shippingData, phone: e.target.value })}
+                      placeholder="Ej. +34 600 000 000"
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Fecha deseada de entrega <span style={{ color: 'var(--color-error)' }}>*</span>
+                    </label>
+                    <input
+                      type="date"
+                      className={styles.input}
+                      value={shippingData.date}
+                      onChange={(e) => setShippingData({ ...shippingData, date: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Mensaje en la tarjeta (opcional)
+                    </label>
+                    <textarea
+                      className={styles.input}
+                      value={shippingData.message}
+                      onChange={(e) => setShippingData({ ...shippingData, message: e.target.value })}
+                      placeholder="Escribe algo bonito..."
+                      rows="2"
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Quantity */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>Cantidad</label>
@@ -296,10 +393,18 @@ export default function ReserveButton({
             {/* Footer */}
             <div className={styles.modalFooter}>
               <div className={styles.totalRow}>
-                <span className={styles.totalLabel}>Total</span>
-                <span className={styles.totalAmount}>
-                  {isFree ? 'Gratis' : `${totalPrice.toFixed(2)}€`}
-                </span>
+                {plan?.type === 'sorpresa' && shippingCost > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                    <span>Gastos de envío</span>
+                    <span>{shippingCost.toFixed(2)}€</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-color)' }}>
+                  <span className={styles.totalLabel}>Total</span>
+                  <span className={styles.totalAmount}>
+                    {isFree ? 'Gratis' : `${totalPrice.toFixed(2)}€`}
+                  </span>
+                </div>
               </div>
 
               <button

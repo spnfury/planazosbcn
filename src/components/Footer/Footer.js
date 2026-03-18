@@ -25,6 +25,8 @@ export default function Footer() {
               <Link href="/#categorias" className={styles.link}>Categorías</Link>
               <Link href="/planes?category=gastro" className={styles.link}>Gastronomía</Link>
               <Link href="/planes?category=naturaleza" className={styles.link}>Naturaleza</Link>
+              <Link href="/planes?category=servicios" className={styles.link}>Servicios</Link>
+              <Link href="/planes?category=bienestar" className={styles.link}>Bienestar</Link>
             </div>
 
             <div className={styles.linkGroup}>

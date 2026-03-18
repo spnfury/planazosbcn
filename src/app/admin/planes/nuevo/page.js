@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
@@ -13,6 +13,8 @@ const CATEGORIES = [
   { id: 'cultura', label: 'Cultura' },
   { id: 'rutas', label: 'Rutas' },
   { id: 'nocturno', label: 'Nocturno' },
+  { id: 'servicios', label: 'Servicios' },
+  { id: 'bienestar', label: 'Bienestar' },
 ];
 
 const EMPTY_TICKET = { name: '', price: '', description: '', capacity: 0, spots_taken: 0, sold_out: false };
@@ -39,6 +41,7 @@ export default function NuevoPlanPage() {
     date: '',
     price: '',
     precio_reserva: 0,
+    shipping_cost: 0,
     venue: '',
     address: '',
     time_start: '',
@@ -49,6 +52,7 @@ export default function NuevoPlanPage() {
     sponsored: false,
     published: true,
     age_restriction: '',
+    collaborator_id: '',
   });
 
   const [tags, setTags] = useState([]);
@@ -56,6 +60,23 @@ export default function NuevoPlanPage() {
   const [tickets, setTickets] = useState([]);
   const [guestLists, setGuestLists] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [collaborators, setCollaborators] = useState([]);
+
+  // Fetch collaborators
+  useEffect(() => {
+    async function fetchCollaborators() {
+      try {
+        const res = await fetch('/api/admin/collaborators');
+        if (res.ok) {
+          const data = await res.json();
+          setCollaborators(data);
+        }
+      } catch (err) {
+        console.error('Error fetching collaborators:', err);
+      }
+    }
+    fetchCollaborators();
+  }, []);
 
   function updateForm(field, value) {
     setForm((prev) => {
@@ -157,8 +178,24 @@ export default function NuevoPlanPage() {
               >
                 <option value="plan">Plan</option>
                 <option value="evento">Evento</option>
+                <option value="sorpresa">Sorpresa/Regalo</option>
               </select>
             </div>
+            
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Colaborador / Restaurante</label>
+              <select
+                className={styles.formSelect}
+                value={form.collaborator_id}
+                onChange={(e) => updateForm('collaborator_id', e.target.value)}
+              >
+                <option value="">Sin colaborador (Solo Admin)</option>
+                {collaborators.map((c) => (
+                  <option key={c.id} value={c.id}>{c.company_name || c.email}</option>
+                ))}
+              </select>
+            </div>
+
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Categoría</label>
               <select
@@ -295,6 +332,21 @@ export default function NuevoPlanPage() {
                 id="form-precio-reserva"
               />
             </div>
+            {form.type === 'sorpresa' && (
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Coste de Envío (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={styles.formInput}
+                  value={form.shipping_cost}
+                  onChange={(e) => updateForm('shipping_cost', Number(e.target.value))}
+                  min="0"
+                  placeholder="5.99"
+                  id="form-shipping-cost"
+                />
+              </div>
+            )}
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Aforo (capacidad máxima)</label>
               <input

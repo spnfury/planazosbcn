@@ -7,7 +7,7 @@
 CREATE TABLE IF NOT EXISTS plans (
   id BIGSERIAL PRIMARY KEY,
   slug TEXT UNIQUE NOT NULL,
-  type TEXT DEFAULT 'plan' CHECK (type IN ('plan', 'evento')),
+  type TEXT DEFAULT 'plan' CHECK (type IN ('plan', 'evento', 'sorpresa')),
   title TEXT NOT NULL,
   excerpt TEXT,
   description TEXT,
@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS plans (
   date TEXT,
   price TEXT,
   precio_reserva numeric DEFAULT 0,
+  shipping_cost numeric DEFAULT 0,
   venue TEXT,
   address TEXT,
   time_start TEXT,
@@ -96,6 +97,11 @@ CREATE TABLE IF NOT EXISTS reservations (
   total_amount INTEGER DEFAULT 0, -- in cents
   stripe_session_id TEXT UNIQUE,
   stripe_payment_intent TEXT,
+  shipping_name TEXT,
+  shipping_address TEXT,
+  shipping_phone TEXT,
+  shipping_date TEXT,
+  shipping_message TEXT,
   qr_code TEXT UNIQUE, -- unique token for QR entrance
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'cancelled', 'refunded')),
   validated_at TIMESTAMPTZ, -- when the QR was scanned/validated

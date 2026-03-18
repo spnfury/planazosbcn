@@ -14,6 +14,8 @@ const CATEGORIES = [
   { id: 'cultura', label: 'Cultura' },
   { id: 'rutas', label: 'Rutas' },
   { id: 'nocturno', label: 'Nocturno' },
+  { id: 'servicios', label: 'Servicios' },
+  { id: 'bienestar', label: 'Bienestar' },
 ];
 
 export default function EditPlanPage({ params }) {
@@ -60,6 +62,7 @@ export default function EditPlanPage({ params }) {
         date: plan.date || '',
         price: plan.price || '',
         precio_reserva: plan.precio_reserva || 0,
+        shipping_cost: plan.shipping_cost || 0,
         venue: plan.venue || '',
         address: plan.address || '',
         time_start: plan.time_start || '',
@@ -210,6 +213,7 @@ export default function EditPlanPage({ params }) {
               <select className={styles.formSelect} value={form.type} onChange={(e) => updateForm('type', e.target.value)}>
                 <option value="plan">Plan</option>
                 <option value="evento">Evento</option>
+                <option value="sorpresa">Sorpresa/Regalo</option>
               </select>
             </div>
             <div className={styles.formGroup}>
@@ -282,6 +286,19 @@ export default function EditPlanPage({ params }) {
               <label className={styles.formLabel}>Precio Pre-reserva (€)</label>
               <input type="number" step="0.01" className={styles.formInput} value={form.precio_reserva} onChange={(e) => updateForm('precio_reserva', Number(e.target.value))} min="0" />
             </div>
+            {form.type === 'sorpresa' && (
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Coste de Envío (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className={styles.formInput}
+                  value={form.shipping_cost}
+                  onChange={(e) => updateForm('shipping_cost', Number(e.target.value))}
+                  min="0"
+                />
+              </div>
+            )}
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Aforo</label>
               <input type="number" className={styles.formInput} value={form.capacity} onChange={(e) => updateForm('capacity', Number(e.target.value))} min="0" />
