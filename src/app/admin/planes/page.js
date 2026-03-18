@@ -33,11 +33,21 @@ export default function AdminPlanesPage() {
   }
 
   async function deletePlan(plan) {
-    if (!confirm(`¿Eliminar "${plan.title}"? Se despublicará y no será visible.`)) return;
-    await supabase.from('plans').update({ published: false }).eq('id', plan.id);
-    setPlans((prev) =>
-      prev.map((p) => (p.id === plan.id ? { ...p, published: false } : p))
-    );
+    if (!confirm(`¿Eliminar "${plan.title}" permanentemente? Esta acción no se puede deshacer.`)) return;
+
+    // Delete related data first (cascade should handle it, but be explicit)
+    await supabase.from('plan_tags').delete().eq('plan_id', plan.id);
+    await supabase.from('plan_tickets').delete().eq('plan_id', plan.id);
+    await supabase.from('plan_guest_lists').delete().eq('plan_id', plan.id);
+    await supabase.from('plan_schedule').delete().eq('plan_id', plan.id);
+
+    const { error } = await supabase.from('plans').delete().eq('id', plan.id);
+    if (error) {
+      alert('Error al eliminar: ' + error.message);
+      return;
+    }
+
+    setPlans((prev) => prev.filter((p) => p.id !== plan.id));
   }
 
   function getCapacityColor(pct) {

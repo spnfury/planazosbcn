@@ -127,15 +127,25 @@ export async function DELETE(request, { params }) {
 
   const { id } = await params;
 
-  // Soft delete — just unpublish
-  const { error } = await supabaseAdmin
-    .from('plans')
-    .update({ published: false })
-    .eq('id', id);
+  try {
+    // Delete related data first
+    await supabaseAdmin.from('plan_tags').delete().eq('plan_id', id);
+    await supabaseAdmin.from('plan_tickets').delete().eq('plan_id', id);
+    await supabaseAdmin.from('plan_guest_lists').delete().eq('plan_id', id);
+    await supabaseAdmin.from('plan_schedule').delete().eq('plan_id', id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Hard delete the plan
+    const { error } = await supabaseAdmin
+      .from('plans')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Plan eliminado permanentemente' });
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
-
-  return NextResponse.json({ message: 'Plan eliminado' });
 }
