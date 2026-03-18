@@ -1,0 +1,331 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import styles from './ReserveButton.module.css';
+
+export default function ReserveButton({
+  plan,
+  tickets = [],
+  className = '',
+  label = 'Reservar ahora',
+  variant = 'primary', // 'primary' | 'event'
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [userId, setUserId] = useState(null);
+
+  // Pre-fill email if user is logged in
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setEmail(user.email || '');
+        setUserId(user.id);
+        // Try to get name from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        if (profile?.full_name) {
+          setName(profile.full_name);
+        }
+      }
+    }
+    if (isOpen) getUser();
+  }, [isOpen]);
+
+  // Close on escape
+  useEffect(() => {
+    function handleEsc(e) {
+      if (e.key === 'Escape') setIsOpen(false);
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleEsc);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Calculate price
+  const getUnitPrice = () => {
+    if (selectedTicketId && tickets.length > 0) {
+      const ticket = tickets.find(t => t.id === selectedTicketId);
+      if (ticket) return parseFloat(ticket.price) || 0;
+    }
+    if (plan.price === 'Gratis') return 0;
+    return parseFloat(plan.price) || 0;
+  };
+
+  const unitPrice = getUnitPrice();
+  const totalPrice = unitPrice * quantity;
+  const isFree = totalPrice === 0;
+
+  // Max available spots
+  const getMaxQuantity = () => {
+    if (selectedTicketId && tickets.length > 0) {
+      const ticket = tickets.find(t => t.id === selectedTicketId);
+      if (ticket) return Math.max(0, (ticket.capacity || 0) - (ticket.spots_taken || 0));
+    }
+    if (plan.capacity > 0) {
+      return Math.max(0, plan.capacity - (plan.spots_taken || 0));
+    }
+    return 10; // default max
+  };
+
+  const maxQuantity = Math.min(getMaxQuantity(), 10);
+
+  const handleSubmit = async () => {
+    setError('');
+
+    if (!email) {
+      setError('El email es obligatorio');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Introduce un email válido');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const body = {
+        planId: plan.id,
+        quantity,
+        customerEmail: email,
+        customerName: name || undefined,
+      };
+
+      if (selectedTicketId) {
+        body.ticketId = selectedTicketId;
+      }
+
+      if (userId) {
+        body.userId = userId;
+      }
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al procesar la reserva');
+      }
+
+      // Redirect to Stripe checkout or success page (for free plans)
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        className={className || 'btn btn--primary btn--large'}
+        style={!className ? { width: '100%', textAlign: 'center' } : undefined}
+        onClick={() => setIsOpen(true)}
+        id="reserve-btn"
+      >
+        {label}
+      </button>
+
+      {isOpen && (
+        <div className={styles.overlay} onClick={(e) => {
+          if (e.target === e.currentTarget) setIsOpen(false);
+        }}>
+          <div className={styles.modal} role="dialog" aria-modal="true">
+            {/* Header */}
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+                {isFree ? '📋 Reservar plaza' : '🎫 Comprar entrada'}
+              </h2>
+              <button
+                className={styles.closeBtn}
+                onClick={() => setIsOpen(false)}
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className={styles.modalBody}>
+              {/* Plan summary */}
+              <div className={styles.planSummary}>
+                {plan.image && (
+                  <img
+                    src={plan.image}
+                    alt={plan.title}
+                    className={styles.planSummaryImg}
+                  />
+                )}
+                <div className={styles.planSummaryInfo}>
+                  <span className={styles.planSummaryTitle}>{plan.title}</span>
+                  {plan.date && (
+                    <span className={styles.planSummaryMeta}>
+                      🗓️ {plan.date}
+                      {plan.venue && ` · 📍 ${plan.venue}`}
+                    </span>
+                  )}
+                  <span className={styles.planSummaryPrice}>
+                    {isFree ? 'Gratis' : `${unitPrice}€`}
+                  </span>
+                </div>
+              </div>
+
+              {/* Ticket selector (if tickets exist) */}
+              {tickets.length > 0 && (
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Tipo de entrada</label>
+                  <div className={styles.ticketSelector}>
+                    {tickets.map((ticket) => {
+                      const isSoldOut = ticket.sold_out;
+                      const isActive = selectedTicketId === ticket.id;
+                      return (
+                        <button
+                          key={ticket.id}
+                          type="button"
+                          className={[
+                            styles.ticketOption,
+                            isActive ? styles.ticketOptionActive : '',
+                            isSoldOut ? styles.ticketOptionDisabled : '',
+                          ].join(' ')}
+                          onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
+                          disabled={isSoldOut}
+                        >
+                          <div>
+                            <div className={styles.ticketOptionName}>{ticket.name}</div>
+                            {ticket.description && (
+                              <div className={styles.ticketOptionDesc}>{ticket.description}</div>
+                            )}
+                          </div>
+                          {isSoldOut ? (
+                            <span className={styles.soldOutBadge}>Agotadas</span>
+                          ) : (
+                            <span className={styles.ticketOptionPrice}>
+                              {ticket.price === 'Gratis' ? 'Gratis' : `${ticket.price}€`}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Name */}
+              <div className={styles.formGroup}>
+                <label htmlFor="reserve-name" className={styles.label}>
+                  Nombre completo
+                </label>
+                <input
+                  id="reserve-name"
+                  type="text"
+                  className={styles.input}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Tu nombre"
+                />
+              </div>
+
+              {/* Email */}
+              <div className={styles.formGroup}>
+                <label htmlFor="reserve-email" className={styles.label}>
+                  Email <span style={{ color: 'var(--color-error)' }}>*</span>
+                </label>
+                <input
+                  id="reserve-email"
+                  type="email"
+                  className={styles.input}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tu@email.com"
+                  required
+                />
+              </div>
+
+              {/* Quantity */}
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Cantidad</label>
+                <div className={styles.quantityRow}>
+                  <button
+                    type="button"
+                    className={styles.quantityBtn}
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    aria-label="Menos"
+                  >
+                    −
+                  </button>
+                  <span className={styles.quantityValue}>{quantity}</span>
+                  <button
+                    type="button"
+                    className={styles.quantityBtn}
+                    onClick={() => setQuantity(q => Math.min(maxQuantity, q + 1))}
+                    disabled={quantity >= maxQuantity}
+                    aria-label="Más"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className={styles.error}>{error}</div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className={styles.modalFooter}>
+              <div className={styles.totalRow}>
+                <span className={styles.totalLabel}>Total</span>
+                <span className={styles.totalAmount}>
+                  {isFree ? 'Gratis' : `${totalPrice.toFixed(2)}€`}
+                </span>
+              </div>
+
+              <button
+                className={styles.submitBtn}
+                onClick={handleSubmit}
+                disabled={loading || (tickets.length > 0 && !selectedTicketId)}
+              >
+                {loading ? (
+                  <>
+                    <span className={styles.spinner} />
+                    Procesando...
+                  </>
+                ) : isFree ? (
+                  '📋 Confirmar reserva gratuita'
+                ) : (
+                  `💳 Pagar ${totalPrice.toFixed(2)}€`
+                )}
+              </button>
+
+              <p className={styles.secureNote}>
+                🔒 Pago seguro procesado por Stripe
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

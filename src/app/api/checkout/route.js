@@ -62,7 +62,12 @@ export async function POST(request) {
       if (plan.price === 'Gratis') {
         unitPrice = 0;
       } else {
-        unitPrice = parseFloat(plan.price) || 0;
+        if (plan.precio_reserva && plan.precio_reserva > 0) {
+           unitPrice = Number(plan.precio_reserva);
+           itemName = `Reserva: ${plan.title}`;
+        } else {
+           unitPrice = parseFloat(plan.price) || 0;
+        }
       }
 
       const available = plan.capacity - plan.spots_taken;

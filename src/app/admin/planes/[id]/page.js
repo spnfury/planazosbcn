@@ -57,6 +57,7 @@ export default function EditPlanPage({ params }) {
         zone: plan.zone || '',
         date: plan.date || '',
         price: plan.price || '',
+        precio_reserva: plan.precio_reserva || 0,
         venue: plan.venue || '',
         address: plan.address || '',
         time_start: plan.time_start || '',
@@ -264,6 +265,10 @@ export default function EditPlanPage({ params }) {
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Precio</label>
               <input type="text" className={styles.formInput} value={form.price} onChange={(e) => updateForm('price', e.target.value)} />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Precio Pre-reserva (€)</label>
+              <input type="number" step="0.01" className={styles.formInput} value={form.precio_reserva} onChange={(e) => updateForm('precio_reserva', Number(e.target.value))} min="0" />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Aforo</label>

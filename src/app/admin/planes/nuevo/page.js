@@ -37,6 +37,7 @@ export default function NuevoPlanPage() {
     zone: '',
     date: '',
     price: '',
+    precio_reserva: 0,
     venue: '',
     address: '',
     time_start: '',
@@ -278,6 +279,19 @@ export default function NuevoPlanPage() {
                 onChange={(e) => updateForm('price', e.target.value)}
                 placeholder="25"
                 id="form-price"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Precio Pre-reserva (€)</label>
+              <input
+                type="number"
+                step="0.01"
+                className={styles.formInput}
+                value={form.precio_reserva}
+                onChange={(e) => updateForm('precio_reserva', Number(e.target.value))}
+                min="0"
+                placeholder="10"
+                id="form-precio-reserva"
               />
             </div>
             <div className={styles.formGroup}>

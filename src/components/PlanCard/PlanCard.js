@@ -37,7 +37,11 @@ export default function PlanCard({ plan, featured = false }) {
             ⭐ Destacado
           </span>
         )}
-        {plan.price && (
+        {plan.precio_reserva > 0 && plan.price !== 'Gratis' ? (
+          <span className={styles.price}>
+            Reserva {plan.precio_reserva}€
+          </span>
+        ) : plan.price && (
           <span className={styles.price}>
             {plan.price === 'Gratis' ? 'Gratis' : `${plan.price}€`}
           </span>

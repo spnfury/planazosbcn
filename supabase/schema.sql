@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS plans (
   zone TEXT,
   date TEXT,
   price TEXT,
+  precio_reserva numeric DEFAULT 0,
   venue TEXT,
   address TEXT,
   time_start TEXT,
@@ -243,4 +244,30 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ============================================
+-- Increment spots function (used by checkout)
+-- ============================================
+CREATE OR REPLACE FUNCTION increment_spots(
+  p_plan_id BIGINT,
+  p_ticket_id BIGINT DEFAULT NULL,
+  p_quantity INTEGER DEFAULT 1
+)
+RETURNS VOID AS $$
+BEGIN
+  -- Update plan spots_taken
+  UPDATE plans
+  SET spots_taken = COALESCE(spots_taken, 0) + p_quantity
+  WHERE id = p_plan_id;
+
+  -- Update ticket spots_taken if applicable
+  IF p_ticket_id IS NOT NULL THEN
+    UPDATE plan_tickets
+    SET
+      spots_taken = COALESCE(spots_taken, 0) + p_quantity,
+      sold_out = (COALESCE(spots_taken, 0) + p_quantity) >= capacity
+    WHERE id = p_ticket_id;
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 

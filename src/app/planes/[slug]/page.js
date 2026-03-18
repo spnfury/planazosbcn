@@ -13,6 +13,7 @@ const mapPlanData = (plan) => ({
   timeStart: plan.time_start,
   timeEnd: plan.time_end,
   ageRestriction: plan.age_restriction,
+  precio_reserva: Number(plan.precio_reserva) || 0,
 });
 
 export async function generateStaticParams() {
@@ -143,9 +144,20 @@ export default async function PlanDetailPage({ params }) {
               <div className={styles.infoCard}>
                 <span className={styles.infoIcon}>💰</span>
                 <div>
-                  <span className={styles.infoLabel}>Precio</span>
+                  <span className={styles.infoLabel}>Precio total</span>
                   <span className={styles.infoValue}>
                     {plan.price === 'Gratis' ? 'Gratis' : `${plan.price}€ por persona`}
+                  </span>
+                </div>
+              </div>
+            )}
+            {plan.precio_reserva > 0 && (
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>💳</span>
+                <div>
+                  <span className={styles.infoLabel}>Reserva online</span>
+                  <span className={styles.infoValue}>
+                    {plan.precio_reserva}€
                   </span>
                 </div>
               </div>
@@ -175,11 +187,17 @@ export default async function PlanDetailPage({ params }) {
                 <span className={styles.ctaPriceValue}>Gratis</span>
               ) : (
                 <>
-                  <span className={styles.ctaPriceValue}>{plan.price}€</span>
-                  <span className={styles.ctaPriceLabel}>por persona</span>
+                  <span className={styles.ctaPriceValue}>{plan.precio_reserva > 0 ? plan.precio_reserva : plan.price}€</span>
+                  <span className={styles.ctaPriceLabel}>{plan.precio_reserva > 0 ? 'Reserva online' : 'por persona'}</span>
                 </>
               )}
             </div>
+
+            {plan.precio_reserva > 0 && plan.price !== 'Gratis' && (
+               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem', textAlign: 'center' }}>
+                 Restante a pagar en el local
+               </p>
+            )}
 
             {plan.capacity > 0 && (
               <CapacityBar
