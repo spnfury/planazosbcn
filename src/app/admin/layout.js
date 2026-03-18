@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/components/Auth/AuthProvider';
 import styles from './admin.module.css';
 
 const NAV_ITEMS = [
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { session, user: authUser, loading: authLoading, signOut } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,9 +32,9 @@ export default function AdminLayout({ children }) {
       return;
     }
 
-    async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+    if (authLoading) return;
 
+    async function checkAuth() {
       if (!session) {
         router.push('/admin/login');
         return;
@@ -45,7 +47,7 @@ export default function AdminLayout({ children }) {
         .single();
 
       if (!adminUser) {
-        await supabase.auth.signOut();
+        await signOut();
         router.push('/admin/login');
         return;
       }
@@ -55,11 +57,10 @@ export default function AdminLayout({ children }) {
     }
 
     checkAuth();
-  }, [pathname, router]);
+  }, [pathname, router, session, authLoading, signOut]);
 
   async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push('/admin/login');
+    await signOut();
   }
 
   // Check if a nav item is active (exact match or starts with for sub-pages)
