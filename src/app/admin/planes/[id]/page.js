@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
 import styles from '../../admin.module.css';
 
@@ -18,6 +18,7 @@ const CATEGORIES = [
 
 export default function EditPlanPage({ params }) {
   const router = useRouter();
+  const [supabase] = useState(() => createClient());
   const [planId, setPlanId] = useState(null);
   const [form, setForm] = useState(null);
   const [tags, setTags] = useState([]);

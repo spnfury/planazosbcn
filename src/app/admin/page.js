@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import styles from './admin.module.css';
 
 export default function AdminDashboard() {
+  const [supabase] = useState(() => createClient());
   const [stats, setStats] = useState({
     totalPlans: 0,
     totalEvents: 0,

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import styles from './admin.module.css';
 
@@ -16,6 +16,7 @@ const NAV_ITEMS = [
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [supabase] = useState(() => createClient());
   const { session, user: authUser, loading: authLoading, signOut } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,7 @@ export default function AdminLayout({ children }) {
         .select('*')
         .eq('id', session.user.id)
         .single();
-
+        
       if (!adminUser) {
         await signOut();
         router.push('/admin/login');

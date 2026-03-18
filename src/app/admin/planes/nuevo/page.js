@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
 import styles from '../../admin.module.css';
 
@@ -21,6 +21,7 @@ const EMPTY_SCHEDULE = { time: '', description: '' };
 
 export default function NuevoPlanPage() {
   const router = useRouter();
+  const [supabase] = useState(() => createClient());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 

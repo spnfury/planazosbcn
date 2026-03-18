@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
 
 export default function AdminPlanesPage() {
+  const [supabase] = useState(() => createClient());
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
 
