@@ -175,6 +175,88 @@
   background: var(--color-border);
 }
 
+/* Avatar Upload */
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.avatarUploadBtn {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 2.5px dashed var(--color-border);
+  background: var(--color-bg);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-out);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.avatarUploadBtn:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg, rgba(232, 93, 38, 0.05));
+}
+
+.avatarPreviewImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatarPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.avatarPlaceholderIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.avatarPlaceholderText {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.avatarSpinner {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarSpinner::after {
+  content: '';
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.avatarHint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 @media (max-width: 480px) {
   .authCard {
     padding: var(--space-8) var(--space-6);
@@ -182,5 +264,10 @@
 
   .formRow {
     grid-template-columns: 1fr;
+  }
+
+  .avatarUploadBtn {
+    width: 84px;
+    height: 84px;
   }
 }

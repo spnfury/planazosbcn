@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 
 export async function POST(request) {
@@ -133,7 +133,8 @@ export async function POST(request) {
 
       // Send email for free reservation
       try {
-        await resend.emails.send({
+        if (resend) {
+          await resend.emails.send({
           from: 'PlanazosBCN Tickets <onboarding@resend.dev>', // Update to your domain later
           to: [customerEmail],
           subject: `🎟️ Tu entrada para: ${plan.title}`,
@@ -158,7 +159,8 @@ export async function POST(request) {
               </p>
             </div>
           `,
-        });
+          });
+        }
       } catch (emailError) {
         console.error('Failed to send confirmation email automatically:', emailError);
         // We don't want to block the success response if the email fails.

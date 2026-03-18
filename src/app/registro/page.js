@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -8,13 +8,48 @@ import styles from './registro.module.css';
 
 export default function RegistroPage() {
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    // Upload
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Error al subir la foto');
+      const data = await res.json();
+      setAvatarUrl(data.url);
+    } catch (err) {
+      setError('No se pudo subir la foto. Inténtalo de nuevo.');
+      setAvatarPreview('');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -40,6 +75,7 @@ export default function RegistroPage() {
         options: {
           data: {
             full_name: fullName,
+            ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
           },
         },
       });
@@ -83,6 +119,35 @@ export default function RegistroPage() {
         <form className={styles.authForm} onSubmit={handleRegister}>
           {error && <div className={styles.authError}>{error}</div>}
           {success && <div className={styles.authSuccess}>{success}</div>}
+
+          {/* Avatar Upload */}
+          <div className={styles.avatarSection}>
+            <button
+              type="button"
+              className={styles.avatarUploadBtn}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+            >
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Tu foto" className={styles.avatarPreviewImg} />
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  <span className={styles.avatarPlaceholderIcon}>📷</span>
+                  <span className={styles.avatarPlaceholderText}>Subir foto</span>
+                </div>
+              )}
+              {uploadingAvatar && <div className={styles.avatarSpinner} />}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              style={{ display: 'none' }}
+              id="avatar-input"
+            />
+            <span className={styles.avatarHint}>Opcional · Toca para añadir tu foto</span>
+          </div>
 
           <div className={styles.formGroup}>
             <label className={styles.formLabel} htmlFor="register-name">Nombre completo</label>
@@ -145,7 +210,7 @@ export default function RegistroPage() {
           <button
             type="submit"
             className={styles.submitBtn}
-            disabled={loading || success}
+            disabled={loading || success || uploadingAvatar}
             id="register-submit"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}

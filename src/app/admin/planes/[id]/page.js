@@ -61,14 +61,14 @@ export default function EditPlanPage({ params }) {
         zone: plan.zone || '',
         date: plan.date || '',
         price: plan.price || '',
-        precio_reserva: plan.precio_reserva || 0,
-        shipping_cost: plan.shipping_cost || 0,
+        precio_reserva: plan.precio_reserva != null ? String(plan.precio_reserva) : '',
+        shipping_cost: plan.shipping_cost != null ? String(plan.shipping_cost) : '',
         venue: plan.venue || '',
         address: plan.address || '',
         time_start: plan.time_start || '',
         time_end: plan.time_end || '',
-        capacity: plan.capacity || 0,
-        spots_taken: plan.spots_taken || 0,
+        capacity: plan.capacity != null ? String(plan.capacity) : '0',
+        spots_taken: plan.spots_taken != null ? String(plan.spots_taken) : '0',
         featured: plan.featured || false,
         sponsored: plan.sponsored || false,
         published: plan.published !== false,
@@ -109,10 +109,19 @@ export default function EditPlanPage({ params }) {
     setSaving(true);
 
     try {
+      // Convert numeric strings to numbers for DB
+      const payload = {
+        ...form,
+        precio_reserva: Number(form.precio_reserva) || 0,
+        shipping_cost: Number(form.shipping_cost) || 0,
+        capacity: Number(form.capacity) || 0,
+        spots_taken: Number(form.spots_taken) || 0,
+      };
+
       // Update plan
       const { error: planError } = await supabase
         .from('plans')
-        .update(form)
+        .update(payload)
         .eq('id', planId);
 
       if (planError) throw planError;
@@ -284,7 +293,7 @@ export default function EditPlanPage({ params }) {
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Precio Pre-reserva (€)</label>
-              <input type="number" step="0.01" className={styles.formInput} value={form.precio_reserva} onChange={(e) => updateForm('precio_reserva', Number(e.target.value))} min="0" />
+              <input type="number" step="0.01" className={styles.formInput} value={form.precio_reserva} onChange={(e) => updateForm('precio_reserva', e.target.value)} min="0" />
             </div>
             {form.type === 'sorpresa' && (
               <div className={styles.formGroup}>
@@ -294,18 +303,18 @@ export default function EditPlanPage({ params }) {
                   step="0.01"
                   className={styles.formInput}
                   value={form.shipping_cost}
-                  onChange={(e) => updateForm('shipping_cost', Number(e.target.value))}
+                  onChange={(e) => updateForm('shipping_cost', e.target.value)}
                   min="0"
                 />
               </div>
             )}
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Aforo</label>
-              <input type="number" className={styles.formInput} value={form.capacity} onChange={(e) => updateForm('capacity', Number(e.target.value))} min="0" />
+              <input type="number" className={styles.formInput} value={form.capacity} onChange={(e) => updateForm('capacity', e.target.value)} min="0" />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Plazas ocupadas</label>
-              <input type="number" className={styles.formInput} value={form.spots_taken} onChange={(e) => updateForm('spots_taken', Number(e.target.value))} min="0" />
+              <input type="number" className={styles.formInput} value={form.spots_taken} onChange={(e) => updateForm('spots_taken', e.target.value)} min="0" />
             </div>
             {form.type === 'evento' && (
               <>

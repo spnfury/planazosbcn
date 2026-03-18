@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/admin', icon: '📊', label: 'Dashboard' },
   { href: '/admin/planes', icon: '📋', label: 'Planes' },
   { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
+  { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
 ];
 
 export default function AdminLayout({ children }) {

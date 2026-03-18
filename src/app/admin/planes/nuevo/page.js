@@ -40,14 +40,14 @@ export default function NuevoPlanPage() {
     zone: '',
     date: '',
     price: '',
-    precio_reserva: 0,
-    shipping_cost: 0,
+    precio_reserva: '',
+    shipping_cost: '',
     venue: '',
     address: '',
     time_start: '',
     time_end: '',
-    capacity: 50,
-    spots_taken: 0,
+    capacity: '50',
+    spots_taken: '0',
     featured: false,
     sponsored: false,
     published: true,
@@ -112,10 +112,19 @@ export default function NuevoPlanPage() {
     setSaving(true);
 
     try {
+      // Convert numeric strings to numbers for DB
+      const payload = {
+        ...form,
+        precio_reserva: Number(form.precio_reserva) || 0,
+        shipping_cost: Number(form.shipping_cost) || 0,
+        capacity: Number(form.capacity) || 0,
+        spots_taken: Number(form.spots_taken) || 0,
+      };
+
       // Insert plan
       const { data: plan, error: planError } = await supabase
         .from('plans')
-        .insert(form)
+        .insert(payload)
         .select()
         .single();
 
@@ -326,7 +335,7 @@ export default function NuevoPlanPage() {
                 step="0.01"
                 className={styles.formInput}
                 value={form.precio_reserva}
-                onChange={(e) => updateForm('precio_reserva', Number(e.target.value))}
+                onChange={(e) => updateForm('precio_reserva', e.target.value)}
                 min="0"
                 placeholder="10"
                 id="form-precio-reserva"
@@ -340,7 +349,7 @@ export default function NuevoPlanPage() {
                   step="0.01"
                   className={styles.formInput}
                   value={form.shipping_cost}
-                  onChange={(e) => updateForm('shipping_cost', Number(e.target.value))}
+                  onChange={(e) => updateForm('shipping_cost', e.target.value)}
                   min="0"
                   placeholder="5.99"
                   id="form-shipping-cost"
@@ -353,7 +362,7 @@ export default function NuevoPlanPage() {
                 type="number"
                 className={styles.formInput}
                 value={form.capacity}
-                onChange={(e) => updateForm('capacity', Number(e.target.value))}
+                onChange={(e) => updateForm('capacity', e.target.value)}
                 min="0"
                 id="form-capacity"
               />

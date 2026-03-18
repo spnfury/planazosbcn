@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 
 export async function POST(request) {
@@ -98,8 +98,9 @@ export async function POST(request) {
         const successUrl = `${baseUrl}/checkout/success?session_id=${reservation.stripe_session_id}`;
         
         try {
-          await resend.emails.send({
-            from: 'PlanazosBCN Tickets <onboarding@resend.dev>', // Update to your domain later
+          if (resend) {
+            await resend.emails.send({
+              from: 'PlanazosBCN Tickets <onboarding@resend.dev>', // Update to your domain later
             to: [reservation.customer_email],
             subject: `🎟️ Tu entrada para: ${plan.title}`,
             html: `
@@ -123,8 +124,11 @@ export async function POST(request) {
                 </p>
               </div>
             `,
-          });
-          console.log(`✉️ Email sent to ${reservation.customer_email}`);
+            });
+            console.log(`✉️ Email sent to ${reservation.customer_email}`);
+          } else {
+            console.log('Skipping email send because RESEND_API_KEY is not set');
+          }
         } catch (emailError) {
           console.error('Failed to send confirmation email automatically:', emailError);
         }
