@@ -79,8 +79,15 @@ export async function POST(request) {
       }
     }
 
-    // Generate unique QR code token
+    // Generate unique QR code token and localizador
     const qrCode = crypto.randomUUID();
+    
+    // Generate a short 6-character alphanumeric code for easy manual verification
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed I, O, 1, 0 to avoid confusion
+    let localizador = '';
+    for (let i = 0; i < 6; i++) {
+      localizador += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
 
     // If free, create reservation directly
     if (unitPrice === 0) {
@@ -96,6 +103,7 @@ export async function POST(request) {
           status: 'paid',
           stripe_session_id: `free_${Date.now()}`,
           qr_code: qrCode,
+          localizador: localizador,
         })
         .select()
         .single();
@@ -159,6 +167,7 @@ export async function POST(request) {
       stripe_session_id: session.id,
       status: 'pending',
       qr_code: qrCode,
+      localizador: localizador,
     });
 
     return NextResponse.json({ url: session.url });
