@@ -41,9 +41,20 @@ export default function AuthProvider({ children }) {
 
   async function signOut() {
     await supabase.auth.signOut();
+    // Also clear cookies via a dedicated api endpoint, or just reload the window
+    window.location.href = '/admin/login';
     setSession(null);
     setUser(null);
   }
+
+  // Add token refresh on interval to be extra safe
+  useEffect(() => {
+    if (!session) return;
+    const interval = setInterval(() => {
+       supabase.auth.getSession();
+    }, 10 * 60 * 1000); // Check every 10 minutes
+    return () => clearInterval(interval);
+  }, [session]);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signOut }}>

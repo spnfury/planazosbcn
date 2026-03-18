@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import ImageUploader from '@/components/ImageUploader';
 import styles from '../../admin.module.css';
@@ -184,6 +185,16 @@ export default function EditPlanPage({ params }) {
           <h1 className={styles.pageTitle}>Editar plan</h1>
           <p className={styles.pageSubtitle}>{form.title}</p>
         </div>
+        {form.slug && (
+          <Link 
+            href={`/planes/${form.slug}`} 
+            target="_blank" 
+            className={styles.actionBtn}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+          >
+            ↗ Ver en la web
+          </Link>
+        )}
       </div>
 
       {error && <div className={styles.loginError} style={{ marginBottom: '1rem' }}>{error}</div>}
