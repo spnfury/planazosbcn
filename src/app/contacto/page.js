@@ -17,11 +17,31 @@ export default function ContactoPage() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
-    // TODO: Connect to Supabase or email service
-    setTimeout(() => setStatus('success'), 1000);
+    
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al enviar el mensaje');
+      }
+
+      setStatus('success');
+    } catch (error) {
+      console.error('Submit error:', error);
+      setStatus('error');
+      // Podríamos añadir un estado de error visible, pero por ahora mostramos en consola
+      alert("Hubo un error enviando el mensaje. Por favor, inténtalo más tarde.");
+      setStatus('idle');
+    }
   };
 
   return (

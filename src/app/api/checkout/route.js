@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 export async function POST(request) {
   try {
@@ -125,8 +129,43 @@ export async function POST(request) {
       });
 
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const successUrl = `${baseUrl}/checkout/success?session_id=${reservation.stripe_session_id}`;
+
+      // Send email for free reservation
+      try {
+        await resend.emails.send({
+          from: 'PlanazosBCN Tickets <onboarding@resend.dev>', // Update to your domain later
+          to: [customerEmail],
+          subject: `🎟️ Tu entrada para: ${plan.title}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h1 style="color: #000;">¡Reserva confirmada! 🎉</h1>
+              <p>Hola,</p>
+              <p>Tu reserva para <strong>${plan.title}</strong> ha sido confirmada correctamente.</p>
+              ${ticketData ? `<p><strong>Tipo de Entrada:</strong> ${ticketData.name}</p>` : ''}
+              <p><strong>Cantidad:</strong> ${quantity}</p>
+              <p><strong>Localizador:</strong> <span style="font-size: 1.2em; font-weight: bold; font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px;">${localizador}</span></p>
+              
+              <div style="margin: 30px 0; text-align: center;">
+                <a href="${successUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                  Ver mi entrada / QR
+                </a>
+              </div>
+              
+              <p style="color: #666; font-size: 0.9em; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                Si tienes alguna pregunta, responde a este correo.<br>
+                PlanazosBCN
+              </p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email automatically:', emailError);
+        // We don't want to block the success response if the email fails.
+      }
+
       return NextResponse.json({
-        url: `${baseUrl}/checkout/success?session_id=${reservation.stripe_session_id}`,
+        url: successUrl,
         free: true,
       });
     }
