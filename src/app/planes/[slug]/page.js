@@ -12,6 +12,9 @@ import InstagramReels from '@/components/InstagramReels/InstagramReels';
 import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import styles from './page.module.css';
 
+// ISR: revalidate every 60s so new plans appear without a full rebuild
+export const revalidate = 60;
+
 // Helper function to map snake_case from DB to camelCase
 const mapPlanData = (plan) => ({
   ...plan,
