@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/components/Auth/AuthProvider';
@@ -156,6 +156,9 @@ export default function PerfilPage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [openSections, setOpenSections] = useState({ basic: true });
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -184,6 +187,41 @@ export default function PerfilPage() {
     setProfile(prev => ({ ...prev, [field]: value }));
     setSaved(false);
   }, []);
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setAvatarPreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload-avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Error al subir la foto');
+      }
+      const data = await res.json();
+      updateField('avatar_url', data.url);
+      setAvatarPreview(data.url);
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      setError('No se pudo subir la foto. Asegúrate de usar JPG/PNG.');
+      setAvatarPreview('');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -268,6 +306,44 @@ export default function PerfilPage() {
             isOpen={openSections.basic}
             onToggle={() => toggleSection('basic')}
           >
+            {/* Avatar upload */}
+            <div className={styles.avatarSection}>
+              <button
+                type="button"
+                className={styles.avatarUploadBtn}
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                id="avatar-upload-btn"
+              >
+                {(avatarPreview || profile.avatar_url) ? (
+                  <img
+                    src={avatarPreview || profile.avatar_url}
+                    alt="Tu foto"
+                    className={styles.avatarImg}
+                  />
+                ) : (
+                  <div className={styles.avatarPlaceholder}>
+                    <span className={styles.avatarPlaceholderIcon}>📷</span>
+                    <span className={styles.avatarPlaceholderText}>Subir foto</span>
+                  </div>
+                )}
+                {uploadingAvatar && <div className={styles.avatarSpinner} />}
+                <div className={styles.avatarOverlay}>
+                  <span>✏️</span>
+                </div>
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg, image/png, image/webp"
+                onChange={handleAvatarChange}
+                style={{ display: 'none' }}
+                id="avatar-file-input"
+              />
+              <span className={styles.avatarHint}>Toca para cambiar tu foto de perfil</span>
+            </div>
+
+            <TextField label="Nombre completo" value={profile.full_name} onChange={v => updateField('full_name', v)} placeholder="Tu nombre y apellidos" />
             <TextField label="Apodo / Nickname" value={profile.nickname} onChange={v => updateField('nickname', v)} placeholder="¿Cómo te gusta que te llamen?" />
             <TextAreaField label="Bio" value={profile.bio} onChange={v => updateField('bio', v)} placeholder="Cuéntanos sobre ti en pocas palabras..." maxLength={500} />
             <TextField label="Fecha de nacimiento" value={profile.birthdate} onChange={v => updateField('birthdate', v)} type="date" />
