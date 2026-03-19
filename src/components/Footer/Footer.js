@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import LogoIcon from '../LogoIcon';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -8,7 +9,8 @@ export default function Footer() {
         <div className={styles.top}>
           <div className={styles.brand}>
             <Link href="/" className={styles.logo}>
-              <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.logoImg} />
+              <LogoIcon size={44} color="#fff" />
+              <span className={styles.logoText}>PlanazosBCN</span>
             </Link>
             <p className={styles.tagline}>
               Tu guía definitiva para descubrir Barcelona. Seleccionamos los mejores planes, 

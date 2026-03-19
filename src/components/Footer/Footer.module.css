@@ -25,14 +25,15 @@
   margin-bottom: var(--space-4);
 }
 
-.logoImg {
-  height: 44px;
-  width: auto;
-  filter: brightness(0) invert(1);
-  transition: opacity var(--duration-fast);
+.logoText {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: #fff;
+  letter-spacing: -0.01em;
 }
 
-.logo:hover .logoImg {
+.logo:hover {
   opacity: 0.85;
 }
 
