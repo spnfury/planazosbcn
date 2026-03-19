@@ -20,10 +20,10 @@ export default function Footer() {
               <h4 className={styles.linkTitle}>Explorar</h4>
               <Link href="/planes" className={styles.link}>Todos los planes</Link>
               <Link href="/#categorias" className={styles.link}>Categorías</Link>
-              <Link href="/planes?category=gastro" className={styles.link}>Gastronomía</Link>
-              <Link href="/planes?category=naturaleza" className={styles.link}>Naturaleza</Link>
-              <Link href="/planes?category=servicios" className={styles.link}>Servicios</Link>
-              <Link href="/planes?category=bienestar" className={styles.link}>Bienestar</Link>
+              <Link href="/planes/categoria/gastronomia" className={styles.link}>Gastronomía</Link>
+              <Link href="/planes/categoria/naturaleza" className={styles.link}>Naturaleza</Link>
+              <Link href="/planes/categoria/servicios" className={styles.link}>Servicios</Link>
+              <Link href="/planes/categoria/bienestar" className={styles.link}>Bienestar</Link>
             </div>
 
             <div className={styles.linkGroup}>

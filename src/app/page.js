@@ -88,7 +88,7 @@ export default async function Home() {
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
-                href={`/planes?category=${cat.id}`}
+                href={`/planes/categoria/${cat.slug}`}
                 className={styles.categoryCard}
                 id={`category-${cat.id}`}
               >
