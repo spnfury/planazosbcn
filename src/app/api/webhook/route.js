@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 import { logActivity } from '@/lib/log';
+import { notifyAdmins } from '@/lib/notify-admins';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -135,6 +136,23 @@ export async function POST(request) {
         } catch (emailError) {
           console.error('Failed to send confirmation email automatically:', emailError);
         }
+
+        // Separate admin notification
+        await notifyAdmins({
+          subject: `💰 Pago confirmado: ${plan.title}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h2>Pago confirmado en PlanazosBCN</h2>
+              <p><strong>Plan:</strong> ${plan.title}</p>
+              <p><strong>Cliente:</strong> ${reservation.customer_email}</p>
+              ${ticketName ? `<p><strong>Tipo de Entrada:</strong> ${ticketName}</p>` : ''}
+              <p><strong>Cantidad:</strong> ${qty}</p>
+              <p><strong>Importe:</strong> ${(reservation.total_amount / 100).toFixed(2)}€</p>
+              <p><strong>Localizador:</strong> ${reservation.localizador || 'N/A'}</p>
+              <p style="color: #666; font-size: 0.85em; margin-top: 20px;">Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
+            </div>
+          `,
+        });
       }
 
     } catch (error) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase-server';
 import { logActivity } from '@/lib/log';
+import { notifyAdmins } from '@/lib/notify-admins';
 
 export async function GET(request) {
   try {
@@ -98,6 +99,22 @@ export async function POST(request) {
     if (error) throw error;
 
     await logActivity({ action: 'review.created', entityType: 'review', entityId: data.id, userId: user.id, userEmail: user.email, details: { planId, rating, comment: comment || '' } });
+
+    // Notify admins of new review
+    const stars = '⭐'.repeat(Number(rating));
+    await notifyAdmins({
+      subject: `📝 Nueva reseña (${stars}) — Plan #${planId}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2>Nueva reseña en PlanazosBCN</h2>
+          <p><strong>Plan ID:</strong> ${planId}</p>
+          <p><strong>Usuario:</strong> ${user.email}</p>
+          <p><strong>Valoración:</strong> ${stars} (${rating}/5)</p>
+          <p><strong>Comentario:</strong> ${comment || '<em>Sin comentario</em>'}</p>
+          <p style="color: #666; font-size: 0.85em; margin-top: 20px;">Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
+        </div>
+      `,
+    });
 
     return NextResponse.json(data);
   } catch (err) {

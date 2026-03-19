@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import ReserveButton from '@/components/ReserveButton/ReserveButton';
 import ShareButtons from './ShareButtons';
 import ReviewsSection from '@/components/Reviews/ReviewsSection';
+import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import styles from './page.module.css';
 
 // Helper function to map snake_case from DB to camelCase
@@ -207,6 +208,42 @@ export default async function PlanDetailPage({ params }) {
             <h2 className={styles.descTitle}>Sobre este plan</h2>
             <p>{plan.description}</p>
           </div>
+
+          {/* Age groups & Etiquetas */}
+          {((plan.age_groups && plan.age_groups.length > 0) || (plan.etiquetas && plan.etiquetas.length > 0)) && (
+            <div className={styles.planBadgesSection}>
+              {plan.age_groups && plan.age_groups.length > 0 && (
+                <div className={styles.badgeGroup}>
+                  <h4 className={styles.badgeGroupTitle}>👥 Edades</h4>
+                  <div className={styles.badgeList}>
+                    {plan.age_groups.map((agId) => {
+                      const ag = getAgeGroup(agId);
+                      return (
+                        <span key={agId} className={styles.ageBadge}>
+                          {ag.emoji} {ag.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {plan.etiquetas && plan.etiquetas.length > 0 && (
+                <div className={styles.badgeGroup}>
+                  <h4 className={styles.badgeGroupTitle}>🏷️ Etiquetas</h4>
+                  <div className={styles.badgeList}>
+                    {plan.etiquetas.map((etId) => {
+                      const et = getEtiqueta(etId);
+                      return (
+                        <span key={etId} className={styles.etiquetaBadge}>
+                          {et.emoji} {et.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           
           <ReviewsSection planId={plan.id} />
         </div>
@@ -437,6 +474,42 @@ function EventLayout({ plan, relatedPlans }) {
               {plan.ageRestriction && (
                 <div className={styles.eventAgeNote}>
                   🔞 Evento recomendado para {plan.ageRestriction}
+                </div>
+              )}
+
+              {/* Age groups & Etiquetas */}
+              {((plan.age_groups && plan.age_groups.length > 0) || (plan.etiquetas && plan.etiquetas.length > 0)) && (
+                <div className={styles.eventBadgesSection}>
+                  {plan.age_groups && plan.age_groups.length > 0 && (
+                    <div className={styles.eventBadgeGroup}>
+                      <h4 className={styles.eventBadgeGroupTitle}>👥 Edades</h4>
+                      <div className={styles.eventBadgeList}>
+                        {plan.age_groups.map((agId) => {
+                          const ag = getAgeGroup(agId);
+                          return (
+                            <span key={agId} className={styles.eventAgeBadge}>
+                              {ag.emoji} {ag.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  {plan.etiquetas && plan.etiquetas.length > 0 && (
+                    <div className={styles.eventBadgeGroup}>
+                      <h4 className={styles.eventBadgeGroupTitle}>🏷️ Etiquetas</h4>
+                      <div className={styles.eventBadgeList}>
+                        {plan.etiquetas.map((etId) => {
+                          const et = getEtiqueta(etId);
+                          return (
+                            <span key={etId} className={styles.eventEtiquetaBadge}>
+                              {et.emoji} {et.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

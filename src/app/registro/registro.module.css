@@ -27,9 +27,10 @@
 }
 
 .authIcon {
-  display: inline-block;
-  font-size: 2.5rem;
-  margin-bottom: var(--space-2);
+  display: block;
+  height: 56px;
+  width: auto;
+  margin: 0 auto var(--space-2);
 }
 
 .authTitle {
@@ -255,6 +256,41 @@
 .avatarHint {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+}
+
+/* Google OAuth Button */
+.googleBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.googleBtn:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-text-muted);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.googleBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.googleIcon {
+  flex-shrink: 0;
 }
 
 @media (max-width: 480px) {

@@ -92,10 +92,8 @@ export default function AdminLayout({ children }) {
       {/* Mobile top header — compact */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileLogoGroup}>
-          <span className={styles.sidebarLogoIcon}>🔥</span>
-          <span className={styles.sidebarLogoText}>
-            Planazos<span>BCN</span>
-          </span>
+          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
         <button
@@ -130,10 +128,8 @@ export default function AdminLayout({ children }) {
       {/* Desktop sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
-          <span className={styles.sidebarLogoIcon}>🔥</span>
-          <span className={styles.sidebarLogoText}>
-            Planazos<span>BCN</span>
-          </span>
+          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
 

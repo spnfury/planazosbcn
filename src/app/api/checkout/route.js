@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
+import { notifyAdmins } from '@/lib/notify-admins';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -165,6 +166,22 @@ export async function POST(request) {
         console.error('Failed to send confirmation email automatically:', emailError);
         // We don't want to block the success response if the email fails.
       }
+
+      // Separate admin notification for free reservation
+      await notifyAdmins({
+        subject: `🎟️ Nueva reserva gratuita: ${plan.title}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+            <h2>Nueva reserva gratuita en PlanazosBCN</h2>
+            <p><strong>Plan:</strong> ${plan.title}</p>
+            <p><strong>Cliente:</strong> ${customerEmail}</p>
+            ${ticketData ? `<p><strong>Tipo de Entrada:</strong> ${ticketData.name}</p>` : ''}
+            <p><strong>Cantidad:</strong> ${quantity}</p>
+            <p><strong>Localizador:</strong> ${localizador}</p>
+            <p style="color: #666; font-size: 0.85em; margin-top: 20px;">Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
+          </div>
+        `,
+      });
 
       return NextResponse.json({
         url: successUrl,

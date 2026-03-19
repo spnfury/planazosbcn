@@ -1,9 +1,10 @@
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
+import { notifyAdmins } from '@/lib/notify-admins';
 
 export async function POST(request) {
   try {
-    const { email, password, fullName, avatarUrl } = await request.json();
+    const { email, password, fullName, phone, avatarUrl } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -26,6 +27,7 @@ export async function POST(request) {
       email_confirm: true, // auto-confirm email
       user_metadata: {
         full_name: fullName || '',
+        ...(phone ? { phone } : {}),
         ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       },
     });
@@ -46,6 +48,29 @@ export async function POST(request) {
         { status: 500 }
       );
     }
+
+    // Save phone to profiles table
+    if (phone) {
+      await supabaseAdmin
+        .from('profiles')
+        .update({ phone })
+        .eq('id', userData.user.id);
+    }
+
+    // Notify admins of new registration
+    await notifyAdmins({
+      subject: `🆕 Nuevo usuario registrado: ${email}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <h2>Nuevo registro en PlanazosBCN</h2>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Nombre:</strong> ${fullName || 'No especificado'}</p>
+          <p><strong>Teléfono:</strong> ${phone || 'No especificado'}</p>
+          <p><strong>Método:</strong> Email + Contraseña</p>
+          <p style="color: #666; font-size: 0.85em; margin-top: 20px;">Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
+        </div>
+      `,
+    });
 
     return NextResponse.json({
       success: true,

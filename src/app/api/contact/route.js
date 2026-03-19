@@ -33,8 +33,8 @@ export async function POST(request) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'PlanazosBCN Contacto <onboarding@resend.dev>', // Using the free tier default onboarding domain. Update to your custom domain later if added to Resend.
-      to: ['delivery@resend.dev'], // Send to the default testing email for the free tier without a verified domain. Note: user may want this sent to their own email, but free tier without domain verified only allows 'delivery@resend.dev'. Let's set it to the email they used to sign up for resend when they verify or for now 'delivery@resend.dev' works for testing. Actually, standard practice for devs is to put their own email. But onboarding@resend.dev only allows sending to the email registered with Resend. I will use a placeholder or let them know. We can use delivery@resend.dev for testing.
+      from: 'PlanazosBCN Contacto <onboarding@resend.dev>',
+      to: ['emaciasdayrit@icloud.com', 'thevega82@gmail.com'],
       subject: `Nueva colaboración: ${business ? business : name} (${type})`,
       replyTo: email,
       html: htmlContent,

@@ -18,14 +18,7 @@ export const CATEGORIES = [
     color: '#22C55E',
     count: 5,
   },
-  {
-    id: 'ocio',
-    label: 'Ocio & Fiesta',
-    emoji: '🎉',
-    description: 'Eventos, conciertos y planes nocturnos',
-    color: '#8B5CF6',
-    count: 6,
-  },
+
   {
     id: 'cultura',
     label: 'Cultura',
@@ -46,9 +39,9 @@ export const CATEGORIES = [
     id: 'nocturno',
     label: 'Nocturno',
     emoji: '🌙',
-    description: 'Planes de noche, bares y copas',
+    description: 'Eventos, conciertos, bares y planes de noche',
     color: '#1B1464',
-    count: 4,
+    count: 10,
   },
   {
     id: 'servicios',
@@ -199,8 +192,8 @@ export const PLANS = [
     description: 'Vuelve a Luz de Gas el primer tardeo de Barcelona con los mejores temas de los 90\'s-00\'s. Acompáñanos en nuestro tardeo en Luz de Gas y baila con la mejor música en directo de la mano de Picoco\'s Band y nuestros DJs residentes que nos harán bailar al ritmo de los himnos que nos marcaron a todos.\n\nPorque hay épocas que merecen ser vividas dos veces.\n\nEntradas disponibles en taquilla según aforo, compra la entrada anticipada para asegurarte la entrada.\nEvento recomendado para mayores de 35 años.\nNo se admiten devoluciones.\nReservado el derecho de admisión.',
     image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=500&fit=crop',
     posterImage: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&h=600&fit=crop',
-    category: 'ocio',
-    categoryLabel: 'Ocio & Fiesta',
+    category: 'nocturno',
+    categoryLabel: 'Nocturno',
     zone: 'Sarrià-Sant Gervasi',
     date: 'SÁB. 28 MARZO 2026',
     price: '15',

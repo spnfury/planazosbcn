@@ -1,13 +1,15 @@
 import Link from 'next/link';
+import { getEtiqueta } from '@/data/planConstants';
 import styles from './PlanCard.module.css';
 
 const CATEGORY_EMOJIS = {
   gastro: '🍽️',
   naturaleza: '🌿',
-  ocio: '🎉',
   cultura: '🎭',
   rutas: '🚶',
   nocturno: '🌙',
+  servicios: '🛠️',
+  bienestar: '💆‍♀️',
 };
 
 export default function PlanCard({ plan, featured = false }) {
@@ -64,13 +66,29 @@ export default function PlanCard({ plan, featured = false }) {
         <div className={styles.footer}>
           {plan.date && (
             <span className={styles.date}>
-              🗓️ {plan.date}
+              📅️ {plan.date}
             </span>
           )}
           <span className={styles.cta}>
             Ver más →
           </span>
         </div>
+
+        {plan.etiquetas && plan.etiquetas.length > 0 && (
+          <div className={styles.etiquetas}>
+            {plan.etiquetas.slice(0, 3).map((etId) => {
+              const et = getEtiqueta(etId);
+              return (
+                <span key={etId} className={styles.etiquetaMini}>
+                  {et.emoji} {et.label}
+                </span>
+              );
+            })}
+            {plan.etiquetas.length > 3 && (
+              <span className={styles.etiquetaMore}>+{plan.etiquetas.length - 3}</span>
+            )}
+          </div>
+        )}
       </div>
     </Link>
   );

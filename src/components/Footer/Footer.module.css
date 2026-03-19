@@ -25,19 +25,15 @@
   margin-bottom: var(--space-4);
 }
 
-.logoIcon {
-  font-size: 1.5rem;
+.logoImg {
+  height: 44px;
+  width: auto;
+  filter: brightness(0) invert(1);
+  transition: opacity var(--duration-fast);
 }
 
-.logoText {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: var(--font-extrabold);
-  color: var(--color-text-inverse);
-}
-
-.logoBcn {
-  color: var(--color-primary-light);
+.logo:hover .logoImg {
+  opacity: 0.85;
 }
 
 .tagline {

@@ -29,19 +29,10 @@
   gap: 0.5rem;
 }
 
-.sidebarLogoIcon {
-  font-size: 1.5rem;
-}
-
-.sidebarLogoText {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.sidebarLogoText span {
-  color: var(--color-primary);
+.sidebarLogoImg {
+  height: 36px;
+  width: auto;
+  filter: brightness(0) invert(1);
 }
 
 .sidebarBadge {

@@ -55,7 +55,7 @@ export default function AdminLoginPage() {
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '2.5rem' }}>🔥</span>
+          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" style={{ height: '60px', width: 'auto', filter: 'brightness(0) invert(1)' }} />
         </div>
         <h1 className={styles.loginTitle}>PlanazosBCN</h1>
         <p className={styles.loginSubtitle}>Panel de Administración</p>

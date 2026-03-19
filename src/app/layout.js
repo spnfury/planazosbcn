@@ -7,6 +7,16 @@ export const metadata = {
   description:
     'Descubre los mejores planes, experiencias y actividades en Barcelona. Gastronomía, naturaleza, ocio, cultura y mucho más. ¡Tu próximo planazo te espera!',
   keywords: 'planes Barcelona, actividades Barcelona, qué hacer Barcelona, experiencias Barcelona, rutas Barcelona, restaurantes Barcelona',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   openGraph: {
     title: 'PlanazosBCN — Los mejores planes de Barcelona',
     description: 'Descubre los mejores planes, experiencias y actividades en Barcelona.',

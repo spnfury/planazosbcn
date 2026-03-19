@@ -40,7 +40,8 @@ export default async function Home() {
         <div className={`container ${styles.heroContent}`}>
           <div className={styles.heroText}>
             <span className={styles.heroBadge}>
-              🔥 Tu guía de planes en Barcelona
+              <img src="/logo-planazosbcn.png" alt="" className={styles.heroBadgeIcon} />
+              Tu guía de planes en Barcelona
             </span>
             <h1 className={styles.heroTitle}>
               Descubre los mejores
@@ -59,22 +60,15 @@ export default async function Home() {
                 Ver categorías
               </Link>
             </div>
-            <div className={styles.heroStats}>
-              <div className={styles.stat}>
-                <span className={styles.statNumber}>8+</span>
-                <span className={styles.statLabel}>Planes activos</span>
-              </div>
-              <div className={styles.statDivider} />
-              <div className={styles.stat}>
-                <span className={styles.statNumber}>6</span>
-                <span className={styles.statLabel}>Categorías</span>
-              </div>
-              <div className={styles.statDivider} />
-              <div className={styles.stat}>
-                <span className={styles.statNumber}>BCN</span>
-                <span className={styles.statLabel}>Barcelona</span>
-              </div>
-            </div>
+          </div>
+
+          {/* Hero Banner Image */}
+          <div className={styles.heroBanner}>
+            <img
+              src="/hero-planazosbcn.jpg"
+              alt="Los mejores planazos en Barcelona"
+              className={styles.heroBannerImg}
+            />
           </div>
         </div>
       </section>

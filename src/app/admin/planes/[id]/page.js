@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
+import { AGE_GROUPS, ETIQUETAS } from '@/data/planConstants';
 import styles from '../../admin.module.css';
 
 const CATEGORIES = [
   { id: 'gastro', label: 'Gastronomía' },
   { id: 'naturaleza', label: 'Naturaleza' },
-  { id: 'ocio', label: 'Ocio & Fiesta' },
   { id: 'cultura', label: 'Cultura' },
   { id: 'rutas', label: 'Rutas' },
   { id: 'nocturno', label: 'Nocturno' },
@@ -74,6 +74,8 @@ export default function EditPlanPage({ params }) {
         sponsored: plan.sponsored || false,
         published: plan.published !== false,
         age_restriction: plan.age_restriction || '',
+        age_groups: plan.age_groups || [],
+        etiquetas: plan.etiquetas || [],
       });
 
       setOriginalPlan({ ...plan });
@@ -414,6 +416,80 @@ export default function EditPlanPage({ params }) {
             <button type="button" className={styles.addBtn} onClick={() => setSchedule([...schedule, { time: '', description: '' }])}>＋ Añadir horario</button>
           </div>
         )}
+
+        {/* Age groups */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>👥 Clasificación por edades</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Selecciona uno o varios rangos de edad</p>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {AGE_GROUPS.map((ag) => {
+              const selected = form.age_groups.includes(ag.id);
+              return (
+                <button
+                  key={ag.id}
+                  type="button"
+                  onClick={() => {
+                    updateForm('age_groups', selected
+                      ? form.age_groups.filter((g) => g !== ag.id)
+                      : [...form.age_groups, ag.id]
+                    );
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '100px',
+                    border: selected ? '2px solid #8B5CF6' : '2px solid rgba(255,255,255,0.1)',
+                    background: selected ? 'rgba(139,92,246,0.15)' : 'rgba(255,255,255,0.03)',
+                    color: selected ? '#A78BFA' : 'rgba(255,255,255,0.5)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {ag.emoji} {ag.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Etiquetas */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>🏷️ Etiquetas</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Selecciona las etiquetas que describen este plan</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.5rem' }}>
+            {ETIQUETAS.map((et) => {
+              const selected = form.etiquetas.includes(et.id);
+              return (
+                <button
+                  key={et.id}
+                  type="button"
+                  onClick={() => {
+                    updateForm('etiquetas', selected
+                      ? form.etiquetas.filter((e) => e !== et.id)
+                      : [...form.etiquetas, et.id]
+                    );
+                  }}
+                  style={{
+                    padding: '0.45rem 0.75rem',
+                    borderRadius: '8px',
+                    border: selected ? '2px solid #F59E0B' : '2px solid rgba(255,255,255,0.08)',
+                    background: selected ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.03)',
+                    color: selected ? '#FCD34D' : 'rgba(255,255,255,0.45)',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <span style={{ fontSize: '1.1rem' }}>{et.emoji}</span> {et.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Options */}
         <div className={styles.formSection}>

@@ -26,10 +26,11 @@ export default function Header() {
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.logo}>
-          <span className={styles.logoIcon}>🔥</span>
-          <span className={styles.logoText}>
-            Planazos<span className={styles.logoBcn}>BCN</span>
-          </span>
+          <img
+            src="/logo-planazosbcn.png"
+            alt="PlanazosBCN"
+            className={styles.logoImg}
+          />
         </Link>
 
         <nav className={`${styles.nav} ${menuOpen ? styles.navOpen : ''}`}>

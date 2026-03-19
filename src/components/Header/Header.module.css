@@ -32,21 +32,19 @@
   z-index: 101;
 }
 
-.logoIcon {
-  font-size: 1.5rem;
-  line-height: 1;
+.logoImg {
+  height: 72px;
+  width: auto;
+  display: block;
+  transition: height var(--duration-normal) var(--ease-out), transform var(--duration-fast) var(--ease-spring);
 }
 
-.logoText {
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: var(--font-extrabold);
-  color: var(--color-text);
-  letter-spacing: -0.02em;
+.scrolled .logoImg {
+  height: 48px;
 }
 
-.logoBcn {
-  color: var(--color-primary);
+.logo:hover .logoImg {
+  transform: scale(1.03);
 }
 
 /* Nav */

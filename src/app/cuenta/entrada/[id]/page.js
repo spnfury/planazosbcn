@@ -96,7 +96,7 @@ export default function EntradaPage({ params }) {
           <div className={styles.ticketHeader}>
             <div className={styles.ticketHeaderBg} />
             <div className={styles.ticketHeaderContent}>
-              <span className={styles.ticketBrand}>🔥 PlanazosBCN</span>
+              <span className={styles.ticketBrand}><img src="/logo-planazosbcn.png" alt="" style={{ height: '20px', width: 'auto', filter: 'brightness(0) invert(1)', verticalAlign: 'middle', marginRight: '6px' }} />PlanazosBCN</span>
               <h1 className={styles.ticketTitle}>{plan?.title || 'Entrada'}</h1>
               <div className={styles.ticketMeta}>
                 {plan?.date && <span>🗓️ {plan.date}</span>}

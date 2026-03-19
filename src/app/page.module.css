@@ -1,11 +1,10 @@
 /* ===== HERO ===== */
 .hero {
   position: relative;
-  min-height: 80vh;
   display: flex;
   align-items: center;
   overflow: hidden;
-  padding: var(--space-16) 0 var(--space-20);
+  padding: var(--space-20) 0 var(--space-16);
 }
 
 .heroBg {
@@ -18,20 +17,20 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    135deg,
-    #FFF5F0 0%,
-    #FFF0E8 30%,
-    #FFE8D6 60%,
-    #FAFAF8 100%
+    160deg,
+    #FFF5F5 0%,
+    #FFE8E4 35%,
+    #FFDDD6 55%,
+    #FFF8F6 100%
   );
 }
 
 .heroPattern {
   position: absolute;
   inset: 0;
-  opacity: 0.4;
-  background-image: radial-gradient(circle at 25% 25%, rgba(232, 93, 38, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(27, 20, 100, 0.04) 0%, transparent 50%);
+  opacity: 0.5;
+  background-image: radial-gradient(circle at 20% 40%, rgba(200, 16, 46, 0.07) 0%, transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(139, 0, 0, 0.04) 0%, transparent 50%);
 }
 
 .heroContent {
@@ -40,19 +39,28 @@
 }
 
 .heroText {
-  max-width: 680px;
+  max-width: 620px;
   animation: fadeInUp 0.8s var(--ease-out) both;
+  margin-bottom: var(--space-10);
 }
 
 .heroBadge {
-  display: inline-block;
-  background: var(--color-primary-bg);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(200, 16, 46, 0.08);
   color: var(--color-primary);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   margin-bottom: var(--space-6);
+  border: 1px solid rgba(200, 16, 46, 0.12);
+}
+
+.heroBadgeIcon {
+  height: 22px;
+  width: auto;
 }
 
 .heroTitle {
@@ -66,7 +74,7 @@
 }
 
 .heroHighlight {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  background: linear-gradient(135deg, var(--color-primary), #ff6b45);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -84,39 +92,23 @@
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
-  margin-bottom: var(--space-10);
 }
 
-.heroStats {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
+/* Hero Banner Image Card */
+.heroBanner {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(200, 16, 46, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  animation: fadeInUp 0.8s var(--ease-out) 0.15s both;
+  border: 3px solid rgba(255, 255, 255, 0.8);
 }
 
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.statNumber {
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
-  font-weight: var(--font-extrabold);
-  color: var(--color-text);
-}
-
-.statLabel {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.statDivider {
-  width: 1px;
-  height: 40px;
-  background: var(--color-border);
+.heroBannerImg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* ===== CATEGORIES ===== */
@@ -246,7 +238,7 @@
 
 /* ===== COLLABORATE ===== */
 .collaborateCard {
-  background: linear-gradient(135deg, #1B1464 0%, #2D2280 100%);
+  background: linear-gradient(135deg, #8B0000 0%, #A52A2A 100%);
   border-radius: var(--radius-xl);
   padding: var(--space-16) var(--space-12);
   text-align: center;
@@ -261,7 +253,7 @@
   right: -100px;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(232, 93, 38, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(200, 16, 46, 0.15) 0%, transparent 70%);
   pointer-events: none;
 }
 

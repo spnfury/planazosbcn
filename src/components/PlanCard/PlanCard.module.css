@@ -144,3 +144,36 @@
   align-items: center;
   gap: var(--space-1);
 }
+
+/* Etiqueta mini-badges */
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-top: var(--space-2);
+}
+
+.etiquetaMini {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  color: #B45309;
+  font-size: 0.65rem;
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+
+.etiquetaMore {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-text-muted);
+  font-size: 0.6rem;
+  font-weight: var(--font-semibold);
+}

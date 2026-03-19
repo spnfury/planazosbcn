@@ -302,14 +302,18 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  background: var(--color-primary);
   background: var(--gradient-primary);
   color: white;
-  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.35);
+  box-shadow: 0 4px 14px rgba(232, 93, 38, 0.35);
 }
 
 .submitBtn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.45);
+  background: var(--color-primary-light);
+  background: var(--gradient-primary);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(232, 93, 38, 0.45);
 }
 
 .submitBtn:disabled {

@@ -8,10 +8,7 @@ export default function Footer() {
         <div className={styles.top}>
           <div className={styles.brand}>
             <Link href="/" className={styles.logo}>
-              <span className={styles.logoIcon}>🔥</span>
-              <span className={styles.logoText}>
-                Planazos<span className={styles.logoBcn}>BCN</span>
-              </span>
+              <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.logoImg} />
             </Link>
             <p className={styles.tagline}>
               Los mejores planes y experiencias de Barcelona, seleccionados para ti.
