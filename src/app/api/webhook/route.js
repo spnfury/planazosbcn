@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
+import { logActivity } from '@/lib/log';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -91,6 +92,8 @@ export async function POST(request) {
       }
 
       console.log(`✅ Reservation ${reservation.id} paid — ${qty} spots claimed`);
+
+      await logActivity({ action: 'payment.completed', entityType: 'reservation', entityId: reservation.id, userEmail: reservation.customer_email, details: { planId: reservation.plan_id, quantity: qty, amount: reservation.total_amount } });
 
       // Send confirmation email
       if (reservation.customer_email && plan) {

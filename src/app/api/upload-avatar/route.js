@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { logActivity } from '@/lib/log';
 
 export async function POST(request) {
   try {
@@ -28,6 +29,7 @@ export async function POST(request) {
 
     if (uploadError) {
       console.error('Avatar upload error:', uploadError);
+      await logActivity({ action: 'avatar.upload_error', entityType: 'user', details: { error: uploadError.message, filename: file.name }, status: 'error' });
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
@@ -36,9 +38,12 @@ export async function POST(request) {
       .from('plan-images')
       .getPublicUrl(filePath);
 
+    await logActivity({ action: 'avatar.uploaded', entityType: 'user', details: { filename: file.name, url: data.publicUrl } });
+
     return NextResponse.json({ url: data.publicUrl });
   } catch (err) {
     console.error('Avatar upload API error:', err);
+    await logActivity({ action: 'avatar.upload_error', entityType: 'user', details: { error: err.message }, status: 'error' });
     return NextResponse.json({ error: 'Error al subir la foto' }, { status: 500 });
   }
 }

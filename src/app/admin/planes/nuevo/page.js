@@ -156,6 +156,9 @@ export default function NuevoPlanPage() {
       }
 
       router.push('/admin/planes');
+
+      // Log plan creation (fire and forget)
+      fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'plan.created', details: { planId: plan.id, title: form.title, category: form.category, type: form.type } }) }).catch(() => {});
     } catch (err) {
       setError(err.message || 'Error al guardar');
       setSaving(false);

@@ -40,11 +40,15 @@ export default function RegistroPage() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error('Error al subir la foto');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Error al subir la foto');
+      }
       const data = await res.json();
       setAvatarUrl(data.url);
     } catch (err) {
-      setError('No se pudo subir la foto. Inténtalo de nuevo.');
+      console.error('Avatar upload error:', err);
+      setError(`No se pudo subir la foto. Asegúrate de usar JPG/PNG y que no sea muy pesada.`);
       setAvatarPreview('');
     } finally {
       setUploadingAvatar(false);
@@ -69,37 +73,42 @@ export default function RegistroPage() {
     setLoading(true);
 
     try {
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
-          },
-        },
+      // Create user via server-side admin API (bypasses email confirmation)
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName,
+          avatarUrl: avatarUrl || undefined,
+        }),
       });
 
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          setError('Este email ya está registrado. ¿Quieres iniciar sesión?');
-        } else {
-          setError('Error al crear la cuenta. Inténtalo de nuevo.');
-        }
+      const result = await res.json();
+
+      if (!res.ok) {
+        setError(result.error || 'Error al crear la cuenta. Inténtalo de nuevo.');
         setLoading(false);
         return;
       }
 
-      // If email confirmation is required
-      if (data.user && !data.session) {
-        setSuccess('¡Cuenta creada! Revisa tu email para confirmar tu cuenta.');
+      // Auto-login after successful registration
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        // Account was created but auto-login failed — redirect to login
+        setSuccess('¡Cuenta creada! Inicia sesión con tus credenciales.');
         setLoading(false);
         return;
       }
 
-      // Auto-login successful
       router.push('/cuenta');
     } catch (err) {
+      console.error('Register error:', err);
       setError('Error inesperado. Inténtalo de nuevo.');
       setLoading(false);
     }
@@ -141,7 +150,7 @@ export default function RegistroPage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg, image/png, image/webp"
               onChange={handleAvatarChange}
               style={{ display: 'none' }}
               id="avatar-input"

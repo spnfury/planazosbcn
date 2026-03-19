@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '@/lib/log';
 
 // Verify the request comes from an authenticated admin
 async function verifyAdmin(request) {
@@ -60,6 +61,7 @@ export async function POST(request) {
 
     if (uploadError) {
       console.error('Storage upload error:', uploadError);
+      await logActivity({ action: 'plan.image_upload_error', entityType: 'plan', userId: admin.id, userEmail: admin.email, details: { error: uploadError.message, filename: file.name }, status: 'error' });
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
@@ -71,6 +73,7 @@ export async function POST(request) {
     return NextResponse.json({ url: data.publicUrl });
   } catch (err) {
     console.error('Upload API error:', err);
+    await logActivity({ action: 'plan.image_upload_error', entityType: 'plan', details: { error: err.message }, status: 'error' });
     return NextResponse.json({ error: 'Error al subir imagen' }, { status: 500 });
   }
 }

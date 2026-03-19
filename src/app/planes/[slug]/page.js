@@ -5,6 +5,7 @@ import CapacityBar from '@/components/CapacityBar/CapacityBar';
 import { supabase } from '@/lib/supabase';
 import ReserveButton from '@/components/ReserveButton/ReserveButton';
 import ShareButtons from './ShareButtons';
+import ReviewsSection from '@/components/Reviews/ReviewsSection';
 import styles from './page.module.css';
 
 // Helper function to map snake_case from DB to camelCase
@@ -197,6 +198,8 @@ export default async function PlanDetailPage({ params }) {
             <h2 className={styles.descTitle}>Sobre este plan</h2>
             <p>{plan.description}</p>
           </div>
+          
+          <ReviewsSection planId={plan.id} />
         </div>
 
         {/* Sidebar */}
@@ -477,6 +480,11 @@ function EventLayout({ plan, relatedPlans }) {
             </div>
           </section>
         )}
+
+        {/* ---- RESEÑAS ---- */}
+        <section className={styles.eventSection}>
+          <ReviewsSection planId={plan.id} />
+        </section>
 
         {/* ---- Related Plans ---- */}
         {relatedPlans.length > 0 && (

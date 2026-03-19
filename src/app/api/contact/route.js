@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { logActivity } from '@/lib/log';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -43,6 +44,8 @@ export async function POST(request) {
       console.error('Resend error:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logActivity({ action: 'contact.submitted', entityType: 'contact', details: { name, email, business, type } });
 
     return NextResponse.json({ success: true, data });
   } catch (error) {

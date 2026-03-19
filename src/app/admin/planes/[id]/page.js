@@ -31,6 +31,7 @@ export default function EditPlanPage({ params }) {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [originalPlan, setOriginalPlan] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -74,6 +75,8 @@ export default function EditPlanPage({ params }) {
         published: plan.published !== false,
         age_restriction: plan.age_restriction || '',
       });
+
+      setOriginalPlan({ ...plan });
 
       setTags((plan.plan_tags || []).map((t) => t.tag));
       setTickets((plan.plan_tickets || []).sort((a, b) => a.sort_order - b.sort_order));
@@ -181,6 +184,20 @@ export default function EditPlanPage({ params }) {
       }
 
       router.push('/admin/planes');
+
+      // Log changes (fire and forget)
+      if (originalPlan) {
+        const trackFields = ['title','slug','excerpt','description','image','poster_image','category','zone','date','price','precio_reserva','shipping_cost','venue','address','time_start','time_end','capacity','spots_taken','featured','sponsored','published','age_restriction','type'];
+        const changes = {};
+        for (const f of trackFields) {
+          if (String(originalPlan[f] ?? '') !== String(payload[f] ?? '')) {
+            changes[f] = { old: originalPlan[f] ?? null, new: payload[f] ?? null };
+          }
+        }
+        if (Object.keys(changes).length > 0) {
+          fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'plan.updated', details: { planId, title: form.title, changes }, status: 'success' }) }).catch(() => {});
+        }
+      }
     } catch (err) {
       setError(err.message || 'Error al guardar');
       setSaving(false);
