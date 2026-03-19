@@ -180,6 +180,49 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* COMMUNITY */}
+      <section className={`section ${styles.communitySection}`} id="comunidad">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-header__label">Comunidad</span>
+            <h2 className="section-header__title">Más que planes, experiencias compartidas</h2>
+            <p className="section-header__subtitle">
+              Conecta con gente que comparte tus mismos gustos. Chatea, queda y haz amigos
+            </p>
+          </div>
+
+          <div className={`${styles.communityGrid} stagger-children`}>
+            <div className={styles.communityCard}>
+              <span className={styles.communityCardIcon}>👥</span>
+              <h3 className={styles.communityCardTitle}>Conoce gente nueva</h3>
+              <p className={styles.communityCardDesc}>
+                Ve quién se ha apuntado a cada plan. Descubre personas con tus mismos intereses y haz nuevos amigos
+              </p>
+            </div>
+            <div className={`${styles.communityCard} ${styles.communityCardHighlight}`}>
+              <span className={styles.communityCardIcon}>💬</span>
+              <h3 className={styles.communityCardTitle}>Chat grupal</h3>
+              <p className={styles.communityCardDesc}>
+                Cada plan tiene su propio chat. Coordínate, haz preguntas y socializa con los demás asistentes antes del evento
+              </p>
+            </div>
+            <div className={styles.communityCard}>
+              <span className={styles.communityCardIcon}>🌟</span>
+              <h3 className={styles.communityCardTitle}>Comparte experiencias</h3>
+              <p className={styles.communityCardDesc}>
+                Deja reseñas, comparte fotos y recomienda tus planes favoritos a la comunidad
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.communityAction}>
+            <Link href="/registro" className="btn btn--primary btn--large" id="cta-community">
+              Únete a la comunidad →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* NEWSLETTER */}
       <Newsletter />
 

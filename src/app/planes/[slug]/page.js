@@ -2,10 +2,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
+import Attendees from '@/components/Attendees/Attendees';
+import PlanChat from '@/components/PlanChat/PlanChat';
 import { supabase } from '@/lib/supabase';
 import ReserveButton from '@/components/ReserveButton/ReserveButton';
 import ShareButtons from './ShareButtons';
 import ReviewsSection from '@/components/Reviews/ReviewsSection';
+import InstagramReels from '@/components/InstagramReels/InstagramReels';
 import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import styles from './page.module.css';
 
@@ -57,7 +60,8 @@ export default async function PlanDetailPage({ params }) {
       plan_tickets (name, price, description, sold_out, sort_order),
       plan_guest_lists (name, time_range, price, description, sold_out, sort_order),
       plan_schedule (time, description, sort_order),
-      plan_tags (tag)
+      plan_tags (tag),
+      plan_reels (url, sort_order)
     `)
     .eq('slug', slug)
     .single();
@@ -69,13 +73,15 @@ export default async function PlanDetailPage({ params }) {
   const guestList = (rawPlan.plan_guest_lists || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   const schedule = (rawPlan.plan_schedule || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   const tags = (rawPlan.plan_tags || []).map(t => t.tag);
+  const reels = (rawPlan.plan_reels || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
 
   const plan = {
     ...mapPlanData(rawPlan),
     tickets: tickets.length > 0 ? tickets : undefined,
     guestList: guestList.length > 0 ? guestList : undefined,
     schedule: schedule.length > 0 ? schedule : undefined,
-    tags: tags.length > 0 ? tags : undefined
+    tags: tags.length > 0 ? tags : undefined,
+    reels: reels.length > 0 ? reels : undefined,
   };
 
   const { data: relatedPlansData } = await supabase
@@ -244,6 +250,12 @@ export default async function PlanDetailPage({ params }) {
               )}
             </div>
           )}
+
+          <Attendees planId={plan.id} />
+
+          {plan.reels && plan.reels.length > 0 && (
+            <InstagramReels reels={plan.reels} />
+          )}
           
           <ReviewsSection planId={plan.id} />
         </div>
@@ -322,6 +334,8 @@ export default async function PlanDetailPage({ params }) {
           </div>
         </section>
       )}
+
+      <PlanChat planId={plan.id} />
     </div>
   );
 }
@@ -563,6 +577,22 @@ function EventLayout({ plan, relatedPlans }) {
           </section>
         )}
 
+        {/* ---- ASISTENTES ---- */}
+        <section className={styles.eventSection}>
+          <Attendees planId={plan.id} />
+        </section>
+
+        {/* ---- INSTAGRAM REELS ---- */}
+        {plan.reels && plan.reels.length > 0 && (
+          <section className={styles.eventSection}>
+            <h2 className={styles.eventSectionTitle}>
+              <span className={styles.eventSectionAccent} />
+              INSTAGRAM REELS
+            </h2>
+            <InstagramReels reels={plan.reels} />
+          </section>
+        )}
+
         {/* ---- RESEÑAS ---- */}
         <section className={styles.eventSection}>
           <ReviewsSection planId={plan.id} />
@@ -582,6 +612,8 @@ function EventLayout({ plan, relatedPlans }) {
             </div>
           </div>
         )}
+
+        <PlanChat planId={plan.id} />
       </div>
     </div>
   );

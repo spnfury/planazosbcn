@@ -62,6 +62,7 @@ export default function NuevoPlanPage() {
   const [tickets, setTickets] = useState([]);
   const [guestLists, setGuestLists] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [reels, setReels] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
 
   // Fetch collaborators
@@ -154,6 +155,12 @@ export default function NuevoPlanPage() {
       if (schedule.length > 0) {
         await supabase.from('plan_schedule').insert(
           schedule.map((s, i) => ({ ...s, plan_id: plan.id, sort_order: i }))
+        );
+      }
+
+      if (reels.length > 0) {
+        await supabase.from('plan_reels').insert(
+          reels.map((url, i) => ({ plan_id: plan.id, url, sort_order: i }))
         );
       }
 
@@ -656,6 +663,44 @@ export default function NuevoPlanPage() {
               );
             })}
           </div>
+        </div>
+
+        {/* Instagram Reels */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>📸 Instagram Reels</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram para promocionar este plan</p>
+          {reels.map((url, i) => (
+            <div key={i} className={styles.listItem} style={{ marginBottom: '0.5rem' }}>
+              <div className={styles.listItemFields} style={{ flex: 1 }}>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  placeholder="https://www.instagram.com/reel/XXXXX/"
+                  value={url}
+                  onChange={(e) => {
+                    const copy = [...reels];
+                    copy[i] = e.target.value;
+                    setReels(copy);
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className={styles.removeBtn}
+                onClick={() => setReels(reels.filter((_, j) => j !== i))}
+              >✕</button>
+            </div>
+          ))}
+          {reels.length < 12 && (
+            <button
+              type="button"
+              className={styles.addBtn}
+              onClick={() => setReels([...reels, ''])}
+            >＋ Añadir reel</button>
+          )}
+          {reels.length >= 12 && (
+            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels alcanzado</p>
+          )}
         </div>
 
         {/* Options */}

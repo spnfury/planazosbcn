@@ -33,14 +33,14 @@
 }
 
 .logoImg {
-  height: 72px;
+  height: 44px;
   width: auto;
   display: block;
   transition: height var(--duration-normal) var(--ease-out), transform var(--duration-fast) var(--ease-spring);
 }
 
 .scrolled .logoImg {
-  height: 48px;
+  height: 36px;
 }
 
 .logo:hover .logoImg {

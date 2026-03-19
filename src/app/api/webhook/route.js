@@ -104,7 +104,7 @@ export async function POST(request) {
         try {
           if (resend) {
             await resend.emails.send({
-              from: 'PlanazosBCN Tickets <onboarding@resend.dev>', // Update to your domain later
+              from: 'PlanazosBCN Tickets <tickets@planazosbcn.com>',
             to: [reservation.customer_email],
             subject: `🎟️ Tu entrada para: ${plan.title}`,
             html: `

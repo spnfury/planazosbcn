@@ -28,6 +28,7 @@ export default function EditPlanPage({ params }) {
   const [tickets, setTickets] = useState([]);
   const [guestLists, setGuestLists] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [reels, setReels] = useState([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,7 +41,7 @@ export default function EditPlanPage({ params }) {
 
       const { data: plan } = await supabase
         .from('plans')
-        .select('*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*)')
+        .select('*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*), plan_reels(*)')
         .eq('id', id)
         .single();
 
@@ -84,6 +85,7 @@ export default function EditPlanPage({ params }) {
       setTickets((plan.plan_tickets || []).sort((a, b) => a.sort_order - b.sort_order));
       setGuestLists((plan.plan_guest_lists || []).sort((a, b) => a.sort_order - b.sort_order));
       setSchedule((plan.plan_schedule || []).sort((a, b) => a.sort_order - b.sort_order));
+      setReels((plan.plan_reels || []).sort((a, b) => a.sort_order - b.sort_order).map((r) => r.url));
       setLoading(false);
     }
 
@@ -180,6 +182,19 @@ export default function EditPlanPage({ params }) {
             plan_id: planId,
             time: s.time,
             description: s.description,
+            sort_order: i,
+          }))
+        );
+      }
+
+      // Replace reels
+      await supabase.from('plan_reels').delete().eq('plan_id', planId);
+      const validReels = reels.filter((url) => url.trim());
+      if (validReels.length > 0) {
+        await supabase.from('plan_reels').insert(
+          validReels.map((url, i) => ({
+            plan_id: planId,
+            url: url.trim(),
             sort_order: i,
           }))
         );
@@ -489,6 +504,44 @@ export default function EditPlanPage({ params }) {
               );
             })}
           </div>
+        </div>
+
+        {/* Instagram Reels */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>📸 Instagram Reels</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram para promocionar este plan</p>
+          {reels.map((url, i) => (
+            <div key={i} className={styles.listItem} style={{ marginBottom: '0.5rem' }}>
+              <div className={styles.listItemFields} style={{ flex: 1 }}>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  placeholder="https://www.instagram.com/reel/XXXXX/"
+                  value={url}
+                  onChange={(e) => {
+                    const copy = [...reels];
+                    copy[i] = e.target.value;
+                    setReels(copy);
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className={styles.removeBtn}
+                onClick={() => setReels(reels.filter((_, j) => j !== i))}
+              >✕</button>
+            </div>
+          ))}
+          {reels.length < 12 && (
+            <button
+              type="button"
+              className={styles.addBtn}
+              onClick={() => setReels([...reels, ''])}
+            >＋ Añadir reel</button>
+          )}
+          {reels.length >= 12 && (
+            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels alcanzado</p>
+          )}
         </div>
 
         {/* Options */}

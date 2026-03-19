@@ -11,7 +11,9 @@ export default function Footer() {
               <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.logoImg} />
             </Link>
             <p className={styles.tagline}>
-              Los mejores planes y experiencias de Barcelona, seleccionados para ti.
+              Tu guía definitiva para descubrir Barcelona. Seleccionamos los mejores planes, 
+              experiencias y actividades de la ciudad — desde rutas gastronómicas hasta escapadas 
+              en la naturaleza. Todo verificado, sin publicidad engañosa, solo planazos de verdad.
             </p>
           </div>
 
@@ -30,6 +32,14 @@ export default function Footer() {
               <h4 className={styles.linkTitle}>Info</h4>
               <Link href="/contacto" className={styles.link}>Colaborar con nosotros</Link>
               <Link href="/contacto" className={styles.link}>Contacto</Link>
+              <Link href="/faq" className={styles.link}>Preguntas frecuentes</Link>
+            </div>
+
+            <div className={styles.linkGroup}>
+              <h4 className={styles.linkTitle}>Legal</h4>
+              <Link href="/privacidad" className={styles.link}>Política de Privacidad</Link>
+              <Link href="/cookies" className={styles.link}>Política de Cookies</Link>
+              <Link href="/terminos" className={styles.link}>Términos y Condiciones</Link>
             </div>
           </div>
         </div>

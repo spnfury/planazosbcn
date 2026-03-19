@@ -13,6 +13,8 @@ export default function CuentaPage() {
   const [profile, setProfile] = useState(null);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showProfile, setShowProfile] = useState(true);
+  const [togglingVisibility, setTogglingVisibility] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -31,6 +33,7 @@ export default function CuentaPage() {
         .single();
 
       setProfile(profileData);
+      setShowProfile(profileData?.show_profile !== false);
 
       // Fetch reservations with plan info
       const { data: reservationsData } = await supabase
@@ -82,6 +85,13 @@ export default function CuentaPage() {
               {profile?.full_name || 'Usuario'}
             </h1>
             <p className={styles.profileEmail}>{user.email}</p>
+            <Link
+              href="/cuenta/perfil"
+              className={styles.editProfileLink}
+              id="account-edit-profile"
+            >
+              ✏️ Editar perfil completo
+            </Link>
           </div>
           <button
             className={styles.logoutBtn}
@@ -89,6 +99,47 @@ export default function CuentaPage() {
             id="account-logout"
           >
             Cerrar sesión
+          </button>
+        </div>
+
+        {/* Privacy Toggle */}
+        <div className={styles.privacySection}>
+          <div className={styles.privacyInfo}>
+            <span className={styles.privacyIcon}>👁️</span>
+            <div>
+              <h3 className={styles.privacyTitle}>Visibilidad del perfil</h3>
+              <p className={styles.privacyDesc}>
+                {showProfile
+                  ? 'Tu foto y nombre son visibles para otros asistentes'
+                  : 'Tu perfil está oculto para otros asistentes'}
+              </p>
+            </div>
+          </div>
+          <button
+            className={`${styles.toggle} ${showProfile ? styles.toggleActive : ''}`}
+            onClick={async () => {
+              setTogglingVisibility(true);
+              const newValue = !showProfile;
+              try {
+                const res = await fetch('/api/profile/visibility', {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ showProfile: newValue }),
+                });
+                if (res.ok) {
+                  setShowProfile(newValue);
+                }
+              } catch (err) {
+                console.error('Toggle error:', err);
+              } finally {
+                setTogglingVisibility(false);
+              }
+            }}
+            disabled={togglingVisibility}
+            aria-label={showProfile ? 'Ocultar perfil' : 'Mostrar perfil'}
+            id="toggle-visibility"
+          >
+            <span className={styles.toggleKnob} />
           </button>
         </div>
 

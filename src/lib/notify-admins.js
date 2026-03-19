@@ -18,7 +18,7 @@ export async function notifyAdmins({ subject, html }) {
 
   try {
     await resend.emails.send({
-      from: 'PlanazosBCN Notificaciones <onboarding@resend.dev>',
+      from: 'PlanazosBCN Notificaciones <notificaciones@planazosbcn.com>',
       to: ADMIN_EMAILS,
       subject,
       html,

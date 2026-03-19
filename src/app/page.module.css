@@ -285,6 +285,110 @@
   line-height: var(--line-normal);
 }
 
+/* ===== COMMUNITY ===== */
+.communitySection {
+  background: linear-gradient(160deg, #FFF5F5 0%, #FFF0ED 40%, #FFF5F5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.communitySection::before {
+  content: '';
+  position: absolute;
+  top: -150px;
+  left: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(200, 16, 46, 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.communitySection::after {
+  content: '';
+  position: absolute;
+  bottom: -200px;
+  right: -100px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(200, 16, 46, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.communityGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+  position: relative;
+  z-index: 1;
+}
+
+.communityCard {
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.communityCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(200, 16, 46, 0.12);
+}
+
+.communityCardHighlight {
+  border-color: rgba(200, 16, 46, 0.2);
+  background: linear-gradient(170deg, #fff 0%, #FFF5F5 100%);
+  box-shadow: 0 4px 20px rgba(200, 16, 46, 0.08);
+  position: relative;
+}
+
+.communityCardHighlight::before {
+  content: '⭐ Nuevo';
+  position: absolute;
+  top: -10px;
+  right: 1.5rem;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+}
+
+.communityCardIcon {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: var(--space-5);
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.communityCard:hover .communityCardIcon {
+  transform: scale(1.2);
+}
+
+.communityCardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+}
+
+.communityCardDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-relaxed, 1.7);
+}
+
+.communityAction {
+  text-align: center;
+  margin-top: var(--space-10);
+  position: relative;
+  z-index: 1;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .planGridFull {
@@ -324,6 +428,15 @@
     gap: var(--space-5);
   }
 
+  .communityGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .communityCardHighlight {
+    order: -1;
+  }
+
   .collaborateCard {
     padding: var(--space-10) var(--space-6);
   }
@@ -347,3 +460,4 @@
     grid-template-columns: 1fr;
   }
 }
+
