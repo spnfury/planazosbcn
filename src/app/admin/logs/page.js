@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
 
 const ACTION_LABELS = {
@@ -25,6 +26,7 @@ const ACTION_LABELS = {
 const ENTITY_FILTERS = ['plan', 'user', 'reservation', 'review', 'contact'];
 
 export default function AdminLogsPage() {
+  const [supabase] = useState(() => createClient());
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,12 +44,16 @@ export default function AdminLogsPage() {
     setLoading(true);
     setError('');
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const params = new URLSearchParams({ page: String(page), limit: '50' });
       if (filterEntity) params.set('entityType', filterEntity);
       if (filterStatus) params.set('status', filterStatus);
       if (search) params.set('search', search);
 
-      const res = await fetch(`/api/admin/logs?${params}`);
+      const res = await fetch(`/api/admin/logs?${params}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       if (!res.ok) throw new Error('Error cargando logs');
       const data = await res.json();
       setLogs(data.logs);

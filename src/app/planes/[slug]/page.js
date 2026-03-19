@@ -179,7 +179,16 @@ export default async function PlanDetailPage({ params }) {
                 <span className={styles.infoIcon}>📍</span>
                 <div>
                   <span className={styles.infoLabel}>Zona</span>
-                  <span className={styles.infoValue}>{plan.zone}, Barcelona</span>
+                  <span className={styles.infoValue}>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${plan.address || plan.zone}, Barcelona`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.locationValueLink}
+                    >
+                      {plan.zone}, Barcelona
+                    </a>
+                  </span>
                 </div>
               </div>
             )}

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
 
 export default function AdminResenasPage() {
+  const [supabase] = useState(() => createClient());
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -16,7 +18,11 @@ export default function AdminResenasPage() {
 
   async function loadReviews() {
     try {
-      const res = await fetch('/api/admin/reviews');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch('/api/admin/reviews', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       if (!res.ok) throw new Error('Error cargando reseñas');
       const data = await res.json();
       setReviews(data);
@@ -30,9 +36,14 @@ export default function AdminResenasPage() {
   async function toggleStatus(id, currentStatus) {
     const newStatus = currentStatus === 'public' ? 'hidden' : 'public';
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       const res = await fetch('/api/admin/reviews', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ id, status: newStatus }),
       });
       
@@ -48,7 +59,12 @@ export default function AdminResenasPage() {
     if (!confirm('¿Seguro que quieres borrar esta reseña de forma permanente?')) return;
     
     try {
-      const res = await fetch(`/api/admin/reviews?id=${id}`, { method: 'DELETE' });
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch(`/api/admin/reviews?id=${id}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
       if (!res.ok) throw new Error('Error al borrar');
       
       setReviews(reviews.filter(r => r.id !== id));
