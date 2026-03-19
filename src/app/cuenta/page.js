@@ -78,7 +78,11 @@ export default function CuentaPage() {
         {/* Profile Header */}
         <div className={styles.profileHeader}>
           <div className={styles.profileAvatar}>
-            {(profile?.full_name || user.email)?.[0]?.toUpperCase() || '?'}
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className={styles.profileAvatarImg} />
+            ) : (
+              (profile?.full_name || user.email)?.[0]?.toUpperCase() || '?'
+            )}
           </div>
           <div className={styles.profileInfo}>
             <h1 className={styles.profileName}>

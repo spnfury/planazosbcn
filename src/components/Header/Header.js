@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/Auth/AuthProvider';
+import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
 
 const NAV_LINKS = [
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(null);
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -21,6 +23,18 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!user) { setAvatarUrl(null); return; }
+    supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+      });
+  }, [user]);
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
@@ -83,9 +97,13 @@ export default function Header() {
           {!loading && (
             user ? (
               <Link href="/cuenta" className={styles.userBtn} id="desktop-account">
-                <span className={styles.userAvatar}>
-                  {(user.user_metadata?.full_name || user.email)?.[0]?.toUpperCase() || '?'}
-                </span>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className={styles.userAvatarImg} />
+                ) : (
+                  <span className={styles.userAvatar}>
+                    {(user.user_metadata?.full_name || user.email)?.[0]?.toUpperCase() || '?'}
+                  </span>
+                )}
               </Link>
             ) : (
               <Link href="/login" className={styles.loginBtn} id="desktop-login">

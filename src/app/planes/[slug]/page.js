@@ -56,27 +56,39 @@ export async function generateMetadata({ params }) {
 export default async function PlanDetailPage({ params }) {
   const { slug } = await params;
   
+  // First, fetch just the plan itself — this must succeed
   const { data: rawPlan, error } = await supabase
     .from('plans')
-    .select(`
-      *,
-      plan_tickets (name, price, description, sold_out, sort_order),
-      plan_guest_lists (name, time_range, price, description, sold_out, sort_order),
-      plan_schedule (time, description, sort_order),
-      plan_tags (tag),
-      plan_reels (url, sort_order)
-    `)
+    .select('*')
     .eq('slug', slug)
     .single();
 
   if (!rawPlan || error) notFound();
 
-  // Sort related data
-  const tickets = (rawPlan.plan_tickets || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  const guestList = (rawPlan.plan_guest_lists || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  const schedule = (rawPlan.plan_schedule || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  const tags = (rawPlan.plan_tags || []).map(t => t.tag);
-  const reels = (rawPlan.plan_reels || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  // Fetch related data separately so missing tables don't break the page
+  let tickets = [];
+  let guestList = [];
+  let schedule = [];
+  let tags = [];
+  let reels = [];
+
+  try {
+    const [ticketsRes, guestListRes, scheduleRes, tagsRes, reelsRes] = await Promise.allSettled([
+      supabase.from('plan_tickets').select('name, price, description, sold_out, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
+      supabase.from('plan_guest_lists').select('name, time_range, price, description, sold_out, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
+      supabase.from('plan_schedule').select('time, description, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
+      supabase.from('plan_tags').select('tag').eq('plan_id', rawPlan.id),
+      supabase.from('plan_reels').select('url, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
+    ]);
+
+    if (ticketsRes.status === 'fulfilled' && ticketsRes.value.data) tickets = ticketsRes.value.data;
+    if (guestListRes.status === 'fulfilled' && guestListRes.value.data) guestList = guestListRes.value.data;
+    if (scheduleRes.status === 'fulfilled' && scheduleRes.value.data) schedule = scheduleRes.value.data;
+    if (tagsRes.status === 'fulfilled' && tagsRes.value.data) tags = tagsRes.value.data.map(t => t.tag);
+    if (reelsRes.status === 'fulfilled' && reelsRes.value.data) reels = reelsRes.value.data;
+  } catch (e) {
+    console.error('Error fetching related plan data:', e);
+  }
 
   const plan = {
     ...mapPlanData(rawPlan),
