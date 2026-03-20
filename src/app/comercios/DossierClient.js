@@ -87,7 +87,7 @@ export default function DossierClient() {
           {/* Header del Dossier */}
           <div className={styles.dHeader}>
             <div className={styles.dLogoBox}>
-              <h2 className={styles.dLogoText}>Planazos<span>BCN</span></h2>
+              <img src="/logo-planazosbcn.png" alt="Planazos BCN" style={{ height: '60px', objectFit: 'contain', marginBottom: '0.5rem' }} />
               <p className={styles.dLogoSub}>La guía definitiva de Barcelona</p>
             </div>
           </div>

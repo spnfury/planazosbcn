@@ -82,9 +82,10 @@
 
 /* Rest of dossier styling, completely self-contained to avoid dark mode bleeding */
 .dHeader {
-  background: #e53e3e;
+  background: linear-gradient(rgba(229, 62, 62, 0.85), rgba(229, 62, 62, 0.95)), url('/hero-planazosbcn.jpg') center/cover no-repeat;
   color: white;
-  padding: 3rem 4rem;
+  padding: 3.5rem 4rem;
+  border-bottom: 4px solid #fff;
 }
 
 .dLogoBox {
