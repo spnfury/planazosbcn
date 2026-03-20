@@ -30,7 +30,7 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border-light);
-  padding: var(--space-4) 0;
+  padding: var(--space-4) 0 var(--space-3);
 }
 
 .filterBar {
@@ -63,6 +63,7 @@
   color: var(--color-text-secondary);
   white-space: nowrap;
   transition: all var(--duration-fast);
+  cursor: pointer;
 }
 
 .categoryBtn:hover {
@@ -111,6 +112,146 @@
 
 .searchInput:focus {
   border-color: var(--color-primary);
+}
+
+/* ─── Day of week + Time slot filter row ─── */
+.filterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.filterLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+/* Day filter */
+.dayFilter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.dayFilter::-webkit-scrollbar {
+  display: none;
+}
+
+.dayBtns {
+  display: flex;
+  gap: 4px;
+}
+
+.dayBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: var(--space-1) var(--space-2);
+  min-width: 42px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: all var(--duration-fast);
+  cursor: pointer;
+}
+
+.dayBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(232, 93, 38, 0.05);
+}
+
+.dayBtnActive {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+.dayBtnActive:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary-light);
+}
+
+.dayLabel {
+  font-size: 0.6rem;
+  font-weight: var(--font-normal);
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+.dayBtnActive .dayLabel {
+  opacity: 1;
+  color: var(--color-text-inverse);
+}
+
+/* Time slot filter (Tardeo / Nocturno) */
+.timeSlotFilter {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.timeSlotBtn {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: all var(--duration-fast);
+  cursor: pointer;
+}
+
+.timeSlotBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.timeSlotActive {
+  color: var(--color-text-inverse);
+  border-color: transparent;
+}
+
+.timeSlotActive.timeSlotTardeo,
+.timeSlotTardeo.timeSlotActive {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.timeSlotActive.timeSlotNocturno,
+.timeSlotNocturno.timeSlotActive {
+  background: linear-gradient(135deg, #1B1464, #6366f1);
+}
+
+.timeSlotActive:not(.timeSlotTardeo):not(.timeSlotNocturno) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.timeSlotTardeo:not(.timeSlotActive):hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.timeSlotNocturno:not(.timeSlotActive):hover {
+  border-color: #6366f1;
+  color: #6366f1;
 }
 
 /* Results */
@@ -162,6 +303,25 @@
 
   .grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .dayFilter {
+    overflow-x: auto;
+  }
+
+  .timeSlotFilter {
+    justify-content: stretch;
+  }
+
+  .timeSlotBtn {
+    flex: 1;
+    text-align: center;
   }
 }
 

@@ -29,6 +29,13 @@ export default async function Home() {
   const allPlans = (plansData || []).map(mapPlanData);
   const featuredPlans = allPlans.filter(p => p.featured);
 
+  // Build dynamic counts per category from actual Supabase data
+  const categoryCounts = {};
+  allPlans.forEach(p => {
+    const cat = p.category;
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+  });
+
   return (
     <>
       {/* HERO */}
@@ -95,7 +102,7 @@ export default async function Home() {
                 <span className={styles.categoryEmoji}>{cat.emoji}</span>
                 <h3 className={styles.categoryName}>{cat.label}</h3>
                 <p className={styles.categoryDesc}>{cat.description}</p>
-                <span className={styles.categoryCount}>{cat.count} planes →</span>
+                <span className={styles.categoryCount}>{categoryCounts[cat.id] || 0} planes →</span>
               </Link>
             ))}
           </div>

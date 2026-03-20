@@ -214,6 +214,17 @@ export default function PerfilPage() {
       const data = await res.json();
       updateField('avatar_url', data.url);
       setAvatarPreview(data.url);
+
+      // Auto-save avatar_url to DB immediately so it persists without needing "Guardar perfil"
+      if (user) {
+        const { error: saveErr } = await supabase
+          .from('profiles')
+          .update({ avatar_url: data.url })
+          .eq('id', user.id);
+        if (saveErr) {
+          console.error('Error auto-saving avatar:', saveErr);
+        }
+      }
     } catch (err) {
       console.error('Avatar upload error:', err);
       setError('No se pudo subir la foto. Asegúrate de usar JPG/PNG.');
