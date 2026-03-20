@@ -149,7 +149,12 @@ export async function POST(request) {
               <p><strong>Cantidad:</strong> ${qty}</p>
               <p><strong>Importe:</strong> ${(reservation.total_amount / 100).toFixed(2)}€</p>
               <p><strong>Localizador:</strong> ${reservation.localizador || 'N/A'}</p>
-              <p style="color: #666; font-size: 0.85em; margin-top: 20px;">Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
+              <div style="margin: 25px 0; text-align: center;">
+                <a href="${baseUrl}/admin/reservas" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                  📊 Ver en Panel de Control
+                </a>
+              </div>
+              <p style="color: #666; font-size: 0.85em; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">Fecha: ${new Date().toLocaleString('es-ES', { timeZone: 'Europe/Madrid' })}</p>
             </div>
           `,
         });

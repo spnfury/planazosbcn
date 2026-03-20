@@ -227,6 +227,10 @@ export async function POST(request) {
       mode: 'payment',
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/checkout/cancel?plan=${plan.slug}`,
+      payment_intent_data: {
+        statement_descriptor: 'PLANAZOSBCN',
+        description: `PlanazosBCN — ${itemName} (x${quantity})`,
+      },
       metadata: {
         planId: String(planId),
         ticketId: ticketId ? String(ticketId) : '',
