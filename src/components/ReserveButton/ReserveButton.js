@@ -63,17 +63,23 @@ export default function ReserveButton({
     };
   }, [isOpen]);
 
-  // Calculate price
+  // Calculate price — use precio_reserva if available (matches backend checkout logic)
   const getUnitPrice = () => {
     if (selectedTicketId && tickets.length > 0) {
       const ticket = tickets.find(t => t.id === selectedTicketId);
       if (ticket) return parseFloat(ticket.price) || 0;
     }
     if (plan.price === 'Gratis') return 0;
+    // If the plan has a reservation price, charge only that amount
+    if (plan.precio_reserva && plan.precio_reserva > 0) {
+      return Number(plan.precio_reserva);
+    }
     return parseFloat(plan.price) || 0;
   };
 
   const unitPrice = getUnitPrice();
+  const fullPrice = parseFloat(plan.price) || 0;
+  const isPreReserve = plan.precio_reserva && plan.precio_reserva > 0 && !selectedTicketId && plan.price !== 'Gratis';
   const shippingCost = plan?.type === 'sorpresa' ? parseFloat(plan.shipping_cost || 0) : 0;
   const totalPrice = (unitPrice * quantity) + shippingCost;
   const isFree = totalPrice === 0;
@@ -203,7 +209,7 @@ export default function ReserveButton({
                     </span>
                   )}
                   <span className={styles.planSummaryPrice}>
-                    {isFree ? 'Gratis' : `${unitPrice}€`}
+                    {isFree ? 'Gratis' : `${fullPrice}€`}
                   </span>
                 </div>
               </div>
@@ -393,6 +399,12 @@ export default function ReserveButton({
             {/* Footer */}
             <div className={styles.modalFooter}>
               <div className={styles.totalRow}>
+                {isPreReserve && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                    <span>Precio total del plan</span>
+                    <span>{(fullPrice * quantity).toFixed(2)}€</span>
+                  </div>
+                )}
                 {plan?.type === 'sorpresa' && shippingCost > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                     <span>Gastos de envío</span>
@@ -400,11 +412,17 @@ export default function ReserveButton({
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-color)' }}>
-                  <span className={styles.totalLabel}>Total</span>
+                  <span className={styles.totalLabel}>{isPreReserve ? 'Pagas ahora' : 'Total'}</span>
                   <span className={styles.totalAmount}>
                     {isFree ? 'Gratis' : `${totalPrice.toFixed(2)}€`}
                   </span>
                 </div>
+                {isPreReserve && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                    <span>Restante a pagar en el local</span>
+                    <span>{((fullPrice - unitPrice) * quantity).toFixed(2)}€</span>
+                  </div>
+                )}
               </div>
 
               <button
