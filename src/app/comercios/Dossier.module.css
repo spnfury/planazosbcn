@@ -1,0 +1,367 @@
+.wrapper {
+  background: var(--bg);
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+.actionsBar {
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 1.5rem 0;
+  position: sticky;
+  top: 60px; /* Adjust according to header */
+  z-index: 10;
+}
+
+.flexActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+}
+
+.pageSubtitle {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.downloadButton {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.downloadButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.downloadButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 
+  Printable Container A4 Style 
+  We set it to a fixed width so html2canvas renders it perfectly desktop-size, 
+  and we center it on the screen.
+*/
+
+.scrollArea {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-x: auto;
+}
+
+.dossierContainer {
+  background: white;
+  color: #1a202c; /* Text dark for print */
+  width: 794px; /* A4 size proportional */
+  min-height: 1123px; /* A4 size proportional */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  font-family: Arial, Helvetica, sans-serif; /* Web safe */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Rest of dossier styling, completely self-contained to avoid dark mode bleeding */
+.dHeader {
+  background: #e53e3e;
+  color: white;
+  padding: 3rem 4rem;
+}
+
+.dLogoBox {
+  display: flex;
+  flex-direction: column;
+}
+
+.dLogoText {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.dLogoText span {
+  font-weight: 400;
+}
+
+.dLogoSub {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.dContent {
+  padding: 3rem 4rem;
+}
+
+.dHero {
+  margin-bottom: 3rem;
+}
+
+.dHeroTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: #1a202c;
+}
+
+.dHeroDesc {
+  font-size: 1.1rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.dStatsGrid {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+.dStatCard {
+  background: #f7fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  flex: 1;
+  border: 1px solid #e2e8f0;
+}
+
+.dStatIcon {
+  color: #e53e3e;
+  margin-bottom: 0.5rem;
+}
+
+.dStatCard h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: #1a202c;
+}
+
+.dStatCard p {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dSectionTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1a202c;
+  border-bottom: 2px solid #e53e3e;
+  padding-bottom: 0.5rem;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.dSectionDesc {
+  color: #4a5568;
+  margin-bottom: 2rem;
+}
+
+.dBenefits {
+  margin-bottom: 4rem;
+}
+
+.dBenefitList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.dBenefitRow {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.dBenefitIcon {
+  background: #fff5f5;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.dBenefitRow h4 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+}
+
+.dBenefitRow p {
+  margin: 0;
+  color: #4a5568;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.dPricing {
+  margin-bottom: 4rem;
+}
+
+.dPricingGrid {
+  display: flex;
+  gap: 2rem;
+}
+
+.dPricingCard {
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  position: relative;
+  background: #ffffff;
+}
+
+.dPricingPremium {
+  border: 2px solid #e53e3e;
+  background: #fff5f5;
+}
+
+.dRibbon {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: #e53e3e;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.dPriceHeader, .dPriceHeaderPremium {
+  margin-bottom: 1.5rem;
+}
+
+.dPriceHeader h3, .dPriceHeaderPremium h3 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+  color: #4a5568;
+}
+
+.dPriceHeaderPremium h3 {
+  color: #e53e3e;
+}
+
+.dPriceValue {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1a202c;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.dPriceValue span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #718096;
+}
+
+.dPriceList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dPriceList li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #4a5568;
+}
+
+.dPriceDisabled {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.dPriceAction {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #edf2f7;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.dPriceActionPremium {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #e53e3e;
+  color: white;
+  font-weight: 600;
+}
+
+.dFooterCta {
+  background: #e53e3e;
+  color: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.dFooterCta h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.dFooterCta p {
+  margin: 0 0 1.5rem 0;
+  opacity: 0.9;
+}
+
+.dContactInfo {
+  background: rgba(255,255,255,0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.dContactInfo p {
+  margin: 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+/* Responsive constraints just for the wrapper, not the PDF box */
+@media (max-width: 850px) {
+  .dossierContainer {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}
+@media (max-width: 600px) {
+  .dossierContainer {
+    transform: scale(0.45);
+    margin-bottom: -600px; /* Offset the scale height reduction */
+  }
+}

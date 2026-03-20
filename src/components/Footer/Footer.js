@@ -32,6 +32,7 @@ export default function Footer() {
 
             <div className={styles.linkGroup}>
               <h4 className={styles.linkTitle}>Info</h4>
+              <Link href="/comercios" className={styles.link}>Para Comercios (Partners)</Link>
               <Link href="/contacto" className={styles.link}>Colaborar con nosotros</Link>
               <Link href="/contacto" className={styles.link}>Contacto</Link>
               <Link href="/faq" className={styles.link}>Preguntas frecuentes</Link>
