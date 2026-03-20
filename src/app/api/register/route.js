@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
 import { notifyAdmins } from '@/lib/notify-admins';
+import { sendWelcomeEmail } from '@/lib/send-welcome-email';
 
 export async function POST(request) {
   try {
@@ -71,6 +72,9 @@ export async function POST(request) {
         </div>
       `,
     });
+
+    // Send welcome email to the new user
+    await sendWelcomeEmail({ email, fullName });
 
     return NextResponse.json({
       success: true,

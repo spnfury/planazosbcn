@@ -80,35 +80,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* CATEGORIES */}
-      <section className="section" id="categorias">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-header__label">Categorías</span>
-            <h2 className="section-header__title">¿Qué tipo de plan buscas?</h2>
-            <p className="section-header__subtitle">
-              Elige la categoría que más te apetezca y encuentra tu próximo planazo
-            </p>
-          </div>
-
-          <div className={`${styles.categoryGrid} stagger-children`}>
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/planes/categoria/${cat.slug}`}
-                className={styles.categoryCard}
-                id={`category-${cat.id}`}
-              >
-                <span className={styles.categoryEmoji}>{cat.emoji}</span>
-                <h3 className={styles.categoryName}>{cat.label}</h3>
-                <p className={styles.categoryDesc}>{cat.description}</p>
-                <span className={styles.categoryCount}>{categoryCounts[cat.id] || 0} planes →</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* FEATURED PLANS */}
       <section className="section section--compact" id="planes">
         <div className="container">
@@ -149,6 +120,35 @@ export default async function Home() {
             <Link href="/planes" className="btn btn--primary btn--large" id="view-all-plans">
               Ver todos los planes →
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CATEGORIES */}
+      <section className="section" id="categorias">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-header__label">Categorías</span>
+            <h2 className="section-header__title">¿Qué tipo de plan buscas?</h2>
+            <p className="section-header__subtitle">
+              Elige la categoría que más te apetezca y encuentra tu próximo planazo
+            </p>
+          </div>
+
+          <div className={`${styles.categoryGrid} stagger-children`}>
+            {CATEGORIES.filter(cat => categoryCounts[cat.id] > 0).map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/planes/categoria/${cat.slug}`}
+                className={styles.categoryCard}
+                id={`category-${cat.id}`}
+              >
+                <span className={styles.categoryEmoji}>{cat.emoji}</span>
+                <h3 className={styles.categoryName}>{cat.label}</h3>
+                <p className={styles.categoryDesc}>{cat.description}</p>
+                <span className={styles.categoryCount}>{categoryCounts[cat.id] || 0} planes →</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

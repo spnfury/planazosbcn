@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { notifyAdmins } from '@/lib/notify-admins';
+import { sendWelcomeEmail } from '@/lib/send-welcome-email';
 
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
@@ -52,6 +53,9 @@ export async function GET(request) {
         </div>
       `,
     });
+
+    // Send welcome email to the new user
+    await sendWelcomeEmail({ email: userEmail, fullName: userName });
 
     return NextResponse.redirect(`${origin}/completar-perfil`);
   }
