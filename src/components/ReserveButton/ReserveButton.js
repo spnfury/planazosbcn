@@ -398,29 +398,29 @@ export default function ReserveButton({
 
             {/* Footer */}
             <div className={styles.modalFooter}>
-              <div className={styles.totalRow}>
+              <div className={styles.priceBreakdown}>
                 {isPreReserve && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                  <div className={styles.breakdownRow}>
                     <span>Precio total del plan</span>
                     <span>{(fullPrice * quantity).toFixed(2)}€</span>
                   </div>
                 )}
                 {plan?.type === 'sorpresa' && shippingCost > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                  <div className={styles.breakdownRow}>
                     <span>Gastos de envío</span>
                     <span>{shippingCost.toFixed(2)}€</span>
                   </div>
                 )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed var(--border-color)' }}>
+                <div className={styles.totalRow}>
                   <span className={styles.totalLabel}>{isPreReserve ? 'Pagas ahora' : 'Total'}</span>
                   <span className={styles.totalAmount}>
                     {isFree ? 'Gratis' : `${totalPrice.toFixed(2)}€`}
                   </span>
                 </div>
                 {isPreReserve && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                    <span>Restante a pagar en el local</span>
-                    <span>{((fullPrice - unitPrice) * quantity).toFixed(2)}€</span>
+                  <div className={styles.breakdownNote}>
+                    <span>Restante a pagar en el local:</span>
+                    <strong>{((fullPrice - unitPrice) * quantity).toFixed(2)}€</strong>
                   </div>
                 )}
               </div>
