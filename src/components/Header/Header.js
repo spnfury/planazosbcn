@@ -9,6 +9,7 @@ import styles from './Header.module.css';
 const NAV_LINKS = [
   { href: '/#planes', label: 'Planes' },
   { href: '/#categorias', label: 'Categorías' },
+  { href: '/comercios', label: 'Para Comercios' },
   { href: '/contacto', label: 'Colaborar' },
 ];
 

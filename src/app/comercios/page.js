@@ -1,4 +1,3 @@
-import LayoutShell from '@/components/LayoutShell';
 import DossierClient from './DossierClient';
 
 export const metadata = {
@@ -8,8 +7,6 @@ export const metadata = {
 
 export default function ComerciosPage() {
   return (
-    <LayoutShell>
-      <DossierClient />
-    </LayoutShell>
+    <DossierClient />
   );
 }
