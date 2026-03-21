@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import styles from '@/app/admin/admin.module.css';
 
 /**
@@ -29,6 +29,7 @@ export default function ImageUploader({ value, onChange, label, id }) {
 
     try {
       // Get current session token for auth
+      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No has iniciado sesión');
 
