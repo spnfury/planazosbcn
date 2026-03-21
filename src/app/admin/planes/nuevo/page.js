@@ -124,6 +124,10 @@ export default function NuevoPlanPage() {
         spots_taken: Number(form.spots_taken) || 0,
       };
 
+      if (!payload.collaborator_id) {
+        delete payload.collaborator_id;
+      }
+
       // Insert plan
       const { data: plan, error: planError } = await supabase
         .from('plans')
