@@ -5,11 +5,13 @@ import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
+import AdminAssistant from '@/components/AdminAssistant/AdminAssistant';
 import styles from './admin.module.css';
 
 const NAV_ITEMS = [
   { href: '/admin', icon: '📊', label: 'Dashboard' },
   { href: '/admin/planes', icon: '📋', label: 'Planes' },
+  { href: '/admin/restaurantes', icon: '🍽️', label: 'Restaurantes' },
   { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
   { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
   { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
@@ -176,6 +178,9 @@ export default function AdminLayout({ children }) {
           </Link>
         ))}
       </nav>
+
+      {/* AI Assistant */}
+      <AdminAssistant />
     </div>
   );
 }

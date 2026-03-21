@@ -65,6 +65,44 @@ export default function NuevoPlanPage() {
   const [reels, setReels] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
 
+  // Listen for AI Assistant fill_form events
+  useEffect(() => {
+    function handleFillForm(e) {
+      const data = e.detail;
+      if (data) {
+        setForm((prev) => {
+          const updated = { ...prev };
+          const planFields = ['type', 'title', 'slug', 'excerpt', 'description', 'category',
+            'zone', 'date', 'price', 'precio_reserva', 'capacity', 'venue', 'address',
+            'time_start', 'time_end', 'featured', 'sponsored', 'published', 'age_restriction',
+            'shipping_cost'];
+          for (const field of planFields) {
+            if (data[field] !== undefined) {
+              updated[field] = data[field];
+            }
+          }
+          // Sync category label
+          if (data.category) {
+            const cat = CATEGORIES.find((c) => c.id === data.category);
+            updated.category_label = cat?.label || data.category;
+          }
+          // Auto-generate slug from title
+          if (data.title && !data.slug) {
+            updated.slug = data.title
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '');
+          }
+          return updated;
+        });
+      }
+    }
+    window.addEventListener('assistant:fill_form', handleFillForm);
+    return () => window.removeEventListener('assistant:fill_form', handleFillForm);
+  }, []);
+
   // Fetch collaborators
   useEffect(() => {
     async function fetchCollaborators() {

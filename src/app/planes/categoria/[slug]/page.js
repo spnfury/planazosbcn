@@ -56,6 +56,7 @@ export default async function CategoryPage({ params }) {
     .from('plans')
     .select('*')
     .eq('category', category.id)
+    .eq('published', true)
     .order('date', { ascending: true });
 
   if (error) {

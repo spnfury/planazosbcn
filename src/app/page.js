@@ -20,6 +20,7 @@ export default async function Home() {
   const { data: plansData, error } = await supabase
     .from('plans')
     .select('*')
+    .eq('published', true)
     .order('date', { ascending: true });
 
   if (error) {

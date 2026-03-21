@@ -7,16 +7,31 @@ export default function Newsletter() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
 
     setStatus('loading');
-    // TODO: Connect to Supabase or email service
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al suscribirse');
+      }
+
       setStatus('success');
       setEmail('');
-    }, 1000);
+    } catch (error) {
+      console.error(error);
+      setStatus('error');
+    }
   };
 
   return (
@@ -29,12 +44,20 @@ export default function Newsletter() {
             Recibe cada semana los mejores planes de Barcelona directamente en tu email. Sin spam, solo planes buenos.
           </p>
 
-          {status === 'success' ? (
+          {status === 'success' && (
             <div className={styles.success}>
               <span className={styles.successIcon}>✅</span>
               <p>¡Genial! Ya estás suscrit@. Prepárate para los mejores planazos.</p>
             </div>
-          ) : (
+          )}
+
+          {status === 'error' && (
+            <div style={{ color: '#fee2e2', backgroundColor: '#991b1b', padding: '0.75rem', borderRadius: '0.5rem', marginBottom: '1.5rem', textAlign: 'center', fontSize: '0.9rem' }}>
+              ❌ Hubo un error al suscribirte. Comprueba tu conexión e inténtalo de nuevo.
+            </div>
+          )}
+
+          {status !== 'success' && (
             <form className={styles.form} onSubmit={handleSubmit} id="newsletter-form">
               <input
                 type="email"

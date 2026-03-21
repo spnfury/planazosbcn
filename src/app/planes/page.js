@@ -127,6 +127,7 @@ export default function PlanesPage() {
       const { data, error } = await supabase
         .from('plans')
         .select('*')
+        .eq('published', true)
         .order('date', { ascending: true });
         
       if (error) {

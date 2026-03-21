@@ -27,7 +27,7 @@ const mapPlanData = (plan) => ({
 });
 
 export async function generateStaticParams() {
-  const { data: plans } = await supabase.from('plans').select('slug');
+  const { data: plans } = await supabase.from('plans').select('slug').eq('published', true);
   return (plans || []).map((plan) => ({ slug: plan.slug }));
 }
 
@@ -38,6 +38,7 @@ export async function generateMetadata({ params }) {
     .from('plans')
     .select('title, excerpt, image')
     .eq('slug', slug)
+    .eq('published', true)
     .single();
     
   if (!plan) return {};
@@ -61,6 +62,7 @@ export default async function PlanDetailPage({ params }) {
     .from('plans')
     .select('*')
     .eq('slug', slug)
+    .eq('published', true)
     .single();
 
   if (!rawPlan || error) notFound();
@@ -103,6 +105,7 @@ export default async function PlanDetailPage({ params }) {
     .from('plans')
     .select('*')
     .eq('category', plan.category)
+    .eq('published', true)
     .neq('id', plan.id)
     .limit(3);
     
