@@ -24,6 +24,34 @@ export default function AdminReservasPage() {
     setLoading(false);
   }
 
+  async function handleCancel(id) {
+    if (!confirm('¿Estás seguro de que deseas cancelar esta reserva y reembolsar el pago en Stripe (si aplica)?')) {
+      return;
+    }
+    
+    try {
+      const res = await fetch('/api/admin/reservas/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reservationId: id }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        alert('Reserva cancelada y reembolso procesado exitosamente.');
+        loadReservations(); // Reload to get fresh data
+      } else {
+        alert(data.error || 'Error al cancelar la reserva');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conectividad al intentar cancelar');
+    }
+  }
+
   const filtered = filter === 'all'
     ? reservations
     : reservations.filter((r) => r.status === filter);
@@ -76,12 +104,20 @@ export default function AdminReservasPage() {
               <th>Total</th>
               <th>Estado</th>
               <th>Fecha</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody className={styles.tableBody}>
             {filtered.map((r) => (
               <tr key={r.id}>
-                <td data-label="ID" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>#{r.id}</td>
+                <td data-label="ID" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem' }}>
+                  <div>#{r.id}</div>
+                  {r.stripe_payment_intent && (
+                    <div style={{ fontSize: '0.65rem', marginTop: '4px', opacity: 0.7 }} title="Stripe Payment ID">
+                      {r.stripe_payment_intent}
+                    </div>
+                  )}
+                </td>
                 <td data-label="Plan" style={{ fontWeight: 600, color: '#fff' }}>{r.plans?.title || `Plan #${r.plan_id}`}</td>
                 <td data-label="Email">{r.customer_email}</td>
                 <td data-label="Cantidad">{r.quantity}</td>
@@ -101,6 +137,28 @@ export default function AdminReservasPage() {
                   {new Date(r.created_at).toLocaleString('es-ES', {
                     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
                   })}
+                </td>
+                <td data-label="Acciones">
+                  {r.status !== 'cancelled' && (
+                    <button
+                      onClick={() => handleCancel(r.id)}
+                      style={{
+                        background: 'rgba(220, 38, 38, 0.2)',
+                        color: '#ef4444',
+                        border: '1px solid rgba(220, 38, 38, 0.4)',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        transition: 'all 0.2s',
+                        fontWeight: '600'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.4)'; e.currentTarget.style.color = '#fff'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.2)'; e.currentTarget.style.color = '#ef4444'; }}
+                    >
+                      Cancelar
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
