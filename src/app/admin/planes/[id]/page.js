@@ -33,6 +33,8 @@ export default function EditPlanPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [originalPlan, setOriginalPlan] = useState(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -107,6 +109,61 @@ export default function EditPlanPage({ params }) {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setTags([...tags, tagInput.trim()]);
       setTagInput('');
+    }
+  }
+
+  async function handleAiGenerate() {
+    if (!aiPrompt.trim()) return;
+    setAiLoading(true);
+    setError('');
+    
+    const currentPlanData = {
+      ...form,
+      tags,
+      tickets,
+      schedule,
+      guestLists,
+      reels
+    };
+
+    try {
+      const res = await fetch('/api/admin/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt, currentPlanData })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error modificando plan con IA');
+      
+      if (data.type !== undefined) updateForm('type', data.type);
+      if (data.title !== undefined) updateForm('title', data.title);
+      if (data.excerpt !== undefined) updateForm('excerpt', data.excerpt);
+      if (data.description !== undefined) updateForm('description', data.description);
+      if (data.category !== undefined) updateForm('category', data.category);
+      if (data.zone !== undefined) updateForm('zone', data.zone);
+      if (data.date !== undefined) updateForm('date', data.date);
+      if (data.price !== undefined) updateForm('price', data.price);
+      if (data.precio_reserva !== undefined) updateForm('precio_reserva', data.precio_reserva);
+      if (data.shipping_cost !== undefined) updateForm('shipping_cost', data.shipping_cost);
+      if (data.capacity !== undefined) updateForm('capacity', data.capacity);
+      if (data.venue !== undefined) updateForm('venue', data.venue);
+      if (data.address !== undefined) updateForm('address', data.address);
+      if (data.time_start !== undefined) updateForm('time_start', data.time_start);
+      if (data.time_end !== undefined) updateForm('time_end', data.time_end);
+      if (data.age_restriction !== undefined) updateForm('age_restriction', data.age_restriction);
+      
+      if (Array.isArray(data.age_groups)) updateForm('age_groups', data.age_groups);
+      if (Array.isArray(data.etiquetas)) updateForm('etiquetas', data.etiquetas);
+      
+      if (Array.isArray(data.tickets)) setTickets(data.tickets);
+      if (Array.isArray(data.schedule)) setSchedule(data.schedule);
+      
+      setAiPrompt('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setAiLoading(false);
     }
   }
 
@@ -247,6 +304,33 @@ export default function EditPlanPage({ params }) {
       {error && <div className={styles.loginError} style={{ marginBottom: '1rem' }}>{error}</div>}
 
       <form onSubmit={handleSubmit}>
+        {/* IA Assistant */}
+        <div className={styles.formSection} style={{ border: '2px solid rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.05)' }}>
+          <h3 className={styles.formSectionTitle} style={{ color: '#A78BFA' }}>✨ Asistente Mágico</h3>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+            Dile al asistente qué cambios quieres hacer a este plan y él modificará los campos manteniendo el resto de información intacta.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+            <textarea
+              className={styles.formInput}
+              style={{ flex: 1, minHeight: '80px', resize: 'vertical' }}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Ej: Baja el precio a la mitad y añade la etiqueta romántico..."
+              id="edit-ai-prompt"
+            />
+            <button
+              type="button"
+              onClick={handleAiGenerate}
+              disabled={aiLoading}
+              className={styles.btnPrimary}
+              style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(to right, #8B5CF6, #EC4899)', border: 'none', height: 'fit-content' }}
+            >
+              {aiLoading ? 'Aplicando...' : 'Aplicar Cambios'}
+            </button>
+          </div>
+        </div>
+
         {/* Basic Info */}
         <div className={styles.formSection}>
           <h3 className={styles.formSectionTitle}>📝 Información básica</h3>

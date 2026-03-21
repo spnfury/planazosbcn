@@ -240,9 +240,9 @@ export default function NuevoPlanPage() {
       <form onSubmit={handleSubmit}>
         {/* IA Assistant */}
         <div className={styles.formSection} style={{ border: '2px solid rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.05)' }}>
-          <h3 className={styles.formSectionTitle} style={{ color: '#A78BFA' }}>✨ Autocompletar con IA (Groq)</h3>
+          <h3 className={styles.formSectionTitle} style={{ color: '#A78BFA' }}>✨ Asistente Mágico</h3>
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-            Describe el plan en lenguaje natural y la IA rellenará los campos por ti.
+            Describe el plan en lenguaje natural y el asistente creará e inventará una ficha detallada rellenando todos los campos requeridos por ti.
           </p>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
             <textarea
@@ -250,7 +250,7 @@ export default function NuevoPlanPage() {
               style={{ flex: 1, minHeight: '80px', resize: 'vertical' }}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder="Ej: Plan para cenar en Barcelona mañana en el barrio de Gràcia. Precio 25 euros, vegano y romantico..."
+              placeholder="Ej: Haz un plan para cenar en Barcelona mañana en el barrio de Gràcia. Precio 25 euros, vegano y romantico..."
               id="form-ai-prompt"
             />
             <button

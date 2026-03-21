@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    const { prompt } = await req.json();
+    const { prompt, currentPlanData } = await req.json();
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
@@ -13,21 +13,29 @@ export async function POST(req) {
       return NextResponse.json({ error: 'GROQ_API_KEY is not configured' }, { status: 500 });
     }
 
+    const modificationContext = currentPlanData 
+      ? `You are MODIFYING an existing plan. The current state of the plan is provided in the user message. 
+      Apply the user's requested changes to this existing plan and return the FULL updated JSON state. Do not change parts of the plan the user didn't mention unless logically required by their change.`
+      : `You are CREATING a new plan from a brief description. 
+      You must expand their brief description logically into a rich, detailed, and attractive plan for Barcelona. Invent catchy titles, thorough descriptions, and complete tickets/schedule if it's an event.`;
+
     const systemPrompt = `
-You are a helpful data extraction assistant. The user will provide a natural language description for an event or plan in Barcelona.
-Extract the relevant details and map them to the following JSON schema. Do not make up information that is not provided, leave string fields empty or numeric fields as 0 if missing.
+You are an expert AI Assistant specialized in Barcelona plans and events. 
+${modificationContext}
+
+Extract or expand the details and map them to the following JSON schema. Do not make up information that is not logically derivable, but DO expand creatively if you are creating a new plan.
 
 Strictly output ONLY valid JSON without any markdown formatting wrappers. 
 
 JSON format:
 {
   "type": "plan" | "evento" | "sorpresa",
-  "title": "A short and catchy title for the plan",
-  "excerpt": "A brief summary",
-  "description": "Full description of the plan",
+  "title": "A catchy title for the plan",
+  "excerpt": "A brief, highly attractive summary",
+  "description": "Full, beautifully written description of the plan or event",
   "category": "One of: gastro, naturaleza, cultura, rutas, nocturno, servicios, bienestar",
-  "zone": "Neighborhood or zone, e.g. El Born",
-  "date": "YYYY-MM-DD format if date mentioned",
+  "zone": "Neighborhood or zone, e.g. El Born, Gràcia",
+  "date": "YYYY-MM-DD format if clearly indicated, else empty",
   "price": "Number as string, or 'Gratis'",
   "precio_reserva": 0,
   "shipping_cost": 0,
@@ -45,7 +53,6 @@ JSON format:
   "schedule": [
     { "time": "20:00", "description": "Apertura de puertas" }
   ]
-}
     `;
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -58,7 +65,7 @@ JSON format:
         model: 'llama3-70b-8192',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt },
+          { role: 'user', content: currentPlanData ? `CURRENT PLAN JSON:\n${JSON.stringify(currentPlanData)}\n\nUSER REQUESTED CHANGES:\n${prompt}` : `USER REQUEST:\n${prompt}` },
         ],
         temperature: 0.1,
         response_format: { type: 'json_object' }
