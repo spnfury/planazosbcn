@@ -62,7 +62,7 @@ JSON format:
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: currentPlanData ? `CURRENT PLAN JSON:\n${JSON.stringify(currentPlanData)}\n\nUSER REQUESTED CHANGES:\n${prompt}` : `USER REQUEST:\n${prompt}` },
