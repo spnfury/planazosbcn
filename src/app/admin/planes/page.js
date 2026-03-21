@@ -110,8 +110,12 @@ export default function AdminPlanesPage() {
                         />
                       )}
                       <div>
-                        <span className={styles.planTitle}>{plan.title}</span>
-                        <span className={styles.planSlug}>/{plan.slug}</span>
+                        <Link href={`/planes/${plan.slug}`} target="_blank" style={{ textDecoration: 'none', color: 'inherit' }}>
+                          <span className={styles.planTitle} style={{ cursor: 'pointer' }}>{plan.title}</span>
+                        </Link>
+                        <Link href={`/planes/${plan.slug}`} target="_blank" style={{ textDecoration: 'none' }}>
+                          <span className={styles.planSlug} style={{ cursor: 'pointer' }}>/{plan.slug} ↗</span>
+                        </Link>
                       </div>
                     </div>
                   </td>
