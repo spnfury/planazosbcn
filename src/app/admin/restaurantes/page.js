@@ -84,7 +84,15 @@ export default function AdminRestaurantsPage() {
                   ) : 'Sin carta adjunta'}
                 </td>
                 <td data-label="Acciones">
-                  <div className={styles.actions}>
+                  <div className={styles.actions} style={{ display: 'flex', gap: '0.5rem' }}>
+                    <Link
+                      href={`/admin/restaurantes/${rest.id}/edit`}
+                      className={styles.actionBtn}
+                      style={{background: 'rgba(255, 255, 255, 0.1)', color: '#fff'}}
+                      title="Editar Restaurante"
+                    >
+                      ✏️ Editar
+                    </Link>
                     <Link
                       href={`/admin/restaurantes/${rest.id}/menus`}
                       className={styles.actionBtn}

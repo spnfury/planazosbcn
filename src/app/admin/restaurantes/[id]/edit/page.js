@@ -1,15 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import styles from '../../admin.module.css';
+import styles from '../../../admin.module.css';
 
-export default function NuevoRestaurantePage() {
+export default function EditarRestaurantePage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id;
+  
   const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -22,10 +26,44 @@ export default function NuevoRestaurantePage() {
   });
 
   const [pdfFile, setPdfFile] = useState(null);
+  const [existingPdf, setExistingPdf] = useState(null);
   
   const [importingIg, setImportingIg] = useState(false);
   const [igError, setIgError] = useState(null);
   const [newReelUrl, setNewReelUrl] = useState('');
+
+  useEffect(() => {
+    if (id) loadRestaurant();
+  }, [id]);
+
+  async function loadRestaurant() {
+    setFetching(true);
+    try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .eq('id', id)
+        .single();
+        
+      if (error) throw error;
+      if (data) {
+        setFormData({
+          nombre: data.nombre || '',
+          direccion: data.direccion || '',
+          tipo_comida: data.tipo_comida || '',
+          instagram_url: data.instagram_url || '',
+          logo_url: data.logo_url || '',
+          reels: Array.isArray(data.reels) ? data.reels : []
+        });
+        setExistingPdf(data.pdf_url);
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Error al cargar restaurante: ' + err.message);
+    } finally {
+      setFetching(false);
+    }
+  }
 
   // Listen for AI Assistant fill_form events
   useEffect(() => {
@@ -92,7 +130,7 @@ export default function NuevoRestaurantePage() {
     setError(null);
 
     try {
-      let pdf_url = null;
+      let pdf_url = existingPdf;
 
       // Upload PDF via server-side API (bypasses storage RLS)
       if (pdfFile) {
@@ -110,24 +148,31 @@ export default function NuevoRestaurantePage() {
         pdf_url = uploadData.url;
       }
 
-      const { data, error: insertError } = await supabase
+      const { error: updateError } = await supabase
         .from('restaurants')
-        .insert([{
+        .update({
           ...formData,
           pdf_url
-        }])
-        .select()
-        .single();
+        })
+        .eq('id', id);
 
-      if (insertError) throw insertError;
+      if (updateError) throw updateError;
 
-      router.push(`/admin/restaurantes/${data.id}/menus`);
+      router.push(`/admin/restaurantes`);
     } catch (err) {
       console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (fetching) {
+    return (
+      <div style={{ color: 'rgba(255,255,255,0.5)', padding: '2rem' }}>
+        Cargando datos del restaurante...
+      </div>
+    );
   }
 
   return (
@@ -137,8 +182,8 @@ export default function NuevoRestaurantePage() {
           <Link href="/admin/restaurantes" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
             ← Volver a Restaurantes
           </Link>
-          <h1 className={styles.pageTitle} style={{ marginTop: '0.5rem' }}>Nuevo Restaurante</h1>
-          <p className={styles.pageSubtitle}>Añade un nuevo restaurante para configurar menús</p>
+          <h1 className={styles.pageTitle} style={{ marginTop: '0.5rem' }}>Editar Restaurante</h1>
+          <p className={styles.pageSubtitle}>Modifica los datos y la integración de Instagram</p>
         </div>
       </div>
 
@@ -277,7 +322,14 @@ export default function NuevoRestaurantePage() {
         <div className={styles.formSection}>
           <h3 className={styles.formSectionTitle}>📄 Carta en PDF</h3>
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Subir carta (Opcional)</label>
+            <label className={styles.formLabel}>Subir/Sustituir carta (Opcional)</label>
+            {existingPdf && !pdfFile && (
+              <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(188,254,47,0.1)', borderRadius: '8px' }}>
+                <span style={{ color: '#bcfe2f' }}>✓ Ya hay un PDF adjunto. Si subes otro, se reemplazará.</span>
+                <br/>
+                <a href={existingPdf} target="_blank" rel="noreferrer" style={{ fontSize: '0.8rem', color: '#fff', textDecoration: 'underline', marginTop: '0.5rem', display: 'inline-block' }}>Ver PDF actual</a>
+              </div>
+            )}
             <div style={{
               border: '2px dashed rgba(255,255,255,0.12)',
               borderRadius: '12px',
@@ -349,7 +401,7 @@ export default function NuevoRestaurantePage() {
             disabled={loading}
             id="form-submit"
           >
-            {loading ? 'Guardando...' : '✓ Crear Restaurante'}
+            {loading ? 'Guardando...' : '✓ Guardar Cambios'}
           </button>
         </div>
       </form>

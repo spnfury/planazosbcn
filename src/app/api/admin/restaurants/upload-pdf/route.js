@@ -16,7 +16,7 @@ export async function POST(req) {
 
     // If only text extraction is requested (for menu generation)
     if (extractTextOnly) {
-      const pdfParse = (await import('pdf-parse')).default || (await import('pdf-parse'));
+      const pdfParse = (await import('pdf-parse/lib/pdf-parse.js')).default || (await import('pdf-parse/lib/pdf-parse.js'));
       const data = await pdfParse(buffer);
       return NextResponse.json({ success: true, text: data.text });
     }

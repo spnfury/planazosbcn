@@ -7,19 +7,22 @@ const groq = new Groq({
 
 export async function POST(req) {
   try {
-    const { pdfText, rules, price, menuType } = await req.json();
+    const { dishes, rules, price, menuType } = await req.json();
 
-    if (!pdfText) {
-      return NextResponse.json({ error: 'PDF text is required' }, { status: 400 });
+    if (!dishes || dishes.length === 0) {
+      return NextResponse.json({ error: 'dishes array is required' }, { status: 400 });
     }
+
+    // Convert dishes to a readable format for the prompt
+    const dishesList = dishes.map(d => `- ${d.nombre} (${d.precio ? d.precio + '€' : 'Sin precio'}) [${d.categoria}]`).join('\n');
 
     const prompt = `
 Eres un asistente experto en gastronomía y gestión de restaurantes.
-A continuación tienes el texto bruto extraído de la carta (PDF) de un restaurante:
+A continuación tienes una lista estructurada de platos reales extraídos de la base de datos de un restaurante:
 
-<CARTA>
-${pdfText}
-</CARTA>
+<PLATOS_DISPONIBLES>
+${dishesList}
+</PLATOS_DISPONIBLES>
 
 Necesitamos que diseñes un menú de restaurante basado EXACTAMENTE en la carta anterior.
 Aquí están las reglas y requerimientos para este menú:
@@ -33,7 +36,7 @@ El menú debe cumplir con lo siguiente:
 - Si dicen "Carne o pescado a escoger", asegúrate de dar opciones en los segundos.
 - Si el precio o reglas exigen un orden (ej. tener un primero si es de 35€, o un segundo si es de 40€), respétalo.
 
-Devuelve la respuesta EXCLUSIVAMENTE en formato JSON válido. Debe seguir esta estructura:
+Devuelve la respuesta EXCLUSIVAMENTE en formato JSON válido. Debe seguir ESTRICTAMENTE esta estructura:
 {
   "nombre": "${menuType}",
   "precio": ${price || 0},
@@ -41,7 +44,7 @@ Devuelve la respuesta EXCLUSIVAMENTE en formato JSON válido. Debe seguir esta e
   "contenido_estructurado": [
     {
       "course": "Primero (o Pica Pica, Segundo, Postre, Bebida)",
-      "options": ["Plato 1", "Plato 2"]
+      "options": ["Nombre del plato limpio", "Otro plato"] // IMPORTANTE: Solo texto plano simple con el nombre limpio. NUNCA incluyas el precio individual del plato aquí.
     }
   ]
 }

@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const ADMIN_EMAILS = ['emaciasdayrit@icloud.com', 'thevega82@gmail.com'];
+const ADMIN_EMAILS = ['emaciasdayrit@icloud.com', 'thevega82@gmail.com', 'emacday@planazosbcn.com'];
 
 /**
  * Send a notification email to all admin addresses.

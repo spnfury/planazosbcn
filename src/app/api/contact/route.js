@@ -34,7 +34,7 @@ export async function POST(request) {
 
     const { data, error } = await resend.emails.send({
       from: 'PlanazosBCN Contacto <contacto@planazosbcn.com>',
-      to: ['emaciasdayrit@icloud.com', 'thevega82@gmail.com'],
+      to: ['emaciasdayrit@icloud.com', 'thevega82@gmail.com', 'emacday@planazosbcn.com'],
       subject: `Nueva colaboración: ${business ? business : name} (${type})`,
       replyTo: email,
       html: htmlContent,
