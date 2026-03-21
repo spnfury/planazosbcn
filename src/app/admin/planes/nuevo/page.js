@@ -321,7 +321,7 @@ export default function NuevoPlanPage() {
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Fecha</label>
               <input
-                type="text"
+                type="date"
                 className={styles.formInput}
                 value={form.date}
                 onChange={(e) => updateForm('date', e.target.value)}

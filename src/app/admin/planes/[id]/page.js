@@ -319,7 +319,7 @@ export default function EditPlanPage({ params }) {
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Fecha</label>
-              <input type="text" className={styles.formInput} value={form.date} onChange={(e) => updateForm('date', e.target.value)} />
+              <input type="date" className={styles.formInput} value={form.date} onChange={(e) => updateForm('date', e.target.value)} />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Precio</label>
