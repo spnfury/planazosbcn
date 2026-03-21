@@ -64,6 +64,8 @@ export default function NuevoPlanPage() {
   const [schedule, setSchedule] = useState([]);
   const [reels, setReels] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
 
   // Fetch collaborators
   useEffect(() => {
@@ -106,6 +108,52 @@ export default function NuevoPlanPage() {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
       setTags([...tags, tagInput.trim()]);
       setTagInput('');
+    }
+  }
+
+  async function handleAiGenerate() {
+    if (!aiPrompt.trim()) return;
+    setAiLoading(true);
+    setError('');
+    
+    try {
+      const res = await fetch('/api/admin/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error generating plan');
+      
+      if (data.type) updateForm('type', data.type);
+      if (data.title) updateForm('title', data.title);
+      if (data.excerpt) updateForm('excerpt', data.excerpt);
+      if (data.description) updateForm('description', data.description);
+      if (data.category) updateForm('category', data.category);
+      if (data.zone) updateForm('zone', data.zone);
+      if (data.date) updateForm('date', data.date);
+      if (data.price !== undefined) updateForm('price', data.price);
+      if (data.precio_reserva !== undefined) updateForm('precio_reserva', data.precio_reserva);
+      if (data.shipping_cost !== undefined) updateForm('shipping_cost', data.shipping_cost);
+      if (data.capacity !== undefined) updateForm('capacity', data.capacity);
+      if (data.venue) updateForm('venue', data.venue);
+      if (data.address) updateForm('address', data.address);
+      if (data.time_start) updateForm('time_start', data.time_start);
+      if (data.time_end) updateForm('time_end', data.time_end);
+      if (data.age_restriction) updateForm('age_restriction', data.age_restriction);
+      
+      if (Array.isArray(data.age_groups)) updateForm('age_groups', data.age_groups);
+      if (Array.isArray(data.etiquetas)) updateForm('etiquetas', data.etiquetas);
+      
+      if (Array.isArray(data.tickets)) setTickets(data.tickets.map(t => ({ ...EMPTY_TICKET, ...t })));
+      if (Array.isArray(data.schedule)) setSchedule(data.schedule.map(s => ({ ...EMPTY_SCHEDULE, ...s })));
+      
+      setAiPrompt('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setAiLoading(false);
     }
   }
 
@@ -190,6 +238,33 @@ export default function NuevoPlanPage() {
       {error && <div className={styles.loginError} style={{ marginBottom: '1rem' }}>{error}</div>}
 
       <form onSubmit={handleSubmit}>
+        {/* IA Assistant */}
+        <div className={styles.formSection} style={{ border: '2px solid rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.05)' }}>
+          <h3 className={styles.formSectionTitle} style={{ color: '#A78BFA' }}>✨ Autocompletar con IA (Groq)</h3>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+            Describe el plan en lenguaje natural y la IA rellenará los campos por ti.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+            <textarea
+              className={styles.formInput}
+              style={{ flex: 1, minHeight: '80px', resize: 'vertical' }}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Ej: Plan para cenar en Barcelona mañana en el barrio de Gràcia. Precio 25 euros, vegano y romantico..."
+              id="form-ai-prompt"
+            />
+            <button
+              type="button"
+              onClick={handleAiGenerate}
+              disabled={aiLoading}
+              className={styles.btnPrimary}
+              style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(to right, #8B5CF6, #EC4899)', border: 'none', height: 'fit-content' }}
+            >
+              {aiLoading ? 'Generando...' : 'Autocompletar'}
+            </button>
+          </div>
+        </div>
+
         {/* Basic Info */}
         <div className={styles.formSection}>
           <h3 className={styles.formSectionTitle}>📝 Información básica</h3>
@@ -334,7 +409,7 @@ export default function NuevoPlanPage() {
               />
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Precio (€ o "Gratis")</label>
+              <label className={styles.formLabel}>Precio (€ o &quot;Gratis&quot;)</label>
               <input
                 type="text"
                 className={styles.formInput}
