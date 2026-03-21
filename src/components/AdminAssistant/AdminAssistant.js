@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './AdminAssistant.module.css';
 
@@ -49,8 +49,12 @@ export default function AdminAssistant() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [interimText, setInterimText] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const autoSendRef = useRef(false);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -63,6 +67,113 @@ export default function AdminAssistant() {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
+
+  // Setup Speech Recognition
+  const initRecognition = useCallback(() => {
+    if (recognitionRef.current) return recognitionRef.current;
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return null;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      let final = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+
+      if (final) {
+        setInput((prev) => {
+          const newVal = (prev + ' ' + final).trim();
+          // If auto-send mode (long press / quick tap), send immediately
+          if (autoSendRef.current) {
+            setTimeout(() => {
+              recognition.stop();
+            }, 300);
+          }
+          return newVal;
+        });
+        setInterimText('');
+      } else {
+        setInterimText(interim);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      if (event.error !== 'aborted') {
+        setIsListening(false);
+        setInterimText('');
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setInterimText('');
+      // Auto-send the accumulated text
+      if (autoSendRef.current) {
+        autoSendRef.current = false;
+        // Small delay so state updates from onresult are processed
+        setTimeout(() => {
+          setInput((current) => {
+            if (current.trim()) {
+              sendMessage(current);
+            }
+            return '';
+          });
+        }, 150);
+      }
+    };
+
+    recognitionRef.current = recognition;
+    return recognition;
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch (_) {}
+      }
+    };
+  }, []);
+
+  function toggleVoice() {
+    if (isListening) {
+      // Stop listening and auto-send
+      autoSendRef.current = true;
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const recognition = initRecognition();
+    if (!recognition) {
+      alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+      return;
+    }
+
+    autoSendRef.current = true;
+    setIsListening(true);
+    setInterimText('');
+
+    try {
+      recognition.start();
+    } catch (e) {
+      // Already started
+      console.warn('Recognition already started', e);
+    }
+  }
 
   async function sendMessage(text) {
     if (!text?.trim() || loading) return;
@@ -230,25 +341,55 @@ export default function AdminAssistant() {
 
           {/* Input */}
           <div className={styles.chatInputArea}>
-            <textarea
-              ref={inputRef}
-              className={styles.chatInput}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Escribe un comando o pregunta..."
-              rows={1}
-              disabled={loading}
-              id="assistant-input"
-            />
-            <button
-              className={styles.chatSendBtn}
-              onClick={() => sendMessage(input)}
-              disabled={!input.trim() || loading}
-              id="assistant-send"
-            >
-              ➤
-            </button>
+            {/* Interim voice preview */}
+            {isListening && interimText && (
+              <div className={styles.interimPreview}>
+                <span className={styles.interimDot} />
+                {interimText}
+              </div>
+            )}
+            <div className={styles.chatInputRow}>
+              <textarea
+                ref={inputRef}
+                className={styles.chatInput}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={isListening ? 'Escuchando...' : 'Escribe un comando o pregunta...'}
+                rows={1}
+                disabled={loading}
+                id="assistant-input"
+              />
+              <button
+                className={`${styles.chatVoiceBtn} ${isListening ? styles.chatVoiceBtnActive : ''}`}
+                onClick={toggleVoice}
+                disabled={loading}
+                id="assistant-voice"
+                aria-label={isListening ? 'Detener grabación' : 'Comando de voz'}
+                title={isListening ? 'Parar y enviar' : 'Hablar'}
+              >
+                {isListening ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" />
+                    <line x1="8" y1="23" x2="16" y2="23" />
+                  </svg>
+                )}
+              </button>
+              <button
+                className={styles.chatSendBtn}
+                onClick={() => sendMessage(input)}
+                disabled={!input.trim() || loading}
+                id="assistant-send"
+              >
+                ➤
+              </button>
+            </div>
           </div>
         </div>
       )}

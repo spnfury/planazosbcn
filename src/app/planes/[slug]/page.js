@@ -10,6 +10,7 @@ import ShareButtons from './ShareButtons';
 import ReviewsSection from '@/components/Reviews/ReviewsSection';
 import InstagramReels from '@/components/InstagramReels/InstagramReels';
 import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
+import { formatDate } from '@/lib/formatDate';
 import styles from './page.module.css';
 
 // ISR: revalidate every 60s so new plans appear without a full rebuild
@@ -164,7 +165,7 @@ export default async function PlanDetailPage({ params }) {
                 <span className={styles.infoIcon}>🗓️</span>
                 <div>
                   <span className={styles.infoLabel}>Fecha</span>
-                  <span className={styles.infoValue}>{plan.date}</span>
+                  <span className={styles.infoValue}>{formatDate(plan.date)}</span>
                 </div>
               </div>
             )}
@@ -173,7 +174,7 @@ export default async function PlanDetailPage({ params }) {
                 <span className={styles.infoIcon}>🗓️</span>
                 <div>
                   <span className={styles.infoLabel}>Validez / Fecha</span>
-                  <span className={styles.infoValue}>{plan.date}</span>
+                  <span className={styles.infoValue}>{formatDate(plan.date)}</span>
                 </div>
               </div>
             )}
@@ -388,7 +389,7 @@ function EventLayout({ plan, relatedPlans }) {
           <div className={styles.eventHeaderContent}>
             {/* Date & Time */}
             <div className={styles.eventDateTime}>
-              <span className={styles.eventDateText}>{plan.date}</span>
+              <span className={styles.eventDateText}>{formatDate(plan.date)}</span>
               {plan.timeStart && (
                 <>
                   <span className={styles.eventTimeSep}>/</span>

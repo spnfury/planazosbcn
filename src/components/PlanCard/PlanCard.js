@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getEtiqueta } from '@/data/planConstants';
+import { formatDate } from '@/lib/formatDate';
 import styles from './PlanCard.module.css';
 
 const CATEGORY_EMOJIS = {
@@ -66,7 +67,7 @@ export default function PlanCard({ plan, featured = false }) {
         <div className={styles.footer}>
           {plan.date && (
             <span className={styles.date}>
-              📅️ {plan.date}
+              📅️ {formatDate(plan.date)}
             </span>
           )}
           <span className={styles.cta}>

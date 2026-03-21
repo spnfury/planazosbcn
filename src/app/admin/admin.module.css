@@ -372,10 +372,60 @@
   text-decoration: none;
 }
 
-.btnPrimary:hover {
+.btnPrimary:hover:not(:disabled) {
   background: var(--color-primary-light);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(232, 93, 38, 0.3);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Back link */
+.backLinkStyle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 150ms;
+}
+
+.backLinkStyle:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Secondary button */
+.btnSecondaryStyle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  transition: all 200ms;
+  white-space: nowrap;
+}
+
+.btnSecondaryStyle:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.btnSecondaryStyle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Toggle switch */

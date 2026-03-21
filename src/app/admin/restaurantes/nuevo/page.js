@@ -45,23 +45,20 @@ export default function NuevoRestaurantePage() {
     try {
       let pdf_url = null;
 
-      // Upload PDF if selected
+      // Upload PDF via server-side API (bypasses storage RLS)
       if (pdfFile) {
-        const fileExt = pdfFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `menus/${fileName}`;
+        const uploadForm = new FormData();
+        uploadForm.append('file', pdfFile);
 
-        const { error: uploadError } = await supabase.storage
-          .from('docs')
-          .upload(filePath, pdfFile);
+        const uploadRes = await fetch('/api/admin/restaurants/upload-pdf', {
+          method: 'POST',
+          body: uploadForm,
+        });
 
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage
-          .from('docs')
-          .getPublicUrl(filePath);
-          
-        pdf_url = publicUrlData.publicUrl;
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Error al subir el PDF');
+        
+        pdf_url = uploadData.url;
       }
 
       const { data, error: insertError } = await supabase

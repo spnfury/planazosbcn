@@ -64,6 +64,7 @@ export default function RestaurantMenusPage() {
     try {
       const formData = new FormData();
       formData.append('file', pdfFile);
+      formData.append('extractTextOnly', 'true');
 
       const res = await fetch('/api/admin/restaurants/upload-pdf', {
         method: 'POST',
@@ -154,7 +155,7 @@ export default function RestaurantMenusPage() {
     <div style={{ padding: '0', maxWidth: '1200px', margin: '0 auto' }}>
       <div className={styles.pageHeader}>
         <div>
-          <Link href="/admin/restaurantes" className={styles.backLink}>
+          <Link href="/admin/restaurantes" className={styles.backLinkStyle}>
             ← Volver
           </Link>
           <h1 className={styles.pageTitle} style={{marginTop: '0.5rem'}}>{restaurant.nombre}</h1>
@@ -171,17 +172,17 @@ export default function RestaurantMenusPage() {
           </h2>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>1. Subir/Elegir Carta (PDF)</label>
-            <div style={{display: 'flex', gap: '1rem'}}>
+            <label className={styles.formLabel}>1. Subir/Elegir Carta (PDF)</label>
+            <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
               <input 
                 type="file" 
                 accept="application/pdf" 
-                className={styles.input} 
+                className={styles.formInput} 
                 onChange={(e) => setPdfFile(e.target.files[0])}
               />
               <button 
                 type="button" 
-                className={styles.btnSecondary}
+                className={styles.btnSecondaryStyle}
                 onClick={handleExtractText}
                 disabled={!pdfFile || isExtracting}
               >
@@ -194,10 +195,10 @@ export default function RestaurantMenusPage() {
           <form onSubmit={handleGenerateMenu}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Tipo / Nombre Menú</label>
+                <label className={styles.formLabel}>Tipo / Nombre Menú</label>
                 <input 
                   type="text" 
-                  className={styles.input} 
+                  className={styles.formInput} 
                   value={menuType}
                   onChange={(e) => setMenuType(e.target.value)}
                   placeholder="Ej. Menú Premium"
@@ -205,10 +206,10 @@ export default function RestaurantMenusPage() {
                 />
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Precio Orientativo (€)</label>
+                <label className={styles.formLabel}>Precio Orientativo (€)</label>
                 <input 
                   type="number" 
-                  className={styles.input} 
+                  className={styles.formInput} 
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="Ej. 35"
@@ -217,9 +218,9 @@ export default function RestaurantMenusPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Instrucciones / Reglas (Lenguaje Natural)</label>
+              <label className={styles.formLabel}>Instrucciones / Reglas (Lenguaje Natural)</label>
               <textarea 
-                className={styles.input} 
+                className={styles.formTextarea} 
                 value={rules}
                 onChange={(e) => setRules(e.target.value)}
                 rows={4}
