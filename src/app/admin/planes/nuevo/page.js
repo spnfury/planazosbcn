@@ -55,6 +55,8 @@ export default function NuevoPlanPage() {
     age_groups: [],
     etiquetas: [],
     collaborator_id: '',
+    menu_terraza: '',
+    suplemento_terraza: '',
   });
 
   const [tags, setTags] = useState([]);
@@ -496,63 +498,81 @@ export default function NuevoPlanPage() {
                 id="form-capacity"
               />
             </div>
-            {form.type === 'evento' && (
-              <>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Venue / Local</label>
-                  <input
-                    type="text"
-                    className={styles.formInput}
-                    value={form.venue}
-                    onChange={(e) => updateForm('venue', e.target.value)}
-                    placeholder="Luz de Gas"
-                    id="form-venue"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Dirección</label>
-                  <input
-                    type="text"
-                    className={styles.formInput}
-                    value={form.address}
-                    onChange={(e) => updateForm('address', e.target.value)}
-                    placeholder="C/ de Muntaner, 246..."
-                    id="form-address"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Hora inicio</label>
-                  <input
-                    type="time"
-                    className={styles.formInput}
-                    value={form.time_start}
-                    onChange={(e) => updateForm('time_start', e.target.value)}
-                    id="form-time-start"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Hora fin</label>
-                  <input
-                    type="time"
-                    className={styles.formInput}
-                    value={form.time_end}
-                    onChange={(e) => updateForm('time_end', e.target.value)}
-                    id="form-time-end"
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Restricción de edad</label>
-                  <input
-                    type="text"
-                    className={styles.formInput}
-                    value={form.age_restriction}
-                    onChange={(e) => updateForm('age_restriction', e.target.value)}
-                    placeholder="+18 años"
-                    id="form-age"
-                  />
-                </div>
-              </>
-            )}
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Venue / Local</label>
+              <input
+                type="text"
+                className={styles.formInput}
+                value={form.venue}
+                onChange={(e) => updateForm('venue', e.target.value)}
+                placeholder="Luz de Gas"
+                id="form-venue"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Dirección</label>
+              <input
+                type="text"
+                className={styles.formInput}
+                value={form.address}
+                onChange={(e) => updateForm('address', e.target.value)}
+                placeholder="C/ de Muntaner, 246..."
+                id="form-address"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Hora inicio</label>
+              <input
+                type="time"
+                className={styles.formInput}
+                value={form.time_start}
+                onChange={(e) => updateForm('time_start', e.target.value)}
+                id="form-time-start"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Hora fin</label>
+              <input
+                type="time"
+                className={styles.formInput}
+                value={form.time_end}
+                onChange={(e) => updateForm('time_end', e.target.value)}
+                id="form-time-end"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Restricción de edad</label>
+              <input
+                type="text"
+                className={styles.formInput}
+                value={form.age_restriction}
+                onChange={(e) => updateForm('age_restriction', e.target.value)}
+                placeholder="+18 años"
+                id="form-age"
+              />
+            </div>
+            <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+              <label className={styles.formLabel}>🌿 Menú en terraza</label>
+              <textarea
+                className={styles.formInput}
+                style={{ minHeight: '60px', resize: 'vertical' }}
+                value={form.menu_terraza}
+                onChange={(e) => updateForm('menu_terraza', e.target.value)}
+                placeholder="Descripción del menú en terraza..."
+                id="form-menu-terraza"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>☀️ Suplemento terraza (€)</label>
+              <input
+                type="text"
+                className={styles.formInput}
+                value={form.suplemento_terraza}
+                onChange={(e) => updateForm('suplemento_terraza', e.target.value)}
+                placeholder="3.50"
+                id="form-suplemento-terraza"
+              />
+            </div>
           </div>
         </div>
 

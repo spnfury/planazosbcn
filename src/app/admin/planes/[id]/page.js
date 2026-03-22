@@ -41,16 +41,20 @@ export default function EditPlanPage({ params }) {
       const { id } = await params;
       setPlanId(id);
 
-      const { data: plan } = await supabase
-        .from('plans')
-        .select('*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*), plan_reels(*)')
-        .eq('id', id)
-        .single();
+      // Use API route to load plan (bypasses RLS)
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
 
-      if (!plan) {
+      const res = await fetch(`/api/admin/plans/${id}`, {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      });
+
+      if (!res.ok) {
         router.push('/admin/planes');
         return;
       }
+
+      const plan = await res.json();
 
       setForm({
         type: plan.type || 'plan',
@@ -79,6 +83,8 @@ export default function EditPlanPage({ params }) {
         age_restriction: plan.age_restriction || '',
         age_groups: plan.age_groups || [],
         etiquetas: plan.etiquetas || [],
+        menu_terraza: plan.menu_terraza || '',
+        suplemento_terraza: plan.suplemento_terraza || '',
       });
 
       setOriginalPlan({ ...plan });
@@ -182,28 +188,22 @@ export default function EditPlanPage({ params }) {
         spots_taken: Number(form.spots_taken) || 0,
       };
 
-      // Update plan
-      const { error: planError } = await supabase
-        .from('plans')
-        .update(payload)
-        .eq('id', planId);
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('No estás autenticado. Inicia sesión de nuevo.');
 
-      if (planError) throw planError;
-
-      // Replace tags
-      await supabase.from('plan_tags').delete().eq('plan_id', planId);
-      if (tags.length > 0) {
-        await supabase.from('plan_tags').insert(
-          tags.map((tag) => ({ plan_id: planId, tag }))
-        );
-      }
-
-      // Replace tickets
-      await supabase.from('plan_tickets').delete().eq('plan_id', planId);
-      if (tickets.length > 0) {
-        await supabase.from('plan_tickets').insert(
-          tickets.map((t, i) => ({
-            plan_id: planId,
+      // Use API route (bypasses RLS with supabaseAdmin)
+      const res = await fetch(`/api/admin/plans/${planId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...payload,
+          tags,
+          tickets: tickets.map((t, i) => ({
             name: t.name,
             price: t.price,
             description: t.description,
@@ -211,40 +211,28 @@ export default function EditPlanPage({ params }) {
             spots_taken: t.spots_taken || 0,
             sold_out: t.sold_out || false,
             sort_order: i,
-          }))
-        );
-      }
-
-      // Replace guest lists
-      await supabase.from('plan_guest_lists').delete().eq('plan_id', planId);
-      if (guestLists.length > 0) {
-        await supabase.from('plan_guest_lists').insert(
-          guestLists.map((g, i) => ({
-            plan_id: planId,
+          })),
+          guestLists: guestLists.map((g, i) => ({
             name: g.name,
             time_range: g.time_range,
             price: g.price,
             description: g.description,
             sold_out: g.sold_out || false,
             sort_order: i,
-          }))
-        );
-      }
-
-      // Replace schedule
-      await supabase.from('plan_schedule').delete().eq('plan_id', planId);
-      if (schedule.length > 0) {
-        await supabase.from('plan_schedule').insert(
-          schedule.map((s, i) => ({
-            plan_id: planId,
+          })),
+          schedule: schedule.map((s, i) => ({
             time: s.time,
             description: s.description,
             sort_order: i,
-          }))
-        );
-      }
+          })),
+        }),
+      });
 
-      // Replace reels
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Error al guardar');
+
+      // Handle reels separately (not in API route)
+      const { data: { session: reelSession } } = await supabase.auth.getSession();
       await supabase.from('plan_reels').delete().eq('plan_id', planId);
       const validReels = reels.filter((url) => url.trim());
       if (validReels.length > 0) {
@@ -261,7 +249,7 @@ export default function EditPlanPage({ params }) {
 
       // Log changes (fire and forget)
       if (originalPlan) {
-        const trackFields = ['title','slug','excerpt','description','image','poster_image','category','zone','date','price','precio_reserva','shipping_cost','venue','address','time_start','time_end','capacity','spots_taken','featured','sponsored','published','age_restriction','type'];
+        const trackFields = ['title','slug','excerpt','description','image','poster_image','category','zone','date','price','precio_reserva','shipping_cost','venue','address','time_start','time_end','capacity','spots_taken','featured','sponsored','published','age_restriction','type','menu_terraza','suplemento_terraza'];
         const changes = {};
         for (const f of trackFields) {
           if (String(originalPlan[f] ?? '') !== String(payload[f] ?? '')) {
@@ -434,30 +422,34 @@ export default function EditPlanPage({ params }) {
               <label className={styles.formLabel}>Plazas ocupadas</label>
               <input type="number" className={styles.formInput} value={form.spots_taken} onChange={(e) => updateForm('spots_taken', e.target.value)} min="0" />
             </div>
-            {form.type === 'evento' && (
-              <>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Venue</label>
-                  <input type="text" className={styles.formInput} value={form.venue} onChange={(e) => updateForm('venue', e.target.value)} />
-                </div>
-                <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                  <label className={styles.formLabel}>Dirección</label>
-                  <input type="text" className={styles.formInput} value={form.address} onChange={(e) => updateForm('address', e.target.value)} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Hora inicio</label>
-                  <input type="time" className={styles.formInput} value={form.time_start} onChange={(e) => updateForm('time_start', e.target.value)} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Hora fin</label>
-                  <input type="time" className={styles.formInput} value={form.time_end} onChange={(e) => updateForm('time_end', e.target.value)} />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Restricción de edad</label>
-                  <input type="text" className={styles.formInput} value={form.age_restriction} onChange={(e) => updateForm('age_restriction', e.target.value)} />
-                </div>
-              </>
-            )}
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Venue / Local</label>
+              <input type="text" className={styles.formInput} value={form.venue} onChange={(e) => updateForm('venue', e.target.value)} placeholder="Nombre del local" />
+            </div>
+            <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+              <label className={styles.formLabel}>Dirección</label>
+              <input type="text" className={styles.formInput} value={form.address} onChange={(e) => updateForm('address', e.target.value)} placeholder="C/ de Muntaner, 246..." />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Hora inicio</label>
+              <input type="time" className={styles.formInput} value={form.time_start} onChange={(e) => updateForm('time_start', e.target.value)} />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Hora fin</label>
+              <input type="time" className={styles.formInput} value={form.time_end} onChange={(e) => updateForm('time_end', e.target.value)} />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Restricción de edad</label>
+              <input type="text" className={styles.formInput} value={form.age_restriction} onChange={(e) => updateForm('age_restriction', e.target.value)} placeholder="+18 años" />
+            </div>
+            <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+              <label className={styles.formLabel}>🌿 Menú en terraza</label>
+              <textarea className={styles.formInput} style={{ minHeight: '60px', resize: 'vertical' }} value={form.menu_terraza} onChange={(e) => updateForm('menu_terraza', e.target.value)} placeholder="Descripción del menú en terraza..." />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>☀️ Suplemento terraza (€)</label>
+              <input type="text" className={styles.formInput} value={form.suplemento_terraza} onChange={(e) => updateForm('suplemento_terraza', e.target.value)} placeholder="3.50" />
+            </div>
           </div>
         </div>
 

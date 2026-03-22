@@ -38,7 +38,7 @@ export async function generateMetadata({ params }) {
   const { data: plan } = await supabase
     .from('plans')
     .select('title, excerpt, image')
-    .eq('slug', slug)
+    .ilike('slug', slug)
     .eq('published', true)
     .single();
     
@@ -62,7 +62,7 @@ export default async function PlanDetailPage({ params }) {
   const { data: rawPlan, error } = await supabase
     .from('plans')
     .select('*')
-    .eq('slug', slug)
+    .ilike('slug', slug)
     .eq('published', true)
     .single();
 
@@ -228,6 +228,30 @@ export default async function PlanDetailPage({ params }) {
               </div>
             )}
           </div>
+
+          {/* Terraza info */}
+          {(plan.menu_terraza || plan.suplemento_terraza) && (
+            <div className={styles.infoCards} style={{ marginTop: '0.5rem' }}>
+              {plan.menu_terraza && (
+                <div className={styles.infoCard}>
+                  <span className={styles.infoIcon}>🌿</span>
+                  <div>
+                    <span className={styles.infoLabel}>Menú en terraza</span>
+                    <span className={styles.infoValue}>{plan.menu_terraza}</span>
+                  </div>
+                </div>
+              )}
+              {plan.suplemento_terraza && (
+                <div className={styles.infoCard}>
+                  <span className={styles.infoIcon}>☀️</span>
+                  <div>
+                    <span className={styles.infoLabel}>Suplemento terraza</span>
+                    <span className={styles.infoValue}>{plan.suplemento_terraza}€</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className={styles.description} id="info">
             <h2 className={styles.descTitle}>Sobre este plan</h2>
