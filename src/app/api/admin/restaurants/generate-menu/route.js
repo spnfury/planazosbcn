@@ -17,42 +17,52 @@ export async function POST(req) {
     const dishesList = dishes.map(d => `- ${d.nombre} (${d.precio ? d.precio + '€' : 'Sin precio'}) [${d.categoria}]`).join('\n');
 
     const prompt = `
-Eres un asistente experto en gastronomía y gestión de restaurantes.
-A continuación tienes una lista estructurada de platos reales extraídos de la base de datos de un restaurante:
+Eres un asistente experto en gastronomía y gestión de restaurantes. TODA tu respuesta debe estar EXCLUSIVAMENTE en ESPAÑOL. NUNCA uses inglés.
+
+A continuación tienes la lista COMPLETA de platos reales extraídos de la carta del restaurante:
 
 <PLATOS_DISPONIBLES>
 ${dishesList}
 </PLATOS_DISPONIBLES>
 
-Necesitamos que diseñes un menú de restaurante basado EXACTAMENTE en la carta anterior.
-Aquí están las reglas y requerimientos para este menú:
+Diseña un menú de restaurante seleccionando platos de la lista anterior.
 - Tipo de menú / Nombre: ${menuType}
 - Precio objetivo sugerido: ${price ? price + '€' : 'No especificado'}
 - Reglas adicionales: ${rules}
 
-El menú debe cumplir con lo siguiente:
-- Platos reales extraídos de la carta.
-- Si las reglas dicen "incluir buen vino", busca y sugiere un buen vino de la carta o indica que se debe incluir.
-- Si dicen "Carne o pescado a escoger", asegúrate de dar opciones en los segundos.
-- Si el precio o reglas exigen un orden (ej. tener un primero si es de 35€, o un segundo si es de 40€), respétalo.
+REGLAS CRÍTICAS QUE DEBES CUMPLIR SIN EXCEPCIÓN:
 
-Devuelve la respuesta EXCLUSIVAMENTE en formato JSON válido. Debe seguir ESTRICTAMENTE esta estructura:
+1. **SOLO PLATOS DE LA CARTA**: Cada plato que incluyas en el menú DEBE existir LITERALMENTE en la lista <PLATOS_DISPONIBLES>. Copia el nombre TAL CUAL aparece arriba. NUNCA inventes platos nuevos.
+
+2. **PROHIBIDO INVENTAR NOMBRES GENÉRICOS**: NUNCA uses nombres genéricos como "Opción de Carnes", "Opción de Pescados", "Plato del día", "A elegir", etc. Si las reglas dicen "carne o pescado a escoger", pon platos CONCRETOS de la carta como opciones (ej: "Txuletón de Burgos madurado 1Kg." y "Tronco merluza a la donostiarra").
+
+3. **CATEGORÍAS ORIGINALES**: Respeta la categoría original de cada plato (indicada entre corchetes). Nunca pongas un plato en una sección que no corresponda a su categoría.
+
+4. **TODO EN ESPAÑOL**: Absolutamente todo el contenido debe estar en español. Nunca uses palabras en inglés como "Suggestion", "wine", "option", etc.
+
+5. **VINO**: Si se pide incluir vino, busca un vino CONCRETO de la lista de platos/bebidas. Si no hay vinos en la carta, indica "Vino de la casa" o "Sugerencia del sumiller". Siempre en español.
+
+6. **NOMBRES DE SECCIÓN (course)**: Usa los nombres de categoría tal como aparecen en la carta original entre corchetes. No inventes secciones nuevas.
+
+Devuelve la respuesta EXCLUSIVAMENTE en formato JSON válido con esta estructura:
 {
   "nombre": "${menuType}",
   "precio": ${price || 0},
   "incluye_vino": true,
   "contenido_estructurado": [
     {
-      "course": "Primero (o Pica Pica, Segundo, Postre, Bebida)",
-      "options": ["Nombre del plato limpio", "Otro plato"] // IMPORTANTE: Solo texto plano simple con el nombre limpio. NUNCA incluyas el precio individual del plato aquí.
+      "course": "Nombre de la sección de la carta (usar la categoría original entre corchetes)",
+      "options": ["Nombre EXACTO del plato 1", "Nombre EXACTO del plato 2"]
     }
   ]
 }
+
+RECUERDA: Solo platos que existan en la lista. Todo en español. Sin nombres genéricos inventados.
 `;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.1-8b-instant', // using a fast standard model, can be upgraded to 70b
+      model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
     });
 

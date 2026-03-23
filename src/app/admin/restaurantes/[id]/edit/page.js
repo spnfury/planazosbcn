@@ -126,6 +126,10 @@ export default function EditarRestaurantePage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    
+    // Yield to the main thread so the browser can paint the button click state (fixes INP issue)
+    await new Promise(resolve => setTimeout(resolve, 0));
+
     setLoading(true);
     setError(null);
 

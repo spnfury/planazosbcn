@@ -30,6 +30,13 @@ export default function RestaurantMenusPage() {
   const [rules, setRules] = useState('Incluir buen vino. Carne o pescado a escoger.');
   const [generatedMenu, setGeneratedMenu] = useState(null);
 
+  // Dish Manager State
+  const [showDishManager, setShowDishManager] = useState(false);
+  const [editingDishId, setEditingDishId] = useState(null);
+  const [editingDishData, setEditingDishData] = useState({});
+  const [newDish, setNewDish] = useState({ nombre: '', categoria: '', precio: '' });
+  const [savingDish, setSavingDish] = useState(false);
+
   useEffect(() => {
     loadData();
   }, [restaurantId]);
@@ -91,6 +98,83 @@ export default function RestaurantMenusPage() {
     } finally {
       setIsExtractingDishes(false);
     }
+  }
+
+  // === DISH MANAGER CRUD ===
+
+  function startEditDish(dish) {
+    setEditingDishId(dish.id);
+    setEditingDishData({ nombre: dish.nombre, categoria: dish.categoria, precio: dish.precio || '', descripcion: dish.descripcion || '' });
+  }
+
+  function cancelEditDish() {
+    setEditingDishId(null);
+    setEditingDishData({});
+  }
+
+  async function saveEditDish(dishId) {
+    setSavingDish(true);
+    try {
+      const { error } = await supabase
+        .from('restaurant_dishes')
+        .update({
+          nombre: editingDishData.nombre,
+          categoria: editingDishData.categoria,
+          precio: editingDishData.precio ? parseFloat(editingDishData.precio) : null,
+          descripcion: editingDishData.descripcion || null,
+        })
+        .eq('id', dishId);
+      if (error) throw error;
+      setEditingDishId(null);
+      setEditingDishData({});
+      loadData();
+    } catch (err) {
+      alert('Error guardando plato: ' + err.message);
+    } finally {
+      setSavingDish(false);
+    }
+  }
+
+  async function deleteDish(dishId) {
+    if (!confirm('¿Eliminar este plato?')) return;
+    const { error } = await supabase.from('restaurant_dishes').delete().eq('id', dishId);
+    if (error) alert('Error: ' + error.message);
+    else loadData();
+  }
+
+  async function addNewDish() {
+    if (!newDish.nombre.trim()) return alert('Escribe un nombre para el plato.');
+    if (!newDish.categoria.trim()) return alert('Escribe una categoría.');
+    setSavingDish(true);
+    try {
+      const { error } = await supabase.from('restaurant_dishes').insert([{
+        restaurant_id: restaurantId,
+        nombre: newDish.nombre.trim(),
+        categoria: newDish.categoria.trim(),
+        precio: newDish.precio ? parseFloat(newDish.precio) : null,
+        alergenos: [],
+        es_apto_menu: true,
+        is_active: true,
+      }]);
+      if (error) throw error;
+      setNewDish({ nombre: '', categoria: '', precio: '' });
+      loadData();
+    } catch (err) {
+      alert('Error añadiendo plato: ' + err.message);
+    } finally {
+      setSavingDish(false);
+    }
+  }
+
+  // Group dishes by category
+  function getDishesByCategory() {
+    const groups = {};
+    dishes.forEach(d => {
+      const cat = d.categoria || 'Sin clasificar';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(d);
+    });
+    return groups;
   }
 
   // Extract text from the restaurant's existing PDF URL
@@ -356,21 +440,120 @@ export default function RestaurantMenusPage() {
               <div style={{ marginTop: '1rem', padding: '1rem', background: '#222', borderRadius: '8px', border: '1px solid #333' }}>
                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem'}}>
                   <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#bcfe2f' }}>✓ {dishes.length} Platos/Bebidas en Base de Datos</h3>
-                  {pdfText && (
-                    <button onClick={() => handleExtractDishes(pdfText)} className={styles.btnSecondary} style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem'}}>
-                      Re-extraer Platos
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    {pdfText && (
+                      <button onClick={() => handleExtractDishes(pdfText)} className={styles.actionBtn} style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem'}}>
+                        🔄 Re-extraer
+                      </button>
+                    )}
+                    <button onClick={() => setShowDishManager(!showDishManager)} className={styles.actionBtn} style={{padding: '0.2rem 0.5rem', fontSize: '0.7rem', color: showDishManager ? '#bcfe2f' : undefined}}>
+                      {showDishManager ? '✕ Cerrar Gestor' : '✏️ Gestionar Platos'}
                     </button>
-                  )}
+                  </div>
                 </div>
-                <div style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.8rem', color: '#aaa', paddingRight: '0.5rem' }}>
-                  {dishes.slice(0, 10).map((d, i) => (
-                    <div key={i} style={{ borderBottom: '1px dashed #444', padding: '0.25rem 0', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>{d.nombre}</span>
-                      <span>{d.precio ? d.precio + '€' : ''}</span>
+
+                {!showDishManager ? (
+                  /* Compact preview */
+                  <div style={{ maxHeight: '150px', overflowY: 'auto', fontSize: '0.8rem', color: '#aaa', paddingRight: '0.5rem' }}>
+                    {dishes.slice(0, 10).map((d, i) => (
+                      <div key={d.id || i} style={{ borderBottom: '1px dashed #444', padding: '0.25rem 0', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{d.nombre}</span>
+                        <span style={{ color: '#666', fontSize: '0.75rem' }}>{d.categoria}{d.precio ? ` · ${d.precio}€` : ''}</span>
+                      </div>
+                    ))}
+                    {dishes.length > 10 && <div style={{textAlign: 'center', padding: '0.5rem', fontStyle: 'italic'}}>... y {dishes.length - 10} más. Pulsa "Gestionar Platos" para ver todos.</div>}
+                  </div>
+                ) : (
+                  /* Full Dish Manager */
+                  <div style={{ marginTop: '0.5rem' }}>
+                    {Object.entries(getDishesByCategory()).map(([cat, catDishes]) => (
+                      <div key={cat} style={{ marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', padding: '0.3rem 0.5rem', background: 'rgba(188,254,47,0.08)', borderRadius: '4px' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#bcfe2f' }}>{cat}</span>
+                          <span style={{ fontSize: '0.7rem', color: '#666' }}>({catDishes.length})</span>
+                        </div>
+
+                        {catDishes.map(dish => (
+                          <div key={dish.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.35rem 0.5rem', borderBottom: '1px solid #333', fontSize: '0.85rem' }}>
+                            {editingDishId === dish.id ? (
+                              /* Editing mode */
+                              <>
+                                <input
+                                  type="text"
+                                  value={editingDishData.nombre}
+                                  onChange={e => setEditingDishData({...editingDishData, nombre: e.target.value})}
+                                  className={styles.formInput}
+                                  style={{ flex: 2, padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                                  placeholder="Nombre del plato"
+                                />
+                                <input
+                                  type="text"
+                                  value={editingDishData.categoria}
+                                  onChange={e => setEditingDishData({...editingDishData, categoria: e.target.value})}
+                                  className={styles.formInput}
+                                  style={{ flex: 1, padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                                  placeholder="Categoría"
+                                />
+                                <input
+                                  type="number"
+                                  value={editingDishData.precio}
+                                  onChange={e => setEditingDishData({...editingDishData, precio: e.target.value})}
+                                  className={styles.formInput}
+                                  style={{ width: '60px', padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                                  placeholder="€"
+                                />
+                                <button onClick={() => saveEditDish(dish.id)} disabled={savingDish} style={{ background: 'none', border: 'none', color: '#22C55E', cursor: 'pointer', fontSize: '1rem' }} title="Guardar">✓</button>
+                                <button onClick={cancelEditDish} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', fontSize: '1rem' }} title="Cancelar">✕</button>
+                              </>
+                            ) : (
+                              /* View mode */
+                              <>
+                                <span style={{ flex: 1, color: '#ddd' }}>{dish.nombre}</span>
+                                <span style={{ color: '#888', fontSize: '0.75rem', minWidth: '50px', textAlign: 'right' }}>{dish.precio ? dish.precio + '€' : ''}</span>
+                                <button onClick={() => startEditDish(dish)} style={{ background: 'none', border: 'none', color: '#A78BFA', cursor: 'pointer', fontSize: '0.85rem', padding: '0.1rem 0.3rem' }} title="Editar">✏️</button>
+                                <button onClick={() => deleteDish(dish.id)} style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', fontSize: '0.85rem', padding: '0.1rem 0.3rem' }} title="Eliminar">🗑️</button>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+
+                    {/* Add new dish */}
+                    <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#2a2a2a', borderRadius: '6px', border: '1px dashed #444' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#aaa', marginBottom: '0.5rem' }}>➕ Añadir plato manualmente</div>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          value={newDish.nombre}
+                          onChange={e => setNewDish({...newDish, nombre: e.target.value})}
+                          className={styles.formInput}
+                          style={{ flex: 2, padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                          placeholder="Nombre del plato"
+                        />
+                        <input
+                          type="text"
+                          value={newDish.categoria}
+                          onChange={e => setNewDish({...newDish, categoria: e.target.value})}
+                          className={styles.formInput}
+                          style={{ flex: 1, padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                          placeholder="Categoría (ej: Pica-Pica)"
+                        />
+                        <input
+                          type="number"
+                          value={newDish.precio}
+                          onChange={e => setNewDish({...newDish, precio: e.target.value})}
+                          className={styles.formInput}
+                          style={{ width: '60px', padding: '0.3rem 0.5rem', fontSize: '0.8rem' }}
+                          placeholder="€"
+                        />
+                        <button onClick={addNewDish} disabled={savingDish} className={styles.btnPrimary} style={{ padding: '0.3rem 0.75rem', fontSize: '0.8rem' }}>
+                          Añadir
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                  {dishes.length > 10 && <div style={{textAlign: 'center', padding: '0.5rem', fontStyle: 'italic'}}>... y {dishes.length - 10} más.</div>}
-                </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

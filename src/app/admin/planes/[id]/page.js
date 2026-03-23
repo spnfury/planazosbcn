@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -35,6 +35,10 @@ export default function EditPlanPage({ params }) {
   const [originalPlan, setOriginalPlan] = useState(null);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   useEffect(() => {
     async function load() {
@@ -112,8 +116,9 @@ export default function EditPlanPage({ params }) {
     }
   }
 
-  async function handleAiGenerate() {
-    if (!aiPrompt.trim()) return;
+  async function handleAiGenerate(promptOverride) {
+    const text = promptOverride || aiPrompt;
+    if (!text.trim()) return;
     setAiLoading(true);
     setError('');
     
@@ -130,7 +135,7 @@ export default function EditPlanPage({ params }) {
       const res = await fetch('/api/admin/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: aiPrompt, currentPlanData })
+        body: JSON.stringify({ prompt: text, currentPlanData })
       });
       
       const data = await res.json();
@@ -165,6 +170,53 @@ export default function EditPlanPage({ params }) {
     } finally {
       setAiLoading(false);
     }
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setIsTranscribing(true);
+        try {
+          const fd = new FormData();
+          fd.append('audio', audioBlob, 'recording.webm');
+          const res = await fetch('/api/admin/transcribe', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Error de transcripción');
+          if (data.text) {
+            setAiPrompt(data.text);
+            setIsTranscribing(false);
+            handleAiGenerate(data.text);
+            return;
+          }
+        } catch (err) {
+          setError(err.message);
+        }
+        setIsTranscribing(false);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      setError('No se pudo acceder al micrófono. Asegúrate de dar permiso.');
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
   }
 
   async function handleSubmit(e) {
@@ -318,17 +370,49 @@ export default function EditPlanPage({ params }) {
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="Ej: Baja el precio a la mitad y añade la etiqueta romántico..."
               id="edit-ai-prompt"
+              disabled={isRecording || isTranscribing}
             />
-            <button
-              type="button"
-              onClick={handleAiGenerate}
-              disabled={aiLoading}
-              className={styles.btnPrimary}
-              style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(to right, #8B5CF6, #EC4899)', border: 'none', height: 'fit-content' }}
-            >
-              {aiLoading ? 'Aplicando...' : 'Aplicar Cambios'}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => handleAiGenerate()}
+                disabled={aiLoading || isRecording || isTranscribing}
+                className={styles.btnPrimary}
+                style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(to right, #8B5CF6, #EC4899)', border: 'none', height: 'fit-content' }}
+              >
+                {aiLoading ? 'Aplicando...' : isTranscribing ? 'Transcribiendo...' : 'Aplicar Cambios'}
+              </button>
+              <button
+                type="button"
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={aiLoading || isTranscribing}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: isRecording ? '2px solid #EF4444' : '2px solid rgba(139,92,246,0.3)',
+                  background: isRecording ? 'rgba(239,68,68,0.15)' : 'rgba(139,92,246,0.08)',
+                  color: isRecording ? '#FCA5A5' : '#A78BFA',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s',
+                  animation: isRecording ? 'pulse 1.5s infinite' : 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {isRecording ? '⏹ Parar' : '🎤 Voz'}
+              </button>
+            </div>
           </div>
+          {isRecording && (
+            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#FCA5A5', fontSize: '0.85rem' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', animation: 'pulse 1s infinite' }} />
+              Grabando audio... Pulsa "Parar" cuando termines.
+            </div>
+          )}
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
         </div>
 
         {/* Basic Info */}

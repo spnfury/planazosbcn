@@ -28,7 +28,7 @@ export default async function Home() {
   }
 
   const allPlans = (plansData || []).map(mapPlanData);
-  const featuredPlans = allPlans.filter(p => p.featured);
+
 
   // Build dynamic counts per category from actual Supabase data
   const categoryCounts = {};
@@ -81,24 +81,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* FEATURED PLANS */}
-      <section className="section section--compact" id="planes">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-header__label">Destacados</span>
-            <h2 className="section-header__title">Planes que no te puedes perder</h2>
-            <p className="section-header__subtitle">
-              Los favoritos de nuestra comunidad esta semana
-            </p>
-          </div>
 
-          <div className={`${styles.planGrid} stagger-children`}>
-            {featuredPlans.map((plan) => (
-              <PlanCard key={plan.id} plan={plan} featured />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ALL PLANS */}
       <section className="section section--compact">
