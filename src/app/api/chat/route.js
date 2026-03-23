@@ -18,13 +18,23 @@ export async function GET(request) {
       return NextResponse.json({ error: 'planId requerido' }, { status: 400 });
     }
 
-    // Check that user has a paid reservation for this plan
+    // Retroactively link reservations for this user's email if any are orphaned
+    if (user.email) {
+      await supabaseAdmin
+        .from('reservations')
+        .update({ user_id: user.id })
+        .is('user_id', null)
+        .eq('plan_id', planId)
+        .eq('customer_email', user.email);
+    }
+
+    // Check that user has a reservation for this plan
     const { data: reservation } = await supabaseAdmin
       .from('reservations')
       .select('id')
       .eq('plan_id', planId)
-      .eq('user_id', user.id)
       .eq('status', 'paid')
+      .or(`user_id.eq.${user.id},customer_email.eq.${user.email}`)
       .limit(1)
       .single();
 
@@ -88,13 +98,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Mensaje demasiado largo (máx 1000 caracteres)' }, { status: 400 });
     }
 
+    // Retroactively link reservations just in case
+    if (user.email) {
+      await supabaseAdmin
+        .from('reservations')
+        .update({ user_id: user.id })
+        .is('user_id', null)
+        .eq('plan_id', planId)
+        .eq('customer_email', user.email);
+    }
+
     // Check reservation
     const { data: reservation } = await supabaseAdmin
       .from('reservations')
       .select('id')
       .eq('plan_id', planId)
-      .eq('user_id', user.id)
       .eq('status', 'paid')
+      .or(`user_id.eq.${user.id},customer_email.eq.${user.email}`)
       .limit(1)
       .single();
 

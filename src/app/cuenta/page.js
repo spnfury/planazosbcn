@@ -35,14 +35,19 @@ export default function CuentaPage() {
       setProfile(profileData);
       setShowProfile(profileData?.show_profile !== false);
 
-      // Fetch reservations with plan info
-      const { data: reservationsData } = await supabase
-        .from('reservations')
-        .select('*, plans(title, slug, image, date, venue)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      setReservations(reservationsData || []);
+      // Fetch reservations via the new API endpoint to ensure auto-linking
+      try {
+        const res = await fetch('/api/profile/reservations');
+        if (res.ok) {
+          const { reservations } = await res.json();
+          setReservations(reservations || []);
+        } else {
+          setReservations([]);
+        }
+      } catch (err) {
+        console.error('Error fetching reservations:', err);
+        setReservations([]);
+      }
       setLoading(false);
     }
 
