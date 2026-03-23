@@ -579,7 +579,7 @@ export default function EditPlanPage({ params }) {
         )}
 
         {/* Tickets */}
-        {form.type === 'evento' && (
+        {(form.type === 'evento' || tickets.length > 0) && (
           <div className={styles.formSection}>
             <h3 className={styles.formSectionTitle}>🎟️ Entradas</h3>
             {tickets.map((ticket, i) => (
