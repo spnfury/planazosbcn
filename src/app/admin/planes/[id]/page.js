@@ -465,18 +465,30 @@ export default function EditPlanPage({ params }) {
           </div>
         </div>
 
-        {/* Details */}
+        {/* Fecha y Horario */}
         <div className={styles.formSection}>
-          <h3 className={styles.formSectionTitle}>📍 Detalles</h3>
+          <h3 className={styles.formSectionTitle}>📅 Fecha y Horario</h3>
           <div className={styles.formGrid}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Zona</label>
-              <input type="text" className={styles.formInput} value={form.zone} onChange={(e) => updateForm('zone', e.target.value)} />
-            </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Fecha</label>
               <input type="date" className={styles.formInput} value={form.date} onChange={(e) => updateForm('date', e.target.value)} />
             </div>
+            <div className={styles.formGroup} style={{ visibility: 'hidden' }}><span /></div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Hora inicio</label>
+              <input type="time" className={styles.formInput} value={form.time_start} onChange={(e) => updateForm('time_start', e.target.value)} />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Hora fin</label>
+              <input type="time" className={styles.formInput} value={form.time_end} onChange={(e) => updateForm('time_end', e.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        {/* Precios */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>💰 Precios</h3>
+          <div className={styles.formGrid}>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Precio</label>
               <input type="text" className={styles.formInput} value={form.price} onChange={(e) => updateForm('price', e.target.value)} />
@@ -488,23 +500,23 @@ export default function EditPlanPage({ params }) {
             {form.type === 'sorpresa' && (
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Coste de Envío (€)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  className={styles.formInput}
-                  value={form.shipping_cost}
-                  onChange={(e) => updateForm('shipping_cost', e.target.value)}
-                  min="0"
-                />
+                <input type="number" step="0.01" className={styles.formInput} value={form.shipping_cost} onChange={(e) => updateForm('shipping_cost', e.target.value)} min="0" />
               </div>
             )}
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Aforo</label>
-              <input type="number" className={styles.formInput} value={form.capacity} onChange={(e) => updateForm('capacity', e.target.value)} min="0" />
+              <label className={styles.formLabel}>☀️ Suplemento terraza (€)</label>
+              <input type="text" className={styles.formInput} value={form.suplemento_terraza} onChange={(e) => updateForm('suplemento_terraza', e.target.value)} placeholder="3.50" />
             </div>
+          </div>
+        </div>
+
+        {/* Ubicación */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>📍 Ubicación</h3>
+          <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Plazas ocupadas</label>
-              <input type="number" className={styles.formInput} value={form.spots_taken} onChange={(e) => updateForm('spots_taken', e.target.value)} min="0" />
+              <label className={styles.formLabel}>Zona</label>
+              <input type="text" className={styles.formInput} value={form.zone} onChange={(e) => updateForm('zone', e.target.value)} />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Venue / Local</label>
@@ -514,25 +526,35 @@ export default function EditPlanPage({ params }) {
               <label className={styles.formLabel}>Dirección</label>
               <input type="text" className={styles.formInput} value={form.address} onChange={(e) => updateForm('address', e.target.value)} placeholder="C/ de Muntaner, 246..." />
             </div>
+          </div>
+        </div>
+
+        {/* Capacidad y Acceso */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>👥 Capacidad y Acceso</h3>
+          <div className={styles.formGrid}>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Hora inicio</label>
-              <input type="time" className={styles.formInput} value={form.time_start} onChange={(e) => updateForm('time_start', e.target.value)} />
+              <label className={styles.formLabel}>Aforo</label>
+              <input type="number" className={styles.formInput} value={form.capacity} onChange={(e) => updateForm('capacity', e.target.value)} min="0" />
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Hora fin</label>
-              <input type="time" className={styles.formInput} value={form.time_end} onChange={(e) => updateForm('time_end', e.target.value)} />
+              <label className={styles.formLabel}>Plazas ocupadas</label>
+              <input type="number" className={styles.formInput} value={form.spots_taken} onChange={(e) => updateForm('spots_taken', e.target.value)} min="0" />
             </div>
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Restricción de edad</label>
               <input type="text" className={styles.formInput} value={form.age_restriction} onChange={(e) => updateForm('age_restriction', e.target.value)} placeholder="+18 años" />
             </div>
+          </div>
+        </div>
+
+        {/* Terraza */}
+        <div className={styles.formSection}>
+          <h3 className={styles.formSectionTitle}>🌿 Terraza</h3>
+          <div className={styles.formGrid}>
             <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-              <label className={styles.formLabel}>🌿 Menú en terraza</label>
+              <label className={styles.formLabel}>Menú en terraza</label>
               <textarea className={styles.formInput} style={{ minHeight: '60px', resize: 'vertical' }} value={form.menu_terraza} onChange={(e) => updateForm('menu_terraza', e.target.value)} placeholder="Descripción del menú en terraza..." />
-            </div>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>☀️ Suplemento terraza (€)</label>
-              <input type="text" className={styles.formInput} value={form.suplemento_terraza} onChange={(e) => updateForm('suplemento_terraza', e.target.value)} placeholder="3.50" />
             </div>
           </div>
         </div>

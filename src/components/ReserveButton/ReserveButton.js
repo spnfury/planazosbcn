@@ -79,7 +79,7 @@ export default function ReserveButton({
 
   const unitPrice = getUnitPrice();
   const fullPrice = parseFloat(plan.price) || 0;
-  const isPreReserve = plan.precio_reserva && plan.precio_reserva > 0 && !selectedTicketId && plan.price !== 'Gratis';
+  const isPreReserve = Boolean(plan.precio_reserva && plan.precio_reserva > 0 && !selectedTicketId && plan.price !== 'Gratis');
   const shippingCost = plan?.type === 'sorpresa' ? parseFloat(plan.shipping_cost || 0) : 0;
   const totalPrice = (unitPrice * quantity) + shippingCost;
   const isFree = totalPrice === 0;
@@ -231,7 +231,7 @@ export default function ReserveButton({
                             isActive ? styles.ticketOptionActive : '',
                             isSoldOut ? styles.ticketOptionDisabled : '',
                           ].join(' ')}
-                          onClick={() => !isSoldOut && setSelectedTicketId(ticket.id)}
+                          onClick={() => !isSoldOut && setSelectedTicketId(isActive ? null : ticket.id)}
                           disabled={isSoldOut}
                         >
                           <div>
@@ -428,7 +428,7 @@ export default function ReserveButton({
               <button
                 className={styles.submitBtn}
                 onClick={handleSubmit}
-                disabled={loading || (tickets.length > 0 && !selectedTicketId)}
+                disabled={loading || (plan.price !== 'Gratis' && tickets.length > 0 && !selectedTicketId)}
               >
                 {loading ? (
                   <>
