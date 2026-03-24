@@ -21,16 +21,37 @@ export async function POST(request) {
       );
     }
 
-    // Find reservation by QR code
-    const { data: reservation, error: resError } = await supabaseAdmin
+    // Try finding reservation by QR code first, then by localizador
+    let reservation = null;
+    let resError = null;
+
+    // Try qr_code (UUID format)
+    const { data: byQr, error: qrErr } = await supabaseAdmin
       .from('reservations')
       .select('*, plans(title, date, venue)')
       .eq('qr_code', qr_code)
       .single();
 
+    if (byQr) {
+      reservation = byQr;
+    } else {
+      // Try localizador (short alphanumeric code)
+      const { data: byLoc, error: locErr } = await supabaseAdmin
+        .from('reservations')
+        .select('*, plans(title, date, venue)')
+        .eq('localizador', qr_code.toUpperCase())
+        .single();
+
+      if (byLoc) {
+        reservation = byLoc;
+      } else {
+        resError = qrErr || locErr;
+      }
+    }
+
     if (resError || !reservation) {
       return NextResponse.json(
-        { error: 'Código QR no válido' },
+        { error: 'Código QR o localizador no válido' },
         { status: 404 }
       );
     }

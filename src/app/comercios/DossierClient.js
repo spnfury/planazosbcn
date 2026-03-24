@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { Download, TrendingUp, Users, Video, MapPin, CheckCircle, Smartphone } from 'lucide-react';
+import { Download, TrendingUp, Users, Video, MapPin, CheckCircle, Smartphone, Camera, BarChart3, Percent, Star, Zap, Globe, MessageCircle } from 'lucide-react';
 import styles from './Dossier.module.css';
 
 export default function DossierClient() {
@@ -154,12 +154,13 @@ export default function DossierClient() {
               </div>
             </div>
 
-            {/* Pricing / Tiers */}
+            {/* Pricing / Tiers - 3 columnas */}
             <div className={styles.dPricing}>
               <h2 className={styles.dSectionTitle}>Nuestros Planes de Colaboración</h2>
               <p className={styles.dSectionDesc}>Elige el modelo que mejor se adapte a tu etapa de crecimiento.</p>
               
-              <div className={styles.dPricingGrid}>
+              <div className={styles.dPricingGrid3}>
+                {/* Plan Básico */}
                 <div className={styles.dPricingCard}>
                   <div className={styles.dPriceHeader}>
                     <h3>Plan Básico</h3>
@@ -169,26 +170,125 @@ export default function DossierClient() {
                     <li><CheckCircle size={16} /> Ficha de negocio en el directorio</li>
                     <li><CheckCircle size={16} /> 1 Foto principal</li>
                     <li><CheckCircle size={16} /> Enlace a tu web o menú</li>
+                    <li><CheckCircle size={16} /> Mapa de ubicación</li>
                     <li className={styles.dPriceDisabled}>Sin Reels de Instagram</li>
                     <li className={styles.dPriceDisabled}>Sin prioridad en búsquedas</li>
                   </ul>
                   <div className={styles.dPriceAction}>Empieza Gratis</div>
                 </div>
 
+                {/* Plan Visibilidad */}
+                <div className={styles.dPricingCard}>
+                  <div className={styles.dPriceHeader}>
+                    <div className={styles.dBadgeNew}>Popular</div>
+                    <h3>Plan Visibilidad</h3>
+                    <div className={styles.dPriceValue}>Contactar</div>
+                  </div>
+                  <ul className={styles.dPriceList}>
+                    <li><CheckCircle size={16} color="#dd6b20" /> Todo lo del Plan Básico</li>
+                    <li><CheckCircle size={16} color="#dd6b20" /> Posición destacada en búsquedas</li>
+                    <li><CheckCircle size={16} color="#dd6b20" /> Hasta 6 Reels integrados</li>
+                    <li><CheckCircle size={16} color="#dd6b20" /> Botón de CTA personalizado</li>
+                    <li><CheckCircle size={16} color="#dd6b20" /> Badge &quot;Recomendado&quot;</li>
+                    <li className={styles.dPriceDisabled}>Sin promoción en RRSS</li>
+                  </ul>
+                  <div className={styles.dPriceActionMid}>Hablemos</div>
+                </div>
+
+                {/* Plan Premium */}
                 <div className={`${styles.dPricingCard} ${styles.dPricingPremium}`}>
-                  <div className={styles.dRibbon}>Recomendado</div>
+                  <div className={styles.dRibbon}>Máximo ROI</div>
                   <div className={styles.dPriceHeaderPremium}>
                     <h3>Plan Premium</h3>
                     <div className={styles.dPriceValue}>Contactar</div>
                   </div>
                   <ul className={styles.dPriceList}>
-                    <li><CheckCircle size={16} color="#e53e3e" /> Ficha Destacada (Top posiciones)</li>
-                    <li><CheckCircle size={16} color="#e53e3e" /> Integración de hasta 12 Reels</li>
-                    <li><CheckCircle size={16} color="#e53e3e" /> Botones de CTA personalizados</li>
-                    <li><CheckCircle size={16} color="#e53e3e" /> Apoyo en nuestras Redes Sociales</li>
-                    <li><CheckCircle size={16} color="#e53e3e" /> Categoría exlusiva (Ej: Tardeo)</li>
+                    <li><CheckCircle size={16} color="#e53e3e" /> Todo lo del Plan Visibilidad</li>
+                    <li><CheckCircle size={16} color="#e53e3e" /> Hasta 12 Reels integrados</li>
+                    <li><CheckCircle size={16} color="#e53e3e" /> Promoción en RRSS de PlanazosBCN</li>
+                    <li><CheckCircle size={16} color="#e53e3e" /> Categoría exclusiva (Tardeo, Brunch…)</li>
+                    <li><CheckCircle size={16} color="#e53e3e" /> Reportes mensuales de visitas</li>
+                    <li><CheckCircle size={16} color="#e53e3e" /> Reservas integradas</li>
                   </ul>
                   <div className={styles.dPriceActionPremium}>Hablemos</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modelo de Comisión 30% */}
+            <div className={styles.dCommission}>
+              <div className={styles.dCommissionHeader}>
+                <div className={styles.dCommissionIcon}><Percent size={32} color="#e53e3e" /></div>
+                <div>
+                  <h2 className={styles.dSectionTitle}>Modelo de Comisión</h2>
+                  <p className={styles.dCommissionSubtitle}>Solo pagas cuando vendes. Cero riesgo para tu negocio.</p>
+                </div>
+              </div>
+              <div className={styles.dCommissionGrid}>
+                <div className={styles.dCommissionCard}>
+                  <div className={styles.dCommissionPercent}>30%</div>
+                  <p>Comisión sobre reservas y ventas gestionadas a través de PlanazosBCN</p>
+                </div>
+                <div className={styles.dCommissionCard}>
+                  <div className={styles.dCommissionPercent}>70%</div>
+                  <p>El restaurante se queda con el 70% de cada venta generada</p>
+                </div>
+                <div className={styles.dCommissionCard}>
+                  <div className={styles.dCommissionDetail}>
+                    <BarChart3 size={24} color="#e53e3e" />
+                    <span>Reporte mensual</span>
+                  </div>
+                  <p>Cobro mensual con detalle de todas las transacciones</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Servicios Adicionales */}
+            <div className={styles.dServices}>
+              <h2 className={styles.dSectionTitle}>Servicios Adicionales</h2>
+              <p className={styles.dSectionDesc}>Potencia tu presencia con nuestros servicios profesionales à la carte.</p>
+
+              <div className={styles.dServicesGrid}>
+                <div className={styles.dServiceCard}>
+                  <div className={styles.dServiceIcon}><Camera size={24} color="#e53e3e" /></div>
+                  <h4>Creación de Reel</h4>
+                  <div className={styles.dServicePrice}>100€<span>/reel</span></div>
+                  <p>Producción profesional de reel para Instagram y TikTok</p>
+                </div>
+
+                <div className={styles.dServiceCard}>
+                  <div className={styles.dServiceIcon}><Video size={24} color="#e53e3e" /></div>
+                  <h4>Pack 3 Reels</h4>
+                  <div className={styles.dServicePrice}>250€</div>
+                  <p>Ahorra con un paquete trimestral de contenido</p>
+                </div>
+
+                <div className={styles.dServiceCard}>
+                  <div className={styles.dServiceIcon}><Zap size={24} color="#e53e3e" /></div>
+                  <h4>Pack 6 Reels</h4>
+                  <div className={styles.dServicePrice}>450€</div>
+                  <p>Pack semestral con máximo ahorro</p>
+                </div>
+
+                <div className={styles.dServiceCard}>
+                  <div className={styles.dServiceIcon}><Camera size={24} color="#e53e3e" /></div>
+                  <h4>Sesión Fotográfica</h4>
+                  <div className={styles.dServicePrice}>150€</div>
+                  <p>10-15 fotos profesionales del local y platos</p>
+                </div>
+
+                <div className={styles.dServiceCard}>
+                  <div className={styles.dServiceIcon}><Globe size={24} color="#e53e3e" /></div>
+                  <h4>Menú Digital con QR</h4>
+                  <div className={styles.dServicePrice}>50€<span>/mes</span></div>
+                  <p>Carta digitalizada con código QR y actualizaciones</p>
+                </div>
+
+                <div className={styles.dServiceCard}>
+                  <div className={styles.dServiceIcon}><MessageCircle size={24} color="#e53e3e" /></div>
+                  <h4>Pack RRSS Mensual</h4>
+                  <div className={styles.dServicePrice}>250€<span>/mes</span></div>
+                  <p>4 posts + 4 stories al mes en nuestras redes</p>
                 </div>
               </div>
             </div>

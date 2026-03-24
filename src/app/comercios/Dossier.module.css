@@ -222,16 +222,17 @@
   margin-bottom: 4rem;
 }
 
-.dPricingGrid {
+/* 3 column pricing grid */
+.dPricingGrid3 {
   display: flex;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .dPricingCard {
   flex: 1;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 2rem;
+  padding: 1.5rem;
   position: relative;
   background: #ffffff;
 }
@@ -247,19 +248,31 @@
   right: 20px;
   background: #e53e3e;
   color: white;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: bold;
   padding: 4px 12px;
   border-radius: 20px;
   text-transform: uppercase;
 }
 
+.dBadgeNew {
+  display: inline-block;
+  background: #dd6b20;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
 .dPriceHeader, .dPriceHeaderPremium {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .dPriceHeader h3, .dPriceHeaderPremium h3 {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   margin: 0 0 0.5rem 0;
   color: #4a5568;
 }
@@ -269,7 +282,7 @@
 }
 
 .dPriceValue {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #1a202c;
   display: flex;
@@ -278,7 +291,7 @@
 }
 
 .dPriceValue span {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 500;
   color: #718096;
 }
@@ -286,17 +299,17 @@
 .dPriceList {
   list-style: none;
   padding: 0;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1.5rem 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .dPriceList li {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #4a5568;
 }
 
@@ -307,22 +320,165 @@
 
 .dPriceAction {
   text-align: center;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: 8px;
   background: #edf2f7;
   color: #4a5568;
   font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.dPriceActionMid {
+  text-align: center;
+  padding: 0.6rem;
+  border-radius: 8px;
+  background: #dd6b20;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .dPriceActionPremium {
   text-align: center;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: 8px;
   background: #e53e3e;
   color: white;
   font-weight: 600;
+  font-size: 0.9rem;
 }
 
+/* Commission Section */
+.dCommission {
+  margin-bottom: 4rem;
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  border-radius: 16px;
+  padding: 2.5rem;
+  border: 1px solid #feb2b2;
+}
+
+.dCommissionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dCommissionIcon {
+  background: white;
+  padding: 1rem;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.15);
+}
+
+.dCommissionSubtitle {
+  color: #4a5568;
+  font-size: 1rem;
+  margin: 0.25rem 0 0 0;
+}
+
+.dCommission .dSectionTitle {
+  margin-bottom: 0;
+}
+
+.dCommissionGrid {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.dCommissionCard {
+  flex: 1;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dCommissionPercent {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #e53e3e;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.dCommissionCard p {
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.dCommissionDetail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dCommissionDetail span {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1a202c;
+}
+
+/* Services Grid */
+.dServices {
+  margin-bottom: 4rem;
+}
+
+.dServicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.dServiceCard {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: box-shadow 0.2s;
+}
+
+.dServiceIcon {
+  background: #fff5f5;
+  display: inline-flex;
+  padding: 0.75rem;
+  border-radius: 50%;
+  margin-bottom: 0.75rem;
+}
+
+.dServiceCard h4 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+}
+
+.dServicePrice {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #e53e3e;
+  margin-bottom: 0.5rem;
+}
+
+.dServicePrice span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #718096;
+}
+
+.dServiceCard p {
+  font-size: 0.8rem;
+  color: #718096;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Footer CTA */
 .dFooterCta {
   background: #e53e3e;
   color: white;

@@ -306,23 +306,12 @@ export default function NuevoPlanPage() {
             description: s.description,
             sort_order: i,
           })),
+          reels: reels.filter((url) => url.trim()),
         }),
       });
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Error al guardar');
-
-      // Handle reels separately (not in API route yet)
-      const validReels = reels.filter((url) => url.trim());
-      if (validReels.length > 0 && result.id) {
-        await supabase.from('plan_reels').insert(
-          validReels.map((url, i) => ({
-            plan_id: result.id,
-            url: url.trim(),
-            sort_order: i,
-          }))
-        );
-      }
 
       router.push('/admin/planes');
 

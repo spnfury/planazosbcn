@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/admin/planes', icon: '📋', label: 'Planes' },
   { href: '/admin/restaurantes', icon: '🍽️', label: 'Restaurantes' },
   { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
+  { href: '/admin/scanner', icon: '📱', label: 'Scanner QR' },
   { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
   { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
   { href: '/admin/logs', icon: '📝', label: 'Logs' },

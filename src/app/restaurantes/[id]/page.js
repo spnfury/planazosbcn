@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import InstagramReels from '@/components/InstagramReels/InstagramReels';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -175,25 +176,7 @@ export default async function DetalleRestaurante({ params }) {
       {/* Instagram Reels Section */}
       {restaurant.reels && restaurant.reels.length > 0 && (
         <div style={{ marginTop: '5rem', background: '#fff', borderRadius: '32px', border: '1px solid #eaeaea', overflow: 'hidden', padding: '3rem' }}>
-          <h2 style={{ fontSize: '2rem', color: '#111', fontWeight: '900', marginBottom: '2rem', textAlign: 'center' }}>
-            📱 Momentos <span style={{color: '#bcfe2f', textShadow: '0px 1px 2px rgba(0,0,0,0.1)'}}>Virales</span>
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
-            {restaurant.reels.map((reel, index) => {
-              // Extract Reel ID for simple embedded thumbnail if desired, 
-              // or just link to it with a stylized card
-              return (
-                <a href={reel} target="_blank" rel="noreferrer" key={index} style={{ textDecoration: 'none', display: 'block' }}>
-                  <div className="reel-card">
-                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎥</div>
-                     <h4 style={{ color: '#111', fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>Ver Reel en Instagram</h4>
-                     <p style={{ color: '#888', fontSize: '0.9rem', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{reel}</p>
-                     <div style={{ marginTop: '1.5rem', display: 'inline-block', color: '#bcfe2f', fontWeight: 'bold', background: '#111', padding: '0.5rem 1.5rem', borderRadius: '20px', fontSize: '0.9rem' }}>Ver Video →</div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
+          <InstagramReels reels={restaurant.reels.map((url) => ({ url }))} />
         </div>
       )}
     </div>

@@ -1,18 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './InstagramReels.module.css';
 
 export default function InstagramReels({ reels = [] }) {
-  const [loadedIndexes, setLoadedIndexes] = useState({});
+  const [mounted, setMounted] = useState(false);
+
+  // Only render iframes on the client to avoid SSR/hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!reels || reels.length === 0) return null;
 
-  // Convert Instagram reel URL to embed URL
-  function getEmbedUrl(url) {
-    // Ensure trailing slash and append embed
-    const cleanUrl = url.replace(/\/$/, '');
-    return `${cleanUrl}/embed`;
+  // Handle both {url, sort_order} objects and plain strings
+  function getReelUrl(reel) {
+    const url = typeof reel === 'string' ? reel : reel.url;
+    return url?.replace(/\/$/, '') || '';
   }
 
   return (
@@ -22,28 +26,35 @@ export default function InstagramReels({ reels = [] }) {
         Descubre este plan en Instagram
       </h2>
       <div className={styles.carousel}>
-        {reels.map((reel, i) => (
-          <div key={i} className={styles.reelCard}>
-            <div className={styles.reelFrame}>
-              {!loadedIndexes[i] && (
-                <div className={styles.reelPlaceholder}>
-                  <div className={styles.reelSpinner} />
-                  <span>Cargando reel...</span>
-                </div>
-              )}
-              <iframe
-                src={getEmbedUrl(reel.url)}
-                className={styles.reelIframe}
-                frameBorder="0"
-                scrolling="no"
-                allowTransparency="true"
-                allow="encrypted-media"
-                title={`Instagram Reel ${i + 1}`}
-                onLoad={() => setLoadedIndexes(prev => ({ ...prev, [i]: true }))}
-              />
+        {reels.map((reel, i) => {
+          const url = getReelUrl(reel);
+          if (!url) return null;
+          const embedUrl = `${url}/embed/`;
+
+          return (
+            <div key={i} className={styles.reelCard}>
+              <div className={styles.reelFrame}>
+                {mounted ? (
+                  <iframe
+                    src={embedUrl}
+                    className={styles.reelIframe}
+                    frameBorder="0"
+                    scrolling="no"
+                    allowTransparency="true"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    title={`Instagram Reel ${i + 1}`}
+                  />
+                ) : (
+                  <div className={styles.reelPlaceholder}>
+                    <div className={styles.reelSpinner} />
+                    <span>Cargando reel...</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

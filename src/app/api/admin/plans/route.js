@@ -83,7 +83,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { tags, tickets, guestLists, schedule, ...planData } = body;
+    const { tags, tickets, guestLists, schedule, reels, ...planData } = body;
 
     // Create plan
     const { data: plan, error: planError } = await supabaseAdmin
@@ -118,6 +118,12 @@ export async function POST(request) {
     if (schedule?.length) {
       await supabaseAdmin.from('plan_schedule').insert(
         schedule.map((s, i) => ({ ...s, plan_id: plan.id, sort_order: i }))
+      );
+    }
+
+    if (reels?.length) {
+      await supabaseAdmin.from('plan_reels').insert(
+        reels.map((url, i) => ({ plan_id: plan.id, url: url.trim(), sort_order: i }))
       );
     }
 

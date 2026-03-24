@@ -37,6 +37,35 @@ export default function RestaurantMenusPage() {
   const [newDish, setNewDish] = useState({ nombre: '', categoria: '', precio: '' });
   const [savingDish, setSavingDish] = useState(false);
 
+  // Helper: calculate real cost from the generated menu by matching dishes
+  function calculateMenuRealCost(menu) {
+    if (!menu?.contenido_estructurado) return { total: 0, totalCon10: 0, detalle: [] };
+    let total = 0;
+    const detalle = [];
+    const priceLookup = {};
+    dishes.forEach(d => {
+      if (d.nombre && d.precio) {
+        priceLookup[d.nombre.toLowerCase().trim()] = d.precio;
+      }
+    });
+    for (const course of menu.contenido_estructurado) {
+      const options = course.options || course.platos || [];
+      for (const opt of options) {
+        const nombre = typeof opt === 'string' ? opt : (opt.plato || opt.nombre || opt.name || '');
+        if (!nombre.trim()) continue;
+        const key = nombre.toLowerCase().trim();
+        let precioReal = priceLookup[key] || null;
+        if (!precioReal) {
+          const fuzzy = Object.entries(priceLookup).find(([k]) => k.includes(key) || key.includes(k));
+          if (fuzzy) precioReal = fuzzy[1];
+        }
+        if (precioReal) total += precioReal;
+        detalle.push({ nombre, precioReal });
+      }
+    }
+    return { total: Math.round(total * 100) / 100, totalCon10: Math.round(total * 0.9 * 100) / 100, detalle };
+  }
+
   useEffect(() => {
     loadData();
   }, [restaurantId]);
@@ -183,9 +212,31 @@ export default function RestaurantMenusPage() {
     
     setIsExtracting(true);
     try {
+      // Check if stored file is an image (by URL extension)
+      const fileUrl = restaurant.pdf_url;
+      const urlExt = fileUrl.split('.').pop()?.split('?')[0]?.toLowerCase();
+      const isImage = ['png', 'jpg', 'jpeg', 'webp', 'heic'].includes(urlExt);
+
+      if (isImage) {
+        // Use OCR directly for images
+        const ocrRes = await fetch('/api/admin/restaurants/ocr-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pdfUrl: fileUrl })
+        });
+        const ocrData = await ocrRes.json();
+        if (ocrData.success && ocrData.text?.trim().length > 10) {
+          setPdfText(ocrData.text);
+          await handleExtractDishes(ocrData.text);
+        } else {
+          alert('No se pudo extraer texto de la imagen. ' + (ocrData.error || ''));
+        }
+        return;
+      }
+
       // Fetch the PDF from the stored URL
-      const pdfResponse = await fetch(restaurant.pdf_url);
-      if (!pdfResponse.ok) throw new Error('No se pudo descargar el PDF');
+      const pdfResponse = await fetch(fileUrl);
+      if (!pdfResponse.ok) throw new Error('No se pudo descargar el archivo');
       const pdfBlob = await pdfResponse.blob();
       
       const formData = new FormData();
@@ -226,7 +277,7 @@ export default function RestaurantMenusPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Error extrayendo texto del PDF: ' + err.message);
+      alert('Error extrayendo texto: ' + err.message);
     } finally {
       setIsExtracting(false);
     }
@@ -235,7 +286,7 @@ export default function RestaurantMenusPage() {
   // Extract text from a manually uploaded PDF file
   async function handleExtractFromFile(e) {
     if (e) e.preventDefault();
-    if (!pdfFile) return alert('Selecciona un PDF primero');
+    if (!pdfFile) return alert('Selecciona un archivo primero');
     
     setIsExtracting(true);
     try {
@@ -262,7 +313,7 @@ export default function RestaurantMenusPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Error extrayendo texto del PDF');
+      alert('Error extrayendo texto del archivo');
     } finally {
       setIsExtracting(false);
     }
@@ -363,16 +414,16 @@ export default function RestaurantMenusPage() {
 
           {/* Step 1: PDF Source */}
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>1. Carta del Restaurante (PDF)</label>
+            <label className={styles.formLabel}>1. Carta del Restaurante (PDF / Imagen)</label>
             
             {restaurant.pdf_url ? (
               <div>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', padding: '0.75rem', background: '#222', borderRadius: '8px', border: '1px solid #333' }}>
                   <span style={{ fontSize: '1.5rem' }}>📄</span>
                   <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#ddd' }}>Carta ya subida</p>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#ddd' }}>Archivo ya subido</p>
                     <a href={restaurant.pdf_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#bcfe2f', textDecoration: 'underline' }}>
-                      Ver PDF ↗
+                      Ver archivo ↗
                     </a>
                   </div>
                   <button 
@@ -390,14 +441,14 @@ export default function RestaurantMenusPage() {
                   onClick={() => setShowManualUpload(!showManualUpload)}
                   style={{ background: 'none', border: 'none', color: '#666', fontSize: '0.75rem', cursor: 'pointer', marginTop: '0.5rem', textDecoration: 'underline' }}
                 >
-                  {showManualUpload ? 'Ocultar' : '¿Usar otro PDF diferente?'}
+                  {showManualUpload ? 'Ocultar' : '¿Usar otro archivo diferente?'}
                 </button>
 
                 {showManualUpload && (
                   <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                     <input 
                       type="file" 
-                      accept="application/pdf" 
+                      accept="application/pdf,image/png,image/jpeg,image/webp,image/heic" 
                       className={styles.formInput} 
                       onChange={(e) => setPdfFile(e.target.files[0])}
                       style={{ flex: 1 }}
@@ -415,11 +466,11 @@ export default function RestaurantMenusPage() {
               </div>
             ) : (
               <div>
-                <p style={{ color: '#ff9944', fontSize: '0.8rem', marginBottom: '0.5rem' }}>⚠️ No hay carta PDF subida para este restaurante. Sube una aquí:</p>
+                <p style={{ color: '#ff9944', fontSize: '0.8rem', marginBottom: '0.5rem' }}>⚠️ No hay carta subida para este restaurante. Sube una aquí (PDF o imagen):</p>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                   <input 
                     type="file" 
-                    accept="application/pdf" 
+                    accept="application/pdf,image/png,image/jpeg,image/webp,image/heic" 
                     className={styles.formInput} 
                     onChange={(e) => setPdfFile(e.target.files[0])}
                     style={{ flex: 1 }}
@@ -630,43 +681,50 @@ export default function RestaurantMenusPage() {
                 </label>
               </div>
 
-              {/* Price discrepancy warning */}
-              {generatedMenu.precio_real_platos > 0 && (
-                <div style={{ 
-                  padding: '0.75rem', 
-                  borderRadius: '8px', 
-                  marginBottom: '1rem',
-                  background: Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5 
-                    ? 'rgba(255, 68, 68, 0.15)' 
-                    : 'rgba(0, 200, 100, 0.1)',
-                  border: Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5
-                    ? '1px solid rgba(255, 68, 68, 0.3)'
-                    : '1px solid rgba(0, 200, 100, 0.2)',
-                }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5 ? '#ff6666' : '#66cc88' }}>
-                    {Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5 
-                      ? '⚠️ Discrepancia de precio detectada'
-                      : '✅ Precios coherentes'}
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#ccc', display: 'flex', gap: '1.5rem' }}>
-                    <span>Precio menú: <strong>{generatedMenu.precio}€</strong></span>
-                    <span>Coste real platos: <strong>{generatedMenu.precio_real_platos}€</strong></span>
-                  </div>
-                  {generatedMenu.detalle_platos && generatedMenu.detalle_platos.length > 0 && (
-                    <details style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#999' }}>
-                      <summary style={{ cursor: 'pointer' }}>Ver precios reales de cada plato</summary>
-                      <div style={{ marginTop: '0.25rem' }}>
-                        {generatedMenu.detalle_platos.map((p, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #333', padding: '0.15rem 0' }}>
+              {/* Live Cost Panel — recalculates on dish add/remove */}
+              {(() => {
+                const cost = calculateMenuRealCost(generatedMenu);
+                const precioVenta = Number(generatedMenu.precio) || 0;
+                const margen = precioVenta > 0 ? Math.round((1 - cost.totalCon10 / precioVenta) * 100) : 0;
+                return cost.detalle.length > 0 ? (
+                  <div style={{ padding: '1rem', borderRadius: '10px', marginBottom: '1rem', background: 'linear-gradient(135deg, rgba(188,254,47,0.08), rgba(0,0,0,0.3))', border: '1px solid rgba(188,254,47,0.25)' }}>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '0.75rem', color: '#bcfe2f' }}>💰 Análisis de Coste del Menú</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div style={{ padding: '0.6rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.2rem' }}>Precio de venta menú</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#bcfe2f' }}>{precioVenta}€</div>
+                      </div>
+                      <div style={{ padding: '0.6rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.2rem' }}>Coste real individual</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#ff9944' }}>{cost.total}€</div>
+                      </div>
+                      <div style={{ padding: '0.6rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.2rem' }}>Coste individual -10%</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#66ccff' }}>{cost.totalCon10}€</div>
+                      </div>
+                      <div style={{ padding: '0.6rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '0.2rem' }}>Tu margen</div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: margen >= 0 ? '#22C55E' : '#EF4444' }}>{margen}%</div>
+                      </div>
+                    </div>
+                    <details style={{ fontSize: '0.75rem', color: '#999' }}>
+                      <summary style={{ cursor: 'pointer', color: '#aaa' }}>Ver desglose por plato</summary>
+                      <div style={{ marginTop: '0.4rem' }}>
+                        {cost.detalle.map((p, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #333', padding: '0.2rem 0' }}>
                             <span>{p.nombre}</span>
-                            <span>{p.precioReal ? p.precioReal + '€' : '❓ No encontrado'}</span>
+                            <span>{p.precioReal ? p.precioReal + '€' : '❓ Sin precio'}</span>
                           </div>
                         ))}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', fontWeight: 'bold', borderTop: '1px solid #555', marginTop: '0.3rem', color: '#ddd' }}>
+                          <span>TOTAL</span>
+                          <span>{cost.total}€</span>
+                        </div>
                       </div>
                     </details>
-                  )}
-                </div>
-              )}              <div style={{ marginTop: '1rem', borderTop: '1px solid #444', paddingTop: '1rem' }}>
+                  </div>
+                ) : null;
+              })()}              <div style={{ marginTop: '1rem', borderTop: '1px solid #444', paddingTop: '1rem' }}>
                 {generatedMenu.contenido_estructurado?.map((course, idx) => {
                    const courseTitle = course.course || course.nombre || 'Sección';
                    const options = course.options || course.platos || [];
@@ -687,24 +745,37 @@ export default function RestaurantMenusPage() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         {options.map((opt, i) => {
                            const val = typeof opt === 'string' ? opt : opt.plato || opt.nombre || opt.name || (typeof opt === 'object' ? Object.values(opt)[0] : JSON.stringify(opt));
+                           // Find matching dish for price display
+                           const matchedDish = dishes.find(d => d.nombre.toLowerCase().trim() === val.toLowerCase().trim())
+                             || dishes.find(d => d.nombre.toLowerCase().includes(val.toLowerCase()) || val.toLowerCase().includes(d.nombre.toLowerCase()));
                            return (
                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                <span style={{color: '#666'}}>•</span>
-                               <input 
-                                 type="text"
+                               <select
                                  className={styles.formInput}
-                                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.9rem', flex: 1 }}
+                                 style={{ padding: '0.4rem 0.6rem', fontSize: '0.9rem', flex: 1, cursor: 'pointer' }}
                                  value={val}
                                  onChange={e => {
                                    const newContent = [...generatedMenu.contenido_estructurado];
                                    const optionsKey = newContent[idx].options ? 'options' : 'platos';
-                                   
-                                   // Keep it as a simple string to avoid restoring the object mess
                                    newContent[idx][optionsKey][i] = e.target.value;
-                                   
                                    setGeneratedMenu({...generatedMenu, contenido_estructurado: newContent});
                                  }}
-                               />
+                               >
+                                 <option value="">— Seleccionar plato —</option>
+                                 {Object.entries(getDishesByCategory()).map(([cat, catDishes]) => (
+                                   <optgroup key={cat} label={cat}>
+                                     {catDishes.map(d => (
+                                       <option key={d.id} value={d.nombre}>
+                                         {d.nombre}{d.precio ? ` (${d.precio}€)` : ''}
+                                       </option>
+                                     ))}
+                                   </optgroup>
+                                 ))}
+                               </select>
+                               {matchedDish?.precio && (
+                                 <span style={{ fontSize: '0.75rem', color: '#ff9944', minWidth: '45px', textAlign: 'right' }}>{matchedDish.precio}€</span>
+                               )}
                                <button 
                                  type="button" 
                                  onClick={() => {
@@ -726,7 +797,7 @@ export default function RestaurantMenusPage() {
                               const newContent = [...generatedMenu.contenido_estructurado];
                               const optionsKey = newContent[idx].options ? 'options' : 'platos';
                               if(!newContent[idx][optionsKey]) newContent[idx][optionsKey] = [];
-                              newContent[idx][optionsKey].push('Nuevo patato');
+                              newContent[idx][optionsKey].push('');
                               setGeneratedMenu({...generatedMenu, contenido_estructurado: newContent});
                            }} 
                            style={{ background: '#333', border: '1px dashed #555', color: '#aaa', padding: '0.25rem', borderRadius: '4px', cursor: 'pointer', marginTop: '0.5rem', fontSize: '0.85rem' }}

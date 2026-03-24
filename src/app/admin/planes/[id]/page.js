@@ -278,25 +278,12 @@ export default function EditPlanPage({ params }) {
             description: s.description,
             sort_order: i,
           })),
+          reels: reels.filter((url) => url.trim()),
         }),
       });
 
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Error al guardar');
-
-      // Handle reels separately (not in API route)
-      const { data: { session: reelSession } } = await supabase.auth.getSession();
-      await supabase.from('plan_reels').delete().eq('plan_id', planId);
-      const validReels = reels.filter((url) => url.trim());
-      if (validReels.length > 0) {
-        await supabase.from('plan_reels').insert(
-          validReels.map((url, i) => ({
-            plan_id: planId,
-            url: url.trim(),
-            sort_order: i,
-          }))
-        );
-      }
 
       router.push('/admin/planes');
 
