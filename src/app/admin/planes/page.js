@@ -88,6 +88,7 @@ export default function AdminPlanesPage() {
               <th>Categoría</th>
               <th>Precio</th>
               <th>Aforo</th>
+              <th>Alojamiento</th>
               <th>Publicado</th>
               <th>Acciones</th>
             </tr>
@@ -140,6 +141,13 @@ export default function AdminPlanesPage() {
                         {plan.spots_taken}/{plan.capacity} ({pct}%)
                       </span>
                     </div>
+                  </td>
+                  <td data-label="Alojamiento">
+                    {plan.alojamiento_hotel ? (
+                      <span style={{ color: '#bcfe2f' }}>🏨 Sí</span>
+                    ) : (
+                      <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>
+                    )}
                   </td>
                   <td data-label="Publicado">
                     <button

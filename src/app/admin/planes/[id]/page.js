@@ -89,6 +89,7 @@ export default function EditPlanPage({ params }) {
         etiquetas: plan.etiquetas || [],
         menu_terraza: plan.menu_terraza || '',
         suplemento_terraza: plan.suplemento_terraza || '',
+        alojamiento_hotel: plan.alojamiento_hotel || '',
       });
 
       setOriginalPlan({ ...plan });
@@ -301,7 +302,7 @@ export default function EditPlanPage({ params }) {
 
       // Log changes (fire and forget)
       if (originalPlan) {
-        const trackFields = ['title','slug','excerpt','description','image','poster_image','category','zone','date','price','precio_reserva','shipping_cost','venue','address','time_start','time_end','capacity','spots_taken','featured','sponsored','published','age_restriction','type','menu_terraza','suplemento_terraza'];
+        const trackFields = ['title','slug','excerpt','description','image','poster_image','category','zone','date','price','precio_reserva','shipping_cost','venue','address','time_start','time_end','capacity','spots_taken','featured','sponsored','published','age_restriction','type','menu_terraza','suplemento_terraza','alojamiento_hotel'];
         const changes = {};
         for (const f of trackFields) {
           if (String(originalPlan[f] ?? '') !== String(payload[f] ?? '')) {
@@ -555,6 +556,14 @@ export default function EditPlanPage({ params }) {
             <div className={`${styles.formGroup} ${styles.formGridFull}`}>
               <label className={styles.formLabel}>Menú en terraza</label>
               <textarea className={styles.formInput} style={{ minHeight: '60px', resize: 'vertical' }} value={form.menu_terraza} onChange={(e) => updateForm('menu_terraza', e.target.value)} placeholder="Descripción del menú en terraza..." />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>☀️ Suplemento terraza (€)</label>
+              <input type="text" className={styles.formInput} value={form.suplemento_terraza} onChange={(e) => updateForm('suplemento_terraza', e.target.value)} placeholder="3.50" />
+            </div>
+            <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+              <label className={styles.formLabel}>🏨 Alojamiento de Hotel</label>
+              <textarea className={styles.formInput} style={{ minHeight: '60px', resize: 'vertical' }} value={form.alojamiento_hotel} onChange={(e) => updateForm('alojamiento_hotel', e.target.value)} placeholder="Nombre del hotel, tipo de habitación, régimen..." />
             </div>
           </div>
         </div>

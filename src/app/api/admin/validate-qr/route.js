@@ -3,6 +3,14 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 
 export async function POST(request) {
   try {
+    // Verify service role key is configured
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY === 'dummy') {
+      console.error('SUPABASE_SERVICE_ROLE_KEY not configured — validation will fail');
+      return NextResponse.json(
+        { error: 'Configuración del servidor incompleta (service role key)' },
+        { status: 500 }
+      );
+    }
     const body = await request.json();
     const { qr_code } = body;
 
@@ -47,14 +55,17 @@ export async function POST(request) {
     }
 
     // Validate the ticket
-    const { error: updateError } = await supabaseAdmin
+    const { data: updatedRes, error: updateError } = await supabaseAdmin
       .from('reservations')
       .update({ validated_at: new Date().toISOString() })
-      .eq('id', reservation.id);
+      .eq('id', reservation.id)
+      .select()
+      .single();
 
     if (updateError) {
+      console.error('QR validation update error:', updateError, 'Reservation ID:', reservation.id);
       return NextResponse.json(
-        { error: 'Error al validar la entrada' },
+        { error: 'Error al validar la entrada: ' + updateError.message },
         { status: 500 }
       );
     }

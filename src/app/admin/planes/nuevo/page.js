@@ -57,6 +57,7 @@ export default function NuevoPlanPage() {
     collaborator_id: '',
     menu_terraza: '',
     suplemento_terraza: '',
+    alojamiento_hotel: '',
   });
 
   const [tags, setTags] = useState([]);
@@ -83,7 +84,7 @@ export default function NuevoPlanPage() {
           const planFields = ['type', 'title', 'slug', 'excerpt', 'description', 'category',
             'zone', 'date', 'price', 'precio_reserva', 'capacity', 'venue', 'address',
             'time_start', 'time_end', 'featured', 'sponsored', 'published', 'age_restriction',
-            'shipping_cost'];
+            'shipping_cost', 'alojamiento_hotel'];
           for (const field of planFields) {
             if (data[field] !== undefined) {
               updated[field] = data[field];
@@ -268,50 +269,65 @@ export default function NuevoPlanPage() {
         delete payload.collaborator_id;
       }
 
-      // Insert plan
-      const { data: plan, error: planError } = await supabase
-        .from('plans')
-        .insert(payload)
-        .select()
-        .single();
+      // Get auth token for admin API
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error('No estás autenticado. Inicia sesión de nuevo.');
 
-      if (planError) throw planError;
+      // Use admin API route (bypasses RLS with supabaseAdmin)
+      const res = await fetch('/api/admin/plans', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...payload,
+          tags,
+          tickets: tickets.map((t, i) => ({
+            name: t.name,
+            price: t.price,
+            description: t.description,
+            capacity: t.capacity || 0,
+            spots_taken: t.spots_taken || 0,
+            sold_out: t.sold_out || false,
+            sort_order: i,
+          })),
+          guestLists: guestLists.map((g, i) => ({
+            name: g.name,
+            time_range: g.time_range,
+            price: g.price,
+            description: g.description,
+            sold_out: g.sold_out || false,
+            sort_order: i,
+          })),
+          schedule: schedule.map((s, i) => ({
+            time: s.time,
+            description: s.description,
+            sort_order: i,
+          })),
+        }),
+      });
 
-      // Insert related data
-      if (tags.length > 0) {
-        await supabase.from('plan_tags').insert(
-          tags.map((tag) => ({ plan_id: plan.id, tag }))
-        );
-      }
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Error al guardar');
 
-      if (tickets.length > 0) {
-        await supabase.from('plan_tickets').insert(
-          tickets.map((t, i) => ({ ...t, plan_id: plan.id, sort_order: i }))
-        );
-      }
-
-      if (guestLists.length > 0) {
-        await supabase.from('plan_guest_lists').insert(
-          guestLists.map((g, i) => ({ ...g, plan_id: plan.id, sort_order: i }))
-        );
-      }
-
-      if (schedule.length > 0) {
-        await supabase.from('plan_schedule').insert(
-          schedule.map((s, i) => ({ ...s, plan_id: plan.id, sort_order: i }))
-        );
-      }
-
-      if (reels.length > 0) {
+      // Handle reels separately (not in API route yet)
+      const validReels = reels.filter((url) => url.trim());
+      if (validReels.length > 0 && result.id) {
         await supabase.from('plan_reels').insert(
-          reels.map((url, i) => ({ plan_id: plan.id, url, sort_order: i }))
+          validReels.map((url, i) => ({
+            plan_id: result.id,
+            url: url.trim(),
+            sort_order: i,
+          }))
         );
       }
 
       router.push('/admin/planes');
 
       // Log plan creation (fire and forget)
-      fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'plan.created', details: { planId: plan.id, title: form.title, category: form.category, type: form.type } }) }).catch(() => {});
+      fetch('/api/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'plan.created', details: { planId: result.id, title: form.title, category: form.category, type: form.type } }) }).catch(() => {});
     } catch (err) {
       setError(err.message || 'Error al guardar');
       setSaving(false);
@@ -684,6 +700,28 @@ export default function NuevoPlanPage() {
                 onChange={(e) => updateForm('menu_terraza', e.target.value)}
                 placeholder="Descripción del menú en terraza..."
                 id="form-menu-terraza"
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>☀️ Suplemento terraza (€)</label>
+              <input
+                type="text"
+                className={styles.formInput}
+                value={form.suplemento_terraza}
+                onChange={(e) => updateForm('suplemento_terraza', e.target.value)}
+                placeholder="3.50"
+                id="form-suplemento-terraza"
+              />
+            </div>
+            <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+              <label className={styles.formLabel}>🏨 Alojamiento de Hotel</label>
+              <textarea
+                className={styles.formInput}
+                style={{ minHeight: '60px', resize: 'vertical' }}
+                value={form.alojamiento_hotel}
+                onChange={(e) => updateForm('alojamiento_hotel', e.target.value)}
+                placeholder="Nombre del hotel, tipo de habitación, régimen..."
+                id="form-alojamiento-hotel"
               />
             </div>
           </div>

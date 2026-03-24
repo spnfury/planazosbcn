@@ -295,7 +295,9 @@ export default function RestaurantMenusPage() {
           ...data.menu, 
           nombre: data.menu.nombre || menuType, 
           precio: data.menu.precio || price,
-          prompt_usado: data.prompt_usado 
+          prompt_usado: data.prompt_usado,
+          precio_real_platos: data.precio_real_platos,
+          detalle_platos: data.detalle_platos,
         });
       } else {
         alert('Error: ' + data.error);
@@ -628,7 +630,43 @@ export default function RestaurantMenusPage() {
                 </label>
               </div>
 
-              <div style={{ marginTop: '1rem', borderTop: '1px solid #444', paddingTop: '1rem' }}>
+              {/* Price discrepancy warning */}
+              {generatedMenu.precio_real_platos > 0 && (
+                <div style={{ 
+                  padding: '0.75rem', 
+                  borderRadius: '8px', 
+                  marginBottom: '1rem',
+                  background: Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5 
+                    ? 'rgba(255, 68, 68, 0.15)' 
+                    : 'rgba(0, 200, 100, 0.1)',
+                  border: Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5
+                    ? '1px solid rgba(255, 68, 68, 0.3)'
+                    : '1px solid rgba(0, 200, 100, 0.2)',
+                }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5 ? '#ff6666' : '#66cc88' }}>
+                    {Math.abs(generatedMenu.precio_real_platos - Number(generatedMenu.precio)) > 5 
+                      ? '⚠️ Discrepancia de precio detectada'
+                      : '✅ Precios coherentes'}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#ccc', display: 'flex', gap: '1.5rem' }}>
+                    <span>Precio menú: <strong>{generatedMenu.precio}€</strong></span>
+                    <span>Coste real platos: <strong>{generatedMenu.precio_real_platos}€</strong></span>
+                  </div>
+                  {generatedMenu.detalle_platos && generatedMenu.detalle_platos.length > 0 && (
+                    <details style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#999' }}>
+                      <summary style={{ cursor: 'pointer' }}>Ver precios reales de cada plato</summary>
+                      <div style={{ marginTop: '0.25rem' }}>
+                        {generatedMenu.detalle_platos.map((p, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #333', padding: '0.15rem 0' }}>
+                            <span>{p.nombre}</span>
+                            <span>{p.precioReal ? p.precioReal + '€' : '❓ No encontrado'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              )}              <div style={{ marginTop: '1rem', borderTop: '1px solid #444', paddingTop: '1rem' }}>
                 {generatedMenu.contenido_estructurado?.map((course, idx) => {
                    const courseTitle = course.course || course.nombre || 'Sección';
                    const options = course.options || course.platos || [];

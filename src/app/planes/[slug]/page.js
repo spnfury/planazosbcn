@@ -253,6 +253,19 @@ export default async function PlanDetailPage({ params }) {
             </div>
           )}
 
+          {/* Hotel accommodation */}
+          {plan.alojamiento_hotel && (
+            <div className={styles.infoCards} style={{ marginTop: '0.5rem' }}>
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>🏨</span>
+                <div>
+                  <span className={styles.infoLabel}>Alojamiento de Hotel</span>
+                  <span className={styles.infoValue}>{plan.alojamiento_hotel}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className={styles.description} id="info">
             <h2 className={styles.descTitle}>Sobre este plan</h2>
             <p>{plan.description}</p>
@@ -567,6 +580,16 @@ function EventLayout({ plan, relatedPlans }) {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Hotel accommodation */}
+              {plan.alojamiento_hotel && (
+                <div className={styles.eventBadgeGroup}>
+                  <h4 className={styles.eventBadgeGroupTitle}>🏨 Alojamiento</h4>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                    {plan.alojamiento_hotel}
+                  </div>
                 </div>
               )}
             </div>
