@@ -69,7 +69,7 @@ No añadas ningún texto antes ni después del JSON.
         { role: 'system', content: systemPrompt },
         { role: 'user', content: text }
       ],
-      model: 'llama3-70b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.1,
       response_format: { type: 'json_object' }
     });
@@ -124,6 +124,8 @@ No añadas ningún texto antes ni después del JSON.
     return NextResponse.json({ success: true, count: insertedTasks.length, tasks: insertedTasks });
   } catch (err) {
     console.error('API /api/admin/tareas/parse error:', err);
-    return NextResponse.json({ error: 'Error al procesar el texto con IA' }, { status: 500 });
+    return NextResponse.json({ 
+      error: `Error interno: ${err.message}` 
+    }, { status: 500 });
   }
 }
