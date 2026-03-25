@@ -40,7 +40,7 @@ export async function GET(request) {
 
     let query = supabaseAdmin
       .from('pending_tasks')
-      .select('*, auth_users:created_by ( email )')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (status) {
