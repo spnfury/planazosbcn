@@ -17,18 +17,14 @@ export default function AdminTasksPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   
   // Custom states
   const [filterStatus, setFilterStatus] = useState('pendiente'); // 'pendiente' | 'completada' | ''
   const [search, setSearch] = useState('');
   
-  // Form parsing
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    client_name: '',
-    priority: 'normal'
-  });
+  // AI Input
+  const [aiTextRaw, setAiTextRaw] = useState('');
 
   const loadTasks = useCallback(async () => {
     setLoading(true);
@@ -59,46 +55,47 @@ export default function AdminTasksPage() {
     loadTasks();
   }, [loadTasks]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleCreateTask = async (e) => {
+  const handleAITaskSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
+    if (!aiTextRaw.trim()) return;
 
     setSubmitting(true);
     setError('');
+    setSuccessMsg('');
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      const res = await fetch('/api/admin/tareas', {
+      const res = await fetch('/api/admin/tareas/parse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ text: aiTextRaw })
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Error al crear la tarea');
+        throw new Error(data.error || 'Error al procesar el texto');
       }
 
-      setFormData({
-        title: '',
-        description: '',
-        client_name: '',
-        priority: 'normal'
-      });
+      const data = await res.json();
       
-      // Reload tasks if they match the current filter
-      if (filterStatus === '' || filterStatus === 'pendiente') {
-        loadTasks();
+      if (data.count === 0) {
+        setError('La IA no pudo encontrar ninguna tarea procesable en el texto.');
+      } else {
+        setSuccessMsg(`¡Se han importado ${data.count} tareas con éxito!`);
+        setAiTextRaw('');
+        
+        // Reload tasks if they match the current filter
+        if (filterStatus === '' || filterStatus === 'pendiente') {
+          loadTasks();
+        }
+        
+        // Hide success message after a few seconds
+        setTimeout(() => setSuccessMsg(''), 4000);
       }
     } catch (err) {
       setError(err.message);
@@ -180,70 +177,48 @@ export default function AdminTasksPage() {
         
         {/* Left Column: Form */}
         <div style={{ flex: '1', minWidth: '300px', maxWidth: '400px' }}>
-          <form className={styles.formSection} onSubmit={handleCreateTask}>
-            <h2 className={styles.formSectionTitle}>➕ Nueva Tarea</h2>
+          <form className={styles.formSection} onSubmit={handleAITaskSubmit}>
+            <h2 className={styles.formSectionTitle}>✨ Organizar Tareas con IA</h2>
             
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+              Pega aquí tus notas, mensajes de WhatsApp o transcripciones. La Inteligencia Artificial lo analizará y extraerá automáticamente todas las tareas pendientes detalladas en el texto.
+            </p>
+
             {error && <div className={styles.loginError} style={{ marginBottom: '1rem' }}>{error}</div>}
             
-            <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-              <label className={styles.formLabel}>¿Qué hay que hacer? *</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                placeholder="Ej. Llamar para confirmar menú"
+            {successMsg && (
+              <div style={{ 
+                padding: '0.75rem 1rem', 
+                background: 'rgba(16, 185, 129, 0.1)', 
+                border: '1px solid rgba(16, 185, 129, 0.2)', 
+                borderRadius: '10px', 
+                color: '#10B981', 
+                fontSize: '0.85rem',
+                marginBottom: '1rem'
+              }}>
+                {successMsg}
+              </div>
+            )}
+            
+            <div className={styles.formGroup} style={{ marginBottom: '1.5rem' }}>
+              <label className={styles.formLabel}>Texto sin formato / WhatsApp</label>
+              <textarea
+                value={aiTextRaw}
+                onChange={(e) => setAiTextRaw(e.target.value)}
+                className={styles.formTextarea}
+                placeholder="Ayer vimos a tres clientes, con el cliente uno hay que hacerle esto y aquello, y para el cliente dos..."
+                style={{ minHeight: '200px' }}
                 required
               />
-            </div>
-            
-            <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-              <label className={styles.formLabel}>Cliente / Restaurante</label>
-              <input
-                type="text"
-                name="client_name"
-                value={formData.client_name}
-                onChange={handleInputChange}
-                className={styles.formInput}
-                placeholder="Ej. El Nacional"
-              />
-            </div>
-
-            <div className={styles.formGroup} style={{ marginBottom: '1rem' }}>
-              <label className={styles.formLabel}>Detalles adicionales</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                className={styles.formTextarea}
-                placeholder="Notas, próximos pasos..."
-                style={{ minHeight: '80px' }}
-              />
-            </div>
-
-            <div className={styles.formGroup} style={{ marginBottom: '1.5rem' }}>
-              <label className={styles.formLabel}>Prioridad</label>
-              <select
-                name="priority"
-                value={formData.priority}
-                onChange={handleInputChange}
-                className={styles.formSelect}
-              >
-                <option value="baja">🟢 Baja (Cuando se pueda)</option>
-                <option value="normal">🔵 Normal (Día a día)</option>
-                <option value="alta">🟠 Alta (Importante)</option>
-                <option value="urgente">🔴 Urgente (ASAP)</option>
-              </select>
             </div>
 
             <button 
               type="submit" 
               className={styles.btnPrimary} 
               style={{ width: '100%', justifyContent: 'center' }}
-              disabled={submitting || !formData.title.trim()}
+              disabled={submitting || !aiTextRaw.trim()}
             >
-              {submitting ? 'Guardando...' : 'Añadir Tarea'}
+              {submitting ? 'Analizando con IA...' : 'Extraer Tareas (IA)'}
             </button>
           </form>
         </div>
