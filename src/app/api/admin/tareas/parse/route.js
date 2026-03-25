@@ -46,22 +46,22 @@ export async function POST(request) {
 
     // Call Groq API to parse the text into an array of tasks
     const systemPrompt = `
-Eres un asistente que extrae tareas pendientes a partir de notas de texto o mensajes de WhatsApp desestructurados.
-Tu objetivo es analizar el texto que provee el usuario, aislar las diferentes "cosas por hacer" (tareas), y devolver un JSON con un array de objetos.
+Eres un asistente que extrae tareas pendientes a partir de notas de texto, listas de viñetas (* o -) o mensajes de WhatsApp desestructurados.
+Tu objetivo es analizar el texto que provee el usuario, aislar las diferentes "cosas por hacer" o "puntos de acción" (tareas), y devolver un JSON con un array de objetos. Incluso si son solo características o listas de servicios para un cliente, trátalos como tareas pendientes de implementar.
 
 El esquema JSON requerido para cada tarea es:
 {
-  "title": "Un título conciso y procesable de la tarea (ej. Llamar a cliente X, Subir carta PDF)",
-  "description": "El contexto adicional o cuándo debe hacerse (ej. Mañana a las 10h)",
-  "client_name": "Si se menciona un cliente particular, pon su nombre aquí, si no, null",
-  "priority": "normal" // Puede ser "baja", "normal", "alta" o "urgente" basado en la urgencia inferida
+  "title": "Un título conciso y procesable de la tarea (ej. 'Configurar paquete de redes sociales', 'Añadir a Google Maps', 'Intercambio publicidad')",
+  "description": "El contexto adicional o cuándo debe hacerse",
+  "client_name": "Si se infiere un cliente particular (ej. 'Sushi Samba'), pon su nombre aquí, si no, null",
+  "priority": "normal" // Puede ser "baja", "normal", "alta" o "urgente"
 }
 
 Retorna ÚNICAMENTE un JSON con la estructura:
 {
   "tasks": [...]
 }
-No añadas ningún texto antes ni después del JSON.
+No añadas ningún texto antes ni después del JSON. Si no encuentras nada, devuelve {"tasks": []}.
 `;
 
     const chatCompletion = await groq.chat.completions.create({
@@ -87,7 +87,7 @@ No añadas ningún texto antes ni después del JSON.
     const tasks = parsedData.tasks || [];
 
     if (tasks.length === 0) {
-      return NextResponse.json({ tasks: [] });
+      return NextResponse.json({ success: true, count: 0, tasks: [] });
     }
 
     // Insert all extracted tasks into the database

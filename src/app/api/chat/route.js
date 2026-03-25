@@ -42,15 +42,14 @@ export async function GET(request) {
       return NextResponse.json({ error: 'No tienes reserva en este plan' }, { status: 403 });
     }
 
-    // Fetch messages with author profile info
+    // Fetch messages without joining profiles
     const { data: messages, error } = await supabaseAdmin
       .from('chat_messages')
       .select(`
         id,
         message,
         created_at,
-        user_id,
-        profiles:user_id (full_name, avatar_url, show_profile)
+        user_id
       `)
       .eq('plan_id', planId)
       .order('created_at', { ascending: true })
@@ -61,16 +60,33 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Error al cargar mensajes' }, { status: 500 });
     }
 
+    // Manual lookup for profiles
+    const userIds = [...new Set((messages || []).map(m => m.user_id).filter(Boolean))];
+    let profilesDict = {};
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabaseAdmin
+        .from('profiles')
+        .select('id, full_name, avatar_url, show_profile')
+        .in('id', userIds);
+      
+      (profilesData || []).forEach(p => {
+        profilesDict[p.id] = p;
+      });
+    }
+
     // Map messages to include author info
-    const mapped = (messages || []).map((m) => ({
-      id: m.id,
-      message: m.message,
-      createdAt: m.created_at,
-      userId: m.user_id,
-      authorName: m.profiles?.full_name || 'Anónimo',
-      authorAvatar: m.profiles?.show_profile !== false ? m.profiles?.avatar_url : null,
-      isOwn: m.user_id === user.id,
-    }));
+    const mapped = (messages || []).map((m) => {
+      const profile = profilesDict[m.user_id];
+      return {
+        id: m.id,
+        message: m.message,
+        createdAt: m.created_at,
+        userId: m.user_id,
+        authorName: profile?.full_name || 'Anónimo',
+        authorAvatar: profile?.show_profile !== false ? profile?.avatar_url : null,
+        isOwn: m.user_id === user.id,
+      };
+    });
 
     return NextResponse.json({ messages: mapped });
   } catch (err) {
@@ -134,8 +150,7 @@ export async function POST(request) {
         id,
         message,
         created_at,
-        user_id,
-        profiles:user_id (full_name, avatar_url, show_profile)
+        user_id
       `)
       .single();
 
@@ -144,14 +159,21 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Error al enviar mensaje' }, { status: 500 });
     }
 
+    // Lookup profile for the new message
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('full_name, avatar_url, show_profile')
+      .eq('id', user.id)
+      .single();
+
     return NextResponse.json({
       message: {
         id: newMsg.id,
         message: newMsg.message,
         createdAt: newMsg.created_at,
         userId: newMsg.user_id,
-        authorName: newMsg.profiles?.full_name || 'Anónimo',
-        authorAvatar: newMsg.profiles?.show_profile !== false ? newMsg.profiles?.avatar_url : null,
+        authorName: profile?.full_name || 'Anónimo',
+        authorAvatar: profile?.show_profile !== false ? profile?.avatar_url : null,
         isOwn: true,
       },
     });
