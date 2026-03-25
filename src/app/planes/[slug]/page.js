@@ -4,6 +4,7 @@ import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
 import Attendees from '@/components/Attendees/Attendees';
 import PlanChat from '@/components/PlanChat/PlanChat';
+import PlanStatus from '@/components/PlanStatus/PlanStatus';
 import { supabase } from '@/lib/supabase';
 import ReserveButton from '@/components/ReserveButton/ReserveButton';
 import ShareButtons from './ShareButtons';
@@ -351,6 +352,13 @@ export default async function PlanDetailPage({ params }) {
               label={plan.type === 'sorpresa' ? 'Regalar ahora' : 'Reservar ahora'}
             />
 
+            <PlanStatus 
+              planId={plan.id} 
+              planSlug={plan.slug}
+              capacity={plan.capacity}
+              spotsTaken={plan.spots_taken || 0}
+            />
+
             <a href="#info" className="btn btn--secondary btn--large" style={{ width: '100%', display: 'inline-block', textAlign: 'center' }} id="plan-info">
               Más información
             </a>
@@ -647,6 +655,14 @@ function EventLayout({ plan, relatedPlans }) {
         {/* ---- ASISTENTES ---- */}
         <section className={styles.eventSection}>
           <Attendees planId={plan.id} />
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <PlanStatus 
+              planId={plan.id} 
+              planSlug={plan.slug}
+              capacity={plan.capacity}
+              spotsTaken={plan.spots_taken || 0}
+            />
+          </div>
         </section>
 
         {/* ---- INSTAGRAM REELS ---- */}

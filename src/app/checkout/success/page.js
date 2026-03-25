@@ -223,6 +223,22 @@ function SuccessContent() {
                 </div>
               )}
 
+              {/* ── Chat CTA ── */}
+              {plan?.slug && (
+                <div className={styles.chatNotice}>
+                  <span className={styles.chatNoticeIcon}>💬</span>
+                  <div className={styles.chatNoticeContent}>
+                    <p className={styles.chatNoticeTitle}>¡Chatea con los demás asistentes!</p>
+                    <p className={styles.chatNoticeText}>
+                      Entra en la página del plan para hablar con el resto de personas que se han apuntado.
+                    </p>
+                    <Link href={`/planes/${plan.slug}`} className={styles.chatNoticeLink} id="go-to-chat">
+                      Ir al chat del plan →
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               {/* ── Action Buttons ── */}
               <div className={styles.actions}>
                 {reservation.user_id && reservation.id && (
