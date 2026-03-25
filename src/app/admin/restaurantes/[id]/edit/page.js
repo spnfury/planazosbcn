@@ -174,6 +174,13 @@ export default function EditarRestaurantePage() {
 
       if (updateError) throw updateError;
 
+      // Revalidate public pages so changes appear instantly
+      await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paths: ['/restaurantes', `/restaurantes/${id}`] }),
+      }).catch(() => {});
+
       router.push(`/admin/restaurantes`);
     } catch (err) {
       console.error(err);
@@ -181,6 +188,7 @@ export default function EditarRestaurantePage() {
     } finally {
       setLoading(false);
     }
+
   }
 
   if (fetching) {

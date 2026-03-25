@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
 async function checkAdmin(request) {
@@ -122,6 +123,12 @@ export async function PUT(request, { params }) {
       }
     }
 
+    // Revalidate all pages that show plan data
+    revalidatePath('/', 'page');
+    revalidatePath('/planes', 'page');
+    revalidatePath(`/planes/${plan.slug}`, 'page');
+    revalidatePath('/planes/categoria', 'layout');
+
     return NextResponse.json(plan);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -154,6 +161,11 @@ export async function DELETE(request, { params }) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Revalidate all pages that show plan data
+    revalidatePath('/', 'page');
+    revalidatePath('/planes', 'page');
+    revalidatePath('/planes/categoria', 'layout');
 
     return NextResponse.json({ message: 'Plan eliminado permanentemente' });
   } catch (err) {

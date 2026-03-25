@@ -34,7 +34,15 @@ export default function AdminRestaurantsPage() {
     }
 
     setRestaurants((prev) => prev.filter((r) => r.id !== restaurant.id));
+
+    // Revalidate public pages so changes appear instantly
+    fetch('/api/revalidate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths: ['/restaurantes', `/restaurantes/${restaurant.id}`] }),
+    }).catch(() => {});
   }
+
 
   return (
     <>

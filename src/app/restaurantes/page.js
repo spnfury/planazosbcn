@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
+// Force dynamic rendering so admin changes appear instantly
+export const dynamic = 'force-dynamic';
+
+
 export const metadata = {
   title: 'Restaurantes | PlanazosBCN',
   description: 'Descubre los mejores restaurantes y menús en Barcelona.',

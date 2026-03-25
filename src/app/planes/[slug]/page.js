@@ -13,8 +13,9 @@ import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import { formatDate } from '@/lib/formatDate';
 import styles from './page.module.css';
 
-// ISR: revalidate every 60s so new plans appear without a full rebuild
-export const revalidate = 60;
+// Force dynamic rendering so admin changes appear instantly
+export const dynamic = 'force-dynamic';
+
 
 // Helper function to map snake_case from DB to camelCase
 const mapPlanData = (plan) => ({

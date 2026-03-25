@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
 // Helper: check admin auth from Authorization header
@@ -126,6 +127,11 @@ export async function POST(request) {
         reels.map((url, i) => ({ plan_id: plan.id, url: url.trim(), sort_order: i }))
       );
     }
+
+    // Revalidate all pages that show plan data
+    revalidatePath('/', 'page');
+    revalidatePath('/planes', 'page');
+    revalidatePath('/planes/categoria', 'layout');
 
     return NextResponse.json(plan, { status: 201 });
   } catch (error) {

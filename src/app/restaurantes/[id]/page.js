@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import InstagramReels from '@/components/InstagramReels/InstagramReels';
 
+// Force dynamic rendering so admin changes appear instantly
+export const dynamic = 'force-dynamic';
+
+
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const { data } = await supabase.from('restaurants').select('nombre').eq('id', id).single();
