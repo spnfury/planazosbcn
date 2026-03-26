@@ -137,6 +137,7 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   overflow-x: hidden;
+  max-width: 100vw;
 }
 
 img, video {
