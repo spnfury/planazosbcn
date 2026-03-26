@@ -50,20 +50,32 @@ export default function NuevoRestaurantePage() {
     setImportingIg(true);
     setIgError(null);
     try {
+      console.log('[IG Import] Fetching:', formData.instagram_url);
       const res = await fetch('/api/admin/restaurants/instagram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: formData.instagram_url })
       });
+
+      // Handle non-JSON responses (e.g. middleware HTML error pages)
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error(`El servidor devolvió una respuesta inesperada (${res.status}). Recarga la página e inténtalo de nuevo.`);
+      }
+
       const data = await res.json();
+      console.log('[IG Import] Response:', data);
       if (!res.ok) throw new Error(data.error || 'Error al importar datos');
       
+      // Always overwrite with imported data (user explicitly clicked import)
       setFormData(prev => ({
         ...prev,
-        nombre: prev.nombre || data.name || '',
-        logo_url: data.logoUrl || prev.logo_url || ''
+        nombre: data.name || prev.nombre || '',
+        logo_url: data.logoUrl || prev.logo_url || '',
+        tipo_comida: data.description || prev.tipo_comida || ''
       }));
     } catch (err) {
+      console.error('[IG Import] Error:', err);
       setIgError(err.message);
     } finally {
       setImportingIg(false);
@@ -279,7 +291,7 @@ export default function NuevoRestaurantePage() {
 
         {/* PDF Upload */}
         <div className={styles.formSection}>
-          <h3 className={styles.formSectionTitle}>📄 Carta en PDF</h3>
+          <h3 className={styles.formSectionTitle}>📄 Carta (PDF / Imagen)</h3>
           <div className={styles.formGroup}>
             <label className={styles.formLabel}>Subir carta (Opcional)</label>
             <div style={{
@@ -294,7 +306,7 @@ export default function NuevoRestaurantePage() {
             }}>
               <input
                 type="file"
-                accept="application/pdf"
+                accept="application/pdf,image/png,image/jpeg,image/webp,image/heic"
                 onChange={(e) => setPdfFile(e.target.files[0])}
                 style={{
                   position: 'absolute',
@@ -327,10 +339,10 @@ export default function NuevoRestaurantePage() {
                 <>
                   <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📄</div>
                   <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', fontWeight: 500 }}>
-                    Haz clic o arrastra un PDF aquí
+                    Haz clic o arrastra un archivo aquí
                   </div>
                   <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                    Sube la carta para usarla luego con el configurador de menús
+                    PDF, PNG, JPG o WEBP — Sube la carta para usarla con el configurador de menús
                   </div>
                 </>
               )}

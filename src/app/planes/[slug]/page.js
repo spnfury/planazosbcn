@@ -4,6 +4,7 @@ import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
 import Attendees from '@/components/Attendees/Attendees';
 import PlanChat from '@/components/PlanChat/PlanChat';
+import PlanStatus from '@/components/PlanStatus/PlanStatus';
 import { supabase } from '@/lib/supabase';
 import ReserveButton from '@/components/ReserveButton/ReserveButton';
 import ShareButtons from './ShareButtons';
@@ -13,8 +14,9 @@ import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import { formatDate } from '@/lib/formatDate';
 import styles from './page.module.css';
 
-// ISR: revalidate every 60s so new plans appear without a full rebuild
-export const revalidate = 60;
+// Force dynamic rendering so admin changes appear instantly
+export const dynamic = 'force-dynamic';
+
 
 // Helper function to map snake_case from DB to camelCase
 const mapPlanData = (plan) => ({
@@ -253,6 +255,19 @@ export default async function PlanDetailPage({ params }) {
             </div>
           )}
 
+          {/* Hotel accommodation */}
+          {plan.alojamiento_hotel && (
+            <div className={styles.infoCards} style={{ marginTop: '0.5rem' }}>
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>🏨</span>
+                <div>
+                  <span className={styles.infoLabel}>Alojamiento de Hotel</span>
+                  <span className={styles.infoValue}>{plan.alojamiento_hotel}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className={styles.description} id="info">
             <h2 className={styles.descTitle}>Sobre este plan</h2>
             <p>{plan.description}</p>
@@ -335,6 +350,13 @@ export default async function PlanDetailPage({ params }) {
               plan={plan} 
               tickets={plan.tickets}
               label={plan.type === 'sorpresa' ? 'Regalar ahora' : 'Reservar ahora'}
+            />
+
+            <PlanStatus 
+              planId={plan.id} 
+              planSlug={plan.slug}
+              capacity={plan.capacity}
+              spotsTaken={plan.spots_taken || 0}
             />
 
             <a href="#info" className="btn btn--secondary btn--large" style={{ width: '100%', display: 'inline-block', textAlign: 'center' }} id="plan-info">
@@ -569,6 +591,16 @@ function EventLayout({ plan, relatedPlans }) {
                   )}
                 </div>
               )}
+
+              {/* Hotel accommodation */}
+              {plan.alojamiento_hotel && (
+                <div className={styles.eventBadgeGroup}>
+                  <h4 className={styles.eventBadgeGroupTitle}>🏨 Alojamiento</h4>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                    {plan.alojamiento_hotel}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right: Schedule + details */}
@@ -623,6 +655,14 @@ function EventLayout({ plan, relatedPlans }) {
         {/* ---- ASISTENTES ---- */}
         <section className={styles.eventSection}>
           <Attendees planId={plan.id} />
+          <div style={{ marginTop: 'var(--space-4)' }}>
+            <PlanStatus 
+              planId={plan.id} 
+              planSlug={plan.slug}
+              capacity={plan.capacity}
+              spotsTaken={plan.spots_taken || 0}
+            />
+          </div>
         </section>
 
         {/* ---- INSTAGRAM REELS ---- */}

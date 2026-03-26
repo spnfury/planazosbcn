@@ -34,7 +34,15 @@ export default function AdminRestaurantsPage() {
     }
 
     setRestaurants((prev) => prev.filter((r) => r.id !== restaurant.id));
+
+    // Revalidate public pages so changes appear instantly
+    fetch('/api/revalidate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths: ['/restaurantes', `/restaurantes/${restaurant.id}`] }),
+    }).catch(() => {});
   }
+
 
   return (
     <>
@@ -80,7 +88,7 @@ export default function AdminRestaurantsPage() {
                 <td data-label="Tipo Comida">{rest.tipo_comida || '-'}</td>
                 <td data-label="Documento">
                   {rest.pdf_url ? (
-                    <a href={rest.pdf_url} target="_blank" rel="noreferrer" style={{color: '#bcfe2f'}}>Ver PDF</a>
+                    <a href={rest.pdf_url} target="_blank" rel="noreferrer" style={{color: '#bcfe2f'}}>Ver carta</a>
                   ) : 'Sin carta adjunta'}
                 </td>
                 <td data-label="Acciones">

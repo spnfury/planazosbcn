@@ -82,7 +82,7 @@ export async function POST(request) {
       // Fetch plan details for the email
       const { data: plan } = await supabaseAdmin
         .from('plans')
-        .select('title')
+        .select('title, slug')
         .eq('id', reservation.plan_id)
         .single();
         
@@ -120,6 +120,12 @@ export async function POST(request) {
                   <a href="${successUrl}" style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
                     Ver mi entrada / QR
                   </a>
+                </div>
+
+                <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 16px; margin: 24px 0;">
+                  <p style="margin: 0 0 6px; font-weight: 700; color: #1E40AF; font-size: 0.95em;">💬 ¡Chatea con los demás asistentes!</p>
+                  <p style="margin: 0 0 10px; color: #3B82F6; font-size: 0.88em; line-height: 1.5;">Entra en la página del plan para hablar con el resto de personas que se han apuntado.</p>
+                  <a href="${baseUrl}/planes/${plan.slug || ''}" style="color: #1E40AF; font-weight: 700; text-decoration: underline; font-size: 0.9em;">Ir al chat del plan →</a>
                 </div>
                 
                 <p style="color: #666; font-size: 0.9em; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">

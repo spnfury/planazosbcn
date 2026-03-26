@@ -5,6 +5,10 @@ import { CATEGORIES, getCategoryBySlug } from '@/data/plans';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
+// Force dynamic rendering so admin changes appear instantly
+export const dynamic = 'force-dynamic';
+
+
 // Helper function to map snake_case from DB to camelCase for PlanCard
 const mapPlanData = (plan) => ({
   ...plan,

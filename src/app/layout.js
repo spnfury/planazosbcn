@@ -2,11 +2,24 @@ import LayoutShell from '@/components/LayoutShell';
 import AuthProvider from '@/components/Auth/AuthProvider';
 import './globals.css';
 
+export const viewport = {
+  themeColor: '#0f0f1a',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata = {
   title: 'PlanazosBCN — Los mejores planes de Barcelona',
   description:
     'Descubre los mejores planes, experiencias y actividades en Barcelona. Gastronomía, naturaleza, ocio, cultura y mucho más. ¡Tu próximo planazo te espera!',
   keywords: 'planes Barcelona, actividades Barcelona, qué hacer Barcelona, experiencias Barcelona, rutas Barcelona, restaurantes Barcelona',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'PlanazosBCN',
+    statusBarStyle: 'black-translucent',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },

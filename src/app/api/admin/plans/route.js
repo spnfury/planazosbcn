@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
 // Helper: check admin auth from Authorization header
@@ -83,7 +84,7 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const { tags, tickets, guestLists, schedule, ...planData } = body;
+    const { tags, tickets, guestLists, schedule, reels, ...planData } = body;
 
     // Create plan
     const { data: plan, error: planError } = await supabaseAdmin
@@ -120,6 +121,17 @@ export async function POST(request) {
         schedule.map((s, i) => ({ ...s, plan_id: plan.id, sort_order: i }))
       );
     }
+
+    if (reels?.length) {
+      await supabaseAdmin.from('plan_reels').insert(
+        reels.map((url, i) => ({ plan_id: plan.id, url: url.trim(), sort_order: i }))
+      );
+    }
+
+    // Revalidate all pages that show plan data
+    revalidatePath('/', 'page');
+    revalidatePath('/planes', 'page');
+    revalidatePath('/planes/categoria', 'layout');
 
     return NextResponse.json(plan, { status: 201 });
   } catch (error) {

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import styles from './PlanChat.module.css';
 
 export default function PlanChat({ planId }) {
+  const [supabase] = useState(() => createClient());
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -27,18 +28,24 @@ export default function PlanChat({ planId }) {
       setUser(currentUser);
 
       try {
+        console.log('🔍 PlanChat init: checking access for planId', planId);
         const res = await fetch(`/api/chat?planId=${planId}`);
+        console.log('🔍 PlanChat fetch status:', res.status, res.statusText);
+        
         if (res.ok) {
           const data = await res.json();
+          console.log('🔍 PlanChat data received:', data);
           setMessages(data.messages || []);
           setHasAccess(true);
-        } else if (res.status === 403) {
-          // User doesn't have a reservation
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          console.log('🔍 PlanChat fetch failed with data:', errData);
           setHasAccess(false);
         }
       } catch (err) {
-        console.error('Chat init error:', err);
+        console.warn('🔍 Chat init error caught:', err);
       } finally {
+        console.log('🔍 PlanChat loading finished');
         setLoading(false);
       }
     }
@@ -143,7 +150,15 @@ export default function PlanChat({ planId }) {
   };
 
   // Don't render if user has no access or is not logged in
-  if (loading || !hasAccess || !user) return null;
+  if (loading) return null;
+  if (!user) {
+    console.log('🔍 PlanChat hidden: No user');
+    return null;
+  }
+  if (!hasAccess) {
+    console.log('🔍 PlanChat hidden: hasAccess is false');
+    return null;
+  }
 
   // Group messages by date
   const groupedMessages = [];

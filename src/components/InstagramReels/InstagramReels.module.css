@@ -30,7 +30,7 @@
   padding-bottom: var(--space-3);
 }
 
-/* Hide scrollbar on webkit */
+/* Scrollbar */
 .carousel::-webkit-scrollbar {
   height: 6px;
 }
@@ -52,7 +52,8 @@
 .reelCard {
   flex: 0 0 auto;
   scroll-snap-align: start;
-  width: 326px;
+  width: 340px;
+  max-width: 85vw;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--color-bg-alt, #f5f5f5);
@@ -68,13 +69,14 @@
 .reelFrame {
   position: relative;
   width: 100%;
-  min-height: 480px;
+  min-height: 550px;
 }
 
 .reelIframe {
   width: 100%;
-  min-height: 480px;
+  height: 550px;
   border: none;
+  display: block;
 }
 
 /* Loading placeholder */
@@ -133,6 +135,20 @@
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .reelCard {
+    width: 300px;
+  }
+
+  .reelFrame {
+    min-height: 480px;
+  }
+
+  .reelIframe {
+    height: 480px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reelCard {
     width: 280px;
   }
 
@@ -141,20 +157,6 @@
   }
 
   .reelIframe {
-    min-height: 420px;
-  }
-}
-
-@media (max-width: 480px) {
-  .reelCard {
-    width: 260px;
-  }
-
-  .reelFrame {
-    min-height: 380px;
-  }
-
-  .reelIframe {
-    min-height: 380px;
+    height: 420px;
   }
 }

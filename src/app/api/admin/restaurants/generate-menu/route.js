@@ -13,21 +13,29 @@ export async function POST(req) {
       return NextResponse.json({ error: 'dishes array is required' }, { status: 400 });
     }
 
+    // Build a price lookup map for post-processing validation
+    const priceLookup = {};
+    dishes.forEach(d => {
+      if (d.nombre && d.precio) {
+        priceLookup[d.nombre.toLowerCase().trim()] = d.precio;
+      }
+    });
+
     // Convert dishes to a readable format for the prompt
-    const dishesList = dishes.map(d => `- ${d.nombre} (${d.precio ? d.precio + '€' : 'Sin precio'}) [${d.categoria}]`).join('\n');
+    const dishesList = dishes.map(d => `- ${d.nombre} → PRECIO REAL: ${d.precio ? d.precio + '€' : 'Sin precio'} [${d.categoria}]`).join('\n');
 
     const prompt = `
 Eres un asistente experto en gastronomía y gestión de restaurantes. TODA tu respuesta debe estar EXCLUSIVAMENTE en ESPAÑOL. NUNCA uses inglés.
 
-A continuación tienes la lista COMPLETA de platos reales extraídos de la carta del restaurante:
+A continuación tienes la lista COMPLETA de platos reales extraídos de la carta del restaurante, CON SUS PRECIOS REALES:
 
 <PLATOS_DISPONIBLES>
 ${dishesList}
 </PLATOS_DISPONIBLES>
 
-Diseña un menú de restaurante seleccionando platos de la lista anterior.
+Diseña un menú de restaurante seleccionando platos EXCLUSIVAMENTE de la lista anterior.
 - Tipo de menú / Nombre: ${menuType}
-- Precio objetivo sugerido: ${price ? price + '€' : 'No especificado'}
+- Precio objetivo sugerido para el menú completo: ${price ? price + '€' : 'No especificado'}
 - Reglas adicionales: ${rules}
 
 REGLAS CRÍTICAS QUE DEBES CUMPLIR SIN EXCEPCIÓN:
@@ -43,6 +51,8 @@ REGLAS CRÍTICAS QUE DEBES CUMPLIR SIN EXCEPCIÓN:
 5. **VINO**: Si se pide incluir vino, busca un vino CONCRETO de la lista de platos/bebidas. Si no hay vinos en la carta, indica "Vino de la casa" o "Sugerencia del sumiller". Siempre en español.
 
 6. **NOMBRES DE SECCIÓN (course)**: Usa los nombres de categoría tal como aparecen en la carta original entre corchetes. No inventes secciones nuevas.
+
+7. **PRECIO**: El precio del menú (campo "precio") debe ser EL PRECIO OBJETIVO indicado arriba (${price || 'el que corresponda'}), NO la suma de los precios individuales. NUNCA incluyas precios individuales de cada plato.
 
 Devuelve la respuesta EXCLUSIVAMENTE en formato JSON válido con esta estructura:
 {
@@ -69,7 +79,41 @@ RECUERDA: Solo platos que existan en la lista. Todo en español. Sin nombres gen
     const resultText = chatCompletion.choices[0]?.message?.content || '{}';
     const jsonResult = JSON.parse(resultText);
 
-    return NextResponse.json({ success: true, menu: jsonResult, prompt_usado: prompt });
+    // Post-processing: calculate actual dish costs for transparency
+    let costoRealPlatos = 0;
+    const platosUsados = [];
+
+    if (jsonResult.contenido_estructurado) {
+      for (const course of jsonResult.contenido_estructurado) {
+        const options = course.options || course.platos || [];
+        for (const opt of options) {
+          const nombre = typeof opt === 'string' ? opt : (opt.plato || opt.nombre || opt.name || '');
+          const key = nombre.toLowerCase().trim();
+          const precioReal = priceLookup[key];
+          if (precioReal) {
+            costoRealPlatos += precioReal;
+            platosUsados.push({ nombre, precioReal });
+          } else {
+            // Try fuzzy match (contains)
+            const fuzzyMatch = Object.entries(priceLookup).find(([k]) => k.includes(key) || key.includes(k));
+            if (fuzzyMatch) {
+              costoRealPlatos += fuzzyMatch[1];
+              platosUsados.push({ nombre, precioReal: fuzzyMatch[1] });
+            } else {
+              platosUsados.push({ nombre, precioReal: null });
+            }
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      menu: jsonResult,
+      prompt_usado: prompt,
+      precio_real_platos: Math.round(costoRealPlatos * 100) / 100,
+      detalle_platos: platosUsados,
+    });
   } catch (error) {
     console.error('Error generating menu with Groq:', error);
     return NextResponse.json({ error: 'Failed to generate menu', details: error.message }, { status: 500 });

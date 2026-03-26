@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
 async function checkAdmin(request) {
@@ -29,7 +30,7 @@ export async function GET(request, { params }) {
 
   const { data: plan, error } = await supabaseAdmin
     .from('plans')
-    .select('*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*)')
+    .select('*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*), plan_reels(*)')
     .eq('id', id)
     .single();
 
@@ -58,7 +59,7 @@ export async function PUT(request, { params }) {
 
   try {
     const body = await request.json();
-    const { tags, tickets, guestLists, schedule, ...planData } = body;
+    const { tags, tickets, guestLists, schedule, reels, ...planData } = body;
 
     // Update plan
     const { data: plan, error: planError } = await supabaseAdmin
@@ -112,6 +113,22 @@ export async function PUT(request, { params }) {
       }
     }
 
+    // Replace reels
+    if (reels !== undefined) {
+      await supabaseAdmin.from('plan_reels').delete().eq('plan_id', id);
+      if (reels.length) {
+        await supabaseAdmin.from('plan_reels').insert(
+          reels.map((url, i) => ({ plan_id: id, url: url.trim(), sort_order: i }))
+        );
+      }
+    }
+
+    // Revalidate all pages that show plan data
+    revalidatePath('/', 'page');
+    revalidatePath('/planes', 'page');
+    revalidatePath(`/planes/${plan.slug}`, 'page');
+    revalidatePath('/planes/categoria', 'layout');
+
     return NextResponse.json(plan);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -133,6 +150,7 @@ export async function DELETE(request, { params }) {
     await supabaseAdmin.from('plan_tickets').delete().eq('plan_id', id);
     await supabaseAdmin.from('plan_guest_lists').delete().eq('plan_id', id);
     await supabaseAdmin.from('plan_schedule').delete().eq('plan_id', id);
+    await supabaseAdmin.from('plan_reels').delete().eq('plan_id', id);
 
     // Hard delete the plan
     const { error } = await supabaseAdmin
@@ -143,6 +161,11 @@ export async function DELETE(request, { params }) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    // Revalidate all pages that show plan data
+    revalidatePath('/', 'page');
+    revalidatePath('/planes', 'page');
+    revalidatePath('/planes/categoria', 'layout');
 
     return NextResponse.json({ message: 'Plan eliminado permanentemente' });
   } catch (err) {
