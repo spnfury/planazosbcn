@@ -19,6 +19,7 @@ export default function ReserveButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
+  const [promoCode, setPromoCode] = useState('');
   const [shippingData, setShippingData] = useState({
     name: '',
     address: '',
@@ -77,11 +78,15 @@ export default function ReserveButton({
     return parseFloat(plan.price) || 0;
   };
 
+  const SECRET_PROMO_CODE = 'PLANAZOS-DEV-100X-FREE-2026';
+  const isPromoApplied = promoCode === SECRET_PROMO_CODE;
+
   const unitPrice = getUnitPrice();
   const fullPrice = parseFloat(plan.price) || 0;
   const isPreReserve = Boolean(plan.precio_reserva && plan.precio_reserva > 0 && !selectedTicketId && plan.price !== 'Gratis');
   const shippingCost = plan?.type === 'sorpresa' ? parseFloat(plan.shipping_cost || 0) : 0;
-  const totalPrice = (unitPrice * quantity) + shippingCost;
+  const baseTotalPrice = (unitPrice * quantity) + shippingCost;
+  const totalPrice = isPromoApplied ? 0 : baseTotalPrice;
   const isFree = totalPrice === 0;
 
   // Max available spots
@@ -137,6 +142,10 @@ export default function ReserveButton({
 
       if (userId) {
         body.userId = userId;
+      }
+
+      if (promoCode) {
+        body.promoCode = promoCode;
       }
 
       const res = await fetch('/api/checkout', {
@@ -283,6 +292,26 @@ export default function ReserveButton({
                   placeholder="tu@email.com"
                   required
                 />
+              </div>
+
+              {/* Promo Code */}
+              <div className={styles.formGroup}>
+                <label htmlFor="reserve-promo" className={styles.label}>
+                  Código promocional (opcional)
+                </label>
+                <input
+                  id="reserve-promo"
+                  type="text"
+                  className={styles.input}
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="Introduce tu código"
+                />
+                {isPromoApplied && (
+                  <p style={{ color: 'var(--color-primary)', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 'bold' }}>
+                    ✅ Código aplicado: ¡Total a pagar 0€!
+                  </p>
+                )}
               </div>
 
               {/* Shipping Data (for sorpresa plans) */}
