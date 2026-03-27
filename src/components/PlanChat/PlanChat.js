@@ -14,14 +14,16 @@ export default function PlanChat({ planId }) {
   const [user, setUser] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [accessError, setAccessError] = useState(null); // 'not-logged-in' | 'no-reservation' | 'error'
   const messagesEndRef = useRef(null);
   const chatBodyRef = useRef(null);
+  const wantAutoOpen = useRef(false);
 
-  // Auto-open chat if URL contains ?chat=true or #chat
+  // Check if URL wants auto-open (store in ref so it persists across renders)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (window.location.search.includes('chat=true') || window.location.hash === '#chat') {
-        setIsOpen(true);
+        wantAutoOpen.current = true;
       }
     }
   }, []);
@@ -31,30 +33,41 @@ export default function PlanChat({ planId }) {
     async function init() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) {
+        setAccessError('not-logged-in');
         setLoading(false);
+        // Still auto-open if requested so user sees the login prompt
+        if (wantAutoOpen.current) setIsOpen(true);
         return;
       }
       setUser(currentUser);
 
       try {
-        console.log('🔍 PlanChat init: checking access for planId', planId);
         const res = await fetch(`/api/chat?planId=${planId}`);
-        console.log('🔍 PlanChat fetch status:', res.status, res.statusText);
         
         if (res.ok) {
           const data = await res.json();
-          console.log('🔍 PlanChat data received:', data);
           setMessages(data.messages || []);
           setHasAccess(true);
+          setAccessError(null);
+          // Auto-open now that we know user has access
+          if (wantAutoOpen.current) setIsOpen(true);
         } else {
           const errData = await res.json().catch(() => ({}));
-          console.log('🔍 PlanChat fetch failed with data:', errData);
+          console.log('PlanChat: access denied', errData);
+          if (res.status === 403) {
+            setAccessError('no-reservation');
+          } else {
+            setAccessError('error');
+          }
           setHasAccess(false);
+          // Still auto-open so user sees a message
+          if (wantAutoOpen.current) setIsOpen(true);
         }
       } catch (err) {
-        console.warn('🔍 Chat init error caught:', err);
+        console.warn('Chat init error:', err);
+        setAccessError('error');
+        if (wantAutoOpen.current) setIsOpen(true);
       } finally {
-        console.log('🔍 PlanChat loading finished');
         setLoading(false);
       }
     }
@@ -77,10 +90,8 @@ export default function PlanChat({ planId }) {
           filter: `plan_id=eq.${planId}`,
         },
         async (payload) => {
-          // Don't duplicate messages we just sent
           if (payload.new.user_id === user.id) return;
 
-          // Fetch the full message with profile info
           try {
             const res = await fetch(`/api/chat?planId=${planId}`);
             if (res.ok) {
@@ -129,7 +140,7 @@ export default function PlanChat({ planId }) {
       }
     } catch (err) {
       console.error('Send error:', err);
-      setNewMessage(messageText); // Restore message on error
+      setNewMessage(messageText);
     } finally {
       setSending(false);
     }
@@ -158,16 +169,8 @@ export default function PlanChat({ planId }) {
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
   };
 
-  // Don't render if user has no access or is not logged in
-  if (loading) return null;
-  if (!user) {
-    console.log('🔍 PlanChat hidden: No user');
-    return null;
-  }
-  if (!hasAccess) {
-    console.log('🔍 PlanChat hidden: hasAccess is false');
-    return null;
-  }
+  // Don't render anything while loading (except if auto-open was requested)
+  if (loading && !wantAutoOpen.current) return null;
 
   // Group messages by date
   const groupedMessages = [];
@@ -181,6 +184,64 @@ export default function PlanChat({ planId }) {
     groupedMessages.push({ type: 'message', ...msg });
   });
 
+  // Render the blocked/error state panel content
+  const renderBlockedContent = () => {
+    if (loading) {
+      return (
+        <div className={styles.emptyChat}>
+          <span className={styles.emptyChatIcon}>⏳</span>
+          <p className={styles.emptyChatText}>Cargando chat...</p>
+        </div>
+      );
+    }
+    if (accessError === 'not-logged-in') {
+      return (
+        <div className={styles.emptyChat}>
+          <span className={styles.emptyChatIcon}>🔒</span>
+          <p className={styles.emptyChatText}>
+            Inicia sesión para acceder al chat del plan
+          </p>
+          <a
+            href="/login"
+            style={{
+              marginTop: '12px',
+              display: 'inline-block',
+              backgroundColor: '#000',
+              color: '#fff',
+              padding: '10px 20px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+            }}
+          >
+            Iniciar sesión
+          </a>
+        </div>
+      );
+    }
+    if (accessError === 'no-reservation') {
+      return (
+        <div className={styles.emptyChat}>
+          <span className={styles.emptyChatIcon}>🎟️</span>
+          <p className={styles.emptyChatText}>
+            Necesitas una reserva confirmada en este plan para acceder al chat
+          </p>
+        </div>
+      );
+    }
+    // generic error
+    return (
+      <div className={styles.emptyChat}>
+        <span className={styles.emptyChatIcon}>⚠️</span>
+        <p className={styles.emptyChatText}>
+          No se pudo cargar el chat. Inténtalo de nuevo más tarde.
+        </p>
+      </div>
+    );
+  };
+
+  // Always show the floating button (so users can discover the chat)
   return (
     <>
       {/* Floating chat toggle button */}
@@ -208,7 +269,9 @@ export default function PlanChat({ planId }) {
               <div>
                 <h3 className={styles.chatHeaderTitle}>Chat del plan</h3>
                 <span className={styles.chatHeaderSub}>
-                  {messages.length} {messages.length === 1 ? 'mensaje' : 'mensajes'}
+                  {hasAccess
+                    ? `${messages.length} ${messages.length === 1 ? 'mensaje' : 'mensajes'}`
+                    : 'Chat de asistentes'}
                 </span>
               </div>
             </div>
@@ -222,7 +285,9 @@ export default function PlanChat({ planId }) {
           </div>
 
           <div className={styles.chatBody} ref={chatBodyRef}>
-            {messages.length === 0 ? (
+            {!hasAccess ? (
+              renderBlockedContent()
+            ) : messages.length === 0 ? (
               <div className={styles.emptyChat}>
                 <span className={styles.emptyChatIcon}>🎉</span>
                 <p className={styles.emptyChatText}>
@@ -269,32 +334,34 @@ export default function PlanChat({ planId }) {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className={styles.chatFooter}>
-            <input
-              type="text"
-              className={styles.chatInput}
-              placeholder="Escribe un mensaje..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              maxLength={1000}
-              disabled={sending}
-              id="chat-input"
-            />
-            <button
-              className={styles.sendBtn}
-              onClick={handleSend}
-              disabled={!newMessage.trim() || sending}
-              aria-label="Enviar mensaje"
-              id="chat-send"
-            >
-              {sending ? (
-                <span className={styles.sendSpinner} />
-              ) : (
-                '➤'
-              )}
-            </button>
-          </div>
+          {hasAccess && (
+            <div className={styles.chatFooter}>
+              <input
+                type="text"
+                className={styles.chatInput}
+                placeholder="Escribe un mensaje..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                maxLength={1000}
+                disabled={sending}
+                id="chat-input"
+              />
+              <button
+                className={styles.sendBtn}
+                onClick={handleSend}
+                disabled={!newMessage.trim() || sending}
+                aria-label="Enviar mensaje"
+                id="chat-send"
+              >
+                {sending ? (
+                  <span className={styles.sendSpinner} />
+                ) : (
+                  '➤'
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </>

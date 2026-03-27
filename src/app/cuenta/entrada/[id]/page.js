@@ -186,6 +186,28 @@ export default function EntradaPage({ params }) {
               <span className={styles.detailValue}>#{reservation.id.toString().padStart(5, '0')}</span>
             </div>
           </div>
+          
+          <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
+            <Link
+              href={`/planes/${plan?.slug}?chat=true`}
+              style={{
+                backgroundColor: '#EFF6FF',
+                color: '#1E40AF',
+                border: '1px solid #BFDBFE',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                width: '100%',
+                justifyContent: 'center'
+              }}
+            >
+              💬 Ir al chat del plan
+            </Link>
+          </div>
         </div>
       </div>
     </div>

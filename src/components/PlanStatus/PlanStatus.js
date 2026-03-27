@@ -57,9 +57,25 @@ export default function PlanStatus({ planId, planSlug, capacity, spotsTaken }) {
           <span className={styles.chatCtaIcon}>💬</span>
           <div className={styles.chatCtaContent}>
             <p className={styles.chatCtaTitle}>Chat del plan</p>
-            <p className={styles.chatCtaText}>
-              Habla con los demás asistentes usando el botón 💬 de abajo a la derecha
+            <p className={styles.chatCtaText} style={{ marginBottom: '8px' }}>
+              Habla con los demás asistentes
             </p>
+            <Link 
+              href={`/planes/${planSlug}?chat=true`}
+              style={{
+                backgroundColor: '#EFF6FF',
+                color: '#1E40AF',
+                border: '1px solid #BFDBFE',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                textDecoration: 'none',
+                display: 'inline-block'
+              }}
+            >
+              Abrir chat ahora →
+            </Link>
           </div>
         </div>
 
