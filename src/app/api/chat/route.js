@@ -88,7 +88,39 @@ export async function GET(request) {
       };
     });
 
-    return NextResponse.json({ messages: mapped });
+    // Fetch all paid reservations to get member info
+    const { data: reservations } = await supabaseAdmin
+      .from('reservations')
+      .select('user_id, quantity, customer_email')
+      .eq('plan_id', planId)
+      .eq('status', 'paid');
+
+    const totalMembers = (reservations || []).reduce((sum, r) => sum + (r.quantity || 1), 0);
+
+    // Get unique member profiles
+    const memberUserIds = [...new Set((reservations || []).map(r => r.user_id).filter(Boolean))];
+    let members = [];
+    if (memberUserIds.length > 0) {
+      const { data: memberProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, full_name, avatar_url, show_profile')
+        .in('id', memberUserIds);
+
+      members = (memberProfiles || [])
+        .filter(p => p.show_profile !== false)
+        .map(p => ({
+          id: p.id,
+          name: p.full_name || 'Anónimo',
+          avatar: p.avatar_url || null,
+          isYou: p.id === user.id,
+        }));
+    }
+
+    return NextResponse.json({
+      messages: mapped,
+      members,
+      totalMembers,
+    });
   } catch (err) {
     console.error('Chat GET error:', err);
     return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
