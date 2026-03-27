@@ -17,6 +17,15 @@ export default function PlanChat({ planId }) {
   const messagesEndRef = useRef(null);
   const chatBodyRef = useRef(null);
 
+  // Auto-open chat if URL contains ?chat=true or #chat
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (window.location.search.includes('chat=true') || window.location.hash === '#chat') {
+        setIsOpen(true);
+      }
+    }
+  }, []);
+
   // Check auth & load messages
   useEffect(() => {
     async function init() {
