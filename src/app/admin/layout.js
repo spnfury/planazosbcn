@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
   { href: '/admin/tareas', icon: '✅', label: 'Tareas' },
   { href: '/admin/scanner', icon: '📱', label: 'Scanner QR' },
+  { href: '/admin/restaurantes/usuarios', icon: '🔐', label: 'Usuarios Rest.' },
   { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
   { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
   { href: '/admin/logs', icon: '📝', label: 'Logs' },
