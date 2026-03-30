@@ -22,6 +22,7 @@ export default function ReserveButton({
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
   const [promoCode, setPromoCode] = useState('');
+  const [showPromoInput, setShowPromoInput] = useState(false);
   const [shippingData, setShippingData] = useState({
     name: '',
     address: '',
@@ -298,21 +299,42 @@ export default function ReserveButton({
 
               {/* Promo Code */}
               <div className={styles.formGroup}>
-                <label htmlFor="reserve-promo" className={styles.label}>
-                  Código promocional (opcional)
-                </label>
-                <input
-                  id="reserve-promo"
-                  type="text"
-                  className={styles.input}
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  placeholder="Introduce tu código"
-                />
-                {isPromoApplied && (
-                  <p style={{ color: 'var(--color-primary)', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 'bold' }}>
-                    ✅ Código aplicado: ¡Total a pagar 0€!
-                  </p>
+                {!showPromoInput && !promoCode ? (
+                  <button 
+                    type="button" 
+                    className={styles.promoToggleBtn} 
+                    onClick={() => setShowPromoInput(true)}
+                  >
+                    ¿Tienes un código promocional?
+                  </button>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label htmlFor="reserve-promo" className={styles.label}>
+                        Código promocional
+                      </label>
+                      <button 
+                        type="button" 
+                        onClick={() => { setShowPromoInput(false); setPromoCode(''); }}
+                        style={{ background: 'none', border: 'none', fontSize: '0.8rem', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                    <input
+                      id="reserve-promo"
+                      type="text"
+                      className={styles.input}
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      placeholder="Introduce tu código"
+                    />
+                    {isPromoApplied && (
+                      <p style={{ color: 'var(--color-primary)', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 'bold' }}>
+                        ✅ Código aplicado: ¡Total a pagar 0€!
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
