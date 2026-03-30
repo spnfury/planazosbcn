@@ -121,7 +121,7 @@ export default function RestaurantLayout({ children }) {
             <div className={styles.portalName}>
               {restaurantUser?.restaurants?.nombre || restaurantUser?.name || 'Restaurante'}
             </div>
-            <span className={styles.portalBadge}>Restaurante</span>
+            <span className={styles.portalBadge}>Comercio</span>
           </div>
         </div>
         <button className={styles.logoutBtn} onClick={signOut} id="restaurant-logout">

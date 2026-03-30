@@ -176,9 +176,9 @@ export default function AdminRestaurantUsersPage() {
     <>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Usuarios Restaurante</h1>
+          <h1 className={styles.pageTitle}>Comercios</h1>
           <p className={styles.pageSubtitle}>
-            {loading ? 'Cargando...' : `${users.length} usuarios restaurante`}
+            {loading ? 'Cargando...' : `${users.length} ${users.length === 1 ? 'comercio' : 'comercios'}`}
           </p>
         </div>
         <button
@@ -186,7 +186,7 @@ export default function AdminRestaurantUsersPage() {
           onClick={() => setShowForm(!showForm)}
           id="toggle-create-form"
         >
-          {showForm ? '✕ Cerrar' : '＋ Nuevo usuario'}
+          {showForm ? '✕ Cerrar' : '＋ Nuevo comercio'}
         </button>
       </div>
 
@@ -220,7 +220,7 @@ export default function AdminRestaurantUsersPage() {
           marginBottom: '1.5rem',
         }}>
           <h3 style={{ color: '#fff', margin: '0 0 1rem', fontSize: '1rem', fontWeight: 700 }}>
-            Crear usuario restaurante
+            Crear acceso de comercio
           </h3>
           <form onSubmit={handleCreate}>
             <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
@@ -331,9 +331,9 @@ export default function AdminRestaurantUsersPage() {
         <p style={{ color: 'rgba(255,255,255,0.4)' }}>Cargando...</p>
       ) : users.length === 0 && !showForm ? (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🍽️</div>
-          <h3 className={styles.emptyTitle}>No hay usuarios restaurante</h3>
-          <p className={styles.emptyDesc}>Crea uno para que el restaurante pueda validar entradas</p>
+          <div className={styles.emptyIcon}>🏪</div>
+          <h3 className={styles.emptyTitle}>No hay comercios</h3>
+          <p className={styles.emptyDesc}>Crea uno para que el comercio pueda gestionar su negocio</p>
         </div>
       ) : (
         <table className={styles.table}>
@@ -489,7 +489,7 @@ export default function AdminRestaurantUsersPage() {
           fontSize: '0.85rem',
           color: 'rgba(255,255,255,0.6)',
         }}>
-          <strong style={{ color: '#3B82F6' }}>ℹ️ URL de acceso para restaurantes:</strong>
+          <strong style={{ color: '#3B82F6' }}>ℹ️ URL de acceso para comercios:</strong>
           <br />
           <code style={{
             background: 'rgba(0,0,0,0.3)',
@@ -504,7 +504,7 @@ export default function AdminRestaurantUsersPage() {
           </code>
           <br />
           <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
-            Comparte este enlace con el restaurante junto con sus credenciales.
+            Comparte este enlace con el comercio junto con sus credenciales.
           </span>
         </div>
       )}

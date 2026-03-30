@@ -75,12 +75,14 @@ export async function POST(request) {
         }
       }
 
-      const available = plan.capacity - plan.spots_taken;
-      if (quantity > available) {
-        return NextResponse.json(
-          { error: `Solo quedan ${available} plazas disponibles` },
-          { status: 400 }
-        );
+      if (plan.capacity && plan.capacity > 0) {
+        const available = plan.capacity - plan.spots_taken;
+        if (quantity > available) {
+          return NextResponse.json(
+            { error: `Solo quedan ${available} plazas disponibles` },
+            { status: 400 }
+          );
+        }
       }
     }
 

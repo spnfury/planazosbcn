@@ -41,7 +41,7 @@ export default function RestaurantLoginPage() {
       const authData = await res.json();
 
       if (!res.ok || !authData.isRestaurant) {
-        setError('No tienes permisos de restaurante');
+        setError('No tienes permisos de comercio');
         await supabase.auth.signOut();
         setLoading(false);
         return;
@@ -69,7 +69,7 @@ export default function RestaurantLoginPage() {
           />
         </div>
         <h1 className={styles.loginTitle}>PlanazosBCN</h1>
-        <p className={styles.loginSubtitle}>Portal de Restaurante</p>
+        <p className={styles.loginSubtitle}>Portal de Comercios</p>
 
         <form className={styles.loginForm} onSubmit={handleLogin}>
           {error && <div className={styles.loginError}>{error}</div>}

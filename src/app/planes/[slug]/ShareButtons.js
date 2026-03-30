@@ -1,12 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
 export default function ShareButtons({ planTitle }) {
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const getUrl = () => typeof window !== 'undefined' ? window.location.href : '';
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getUrl = () => mounted && typeof window !== 'undefined' ? window.location.href : '';
   const getText = () => `¡Mira este plan!: ${planTitle}\n${getUrl()}`;
 
   const handleNativeShare = async () => {
@@ -53,7 +58,7 @@ export default function ShareButtons({ planTitle }) {
 
   return (
     <div className={styles.shareButtons}>
-      {typeof navigator !== 'undefined' && navigator.share && (
+      {mounted && typeof navigator !== 'undefined' && navigator.share && (
         <button
           className={`${styles.shareBtn} ${styles.shareBtnNative}`}
           aria-label="Compartir"
