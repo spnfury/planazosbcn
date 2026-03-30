@@ -15,7 +15,9 @@ export default function ReserveButton({
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [selectedTicketId, setSelectedTicketId] = useState(
+    tickets && tickets.length > 0 ? (tickets.find(t => !t.sold_out)?.id || null) : null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
