@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
   { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
   { href: '/admin/logs', icon: '📝', label: 'Logs' },
+  { href: '/admin/generador-reels', icon: '🎬', label: 'Reels' },
 ];
 
 export default function AdminLayout({ children }) {

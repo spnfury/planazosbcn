@@ -166,6 +166,13 @@ export default function AdminPlanesPage() {
                       >
                         ✏️ Editar
                       </Link>
+                      <Link
+                        href={`/admin/generador-reels?id=${plan.id}`}
+                        className={styles.actionBtn}
+                        style={{background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe'}}
+                      >
+                        🎬 Reel
+                      </Link>
                       <button
                         className={`${styles.actionBtn} ${styles.actionBtnDanger}`}
                         onClick={() => deletePlan(plan)}

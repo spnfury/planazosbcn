@@ -106,7 +106,14 @@ export default function AdminRestaurantsPage() {
                       className={styles.actionBtn}
                       style={{background: 'rgba(188, 254, 47, 0.2)', color: '#bcfe2f'}}
                     >
-                      🤖 Configurar Menús
+                      🤖 Menús
+                    </Link>
+                    <Link
+                      href={`/admin/generador-reels?id=${rest.id}`}
+                      className={styles.actionBtn}
+                      style={{background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe'}}
+                    >
+                      🎬 Reel
                     </Link>
                     <button
                       className={`${styles.actionBtn} ${styles.actionBtnDanger}`}

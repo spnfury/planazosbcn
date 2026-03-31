@@ -117,11 +117,34 @@
 
 
 
-/* Auth — Desktop */
 .authDesktop {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.socialDesktop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-right: var(--space-2);
+  padding-right: var(--space-4);
+  border-right: 1px solid var(--color-border);
+}
+
+.socialIcon {
+  color: var(--color-text-secondary);
+  transition: color var(--duration-fast);
+  display: flex;
+  align-items: center;
+}
+
+.socialIcon:hover {
+  color: var(--color-primary);
+}
+
+.navSocialMobile {
+  display: none;
 }
 
 .loginBtn {
@@ -233,6 +256,16 @@
   .navAuthMobile {
     display: block;
     margin-top: var(--space-2);
+  }
+
+  .navSocialMobile {
+    display: flex;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+  }
+  
+  .navSocialMobile .socialIcon {
+    color: var(--color-text);
   }
 }
 
