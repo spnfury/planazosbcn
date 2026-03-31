@@ -264,6 +264,7 @@ export default function GeneradorReelsPage({ searchParams }) {
                    href={renderUrl}
                    target="_blank"
                    rel="noopener noreferrer"
+                   download={`planazos-reel-${plan?.slug || 'video'}.mp4`}
                    className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md mt-4"
                  >
                    <Download className="w-5 h-5" /> 
