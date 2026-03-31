@@ -14,6 +14,9 @@ export default function GeneradorReelsPage({ searchParams }) {
   const [rendering, setRendering] = useState(false);
   const [renderUrl, setRenderUrl] = useState(null);
   const [renderError, setRenderError] = useState(null);
+  const [autoPublishIg, setAutoPublishIg] = useState(false);
+  const [autoPublishTt, setAutoPublishTt] = useState(false);
+  const [publishStatus, setPublishStatus] = useState(null);
 
   const [hooks, setHooks] = useState([
     "¿Buscando un planazo único?",
@@ -82,6 +85,7 @@ export default function GeneradorReelsPage({ searchParams }) {
     setRendering(true);
     setRenderError(null);
     setRenderUrl(null);
+    setPublishStatus(null);
     try {
       const res = await fetch('/api/admin/render-reel', {
         method: 'POST',
@@ -98,8 +102,34 @@ export default function GeneradorReelsPage({ searchParams }) {
       if (!res.ok) throw new Error(data.error || 'Error al renderizar');
       
       setRenderUrl(data.url);
+
+      if (autoPublishIg || autoPublishTt) {
+        setPublishStatus('publishing');
+        const pubRes = await fetch('/api/admin/publish-social', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             videoUrl: data.url,
+             caption: `${plan?.title} - ${plan?.description?.slice(0,90)}... #planesbcn #planesenbarcelona`,
+             instagram: autoPublishIg,
+             tiktok: autoPublishTt
+           })
+        });
+        const pubData = await pubRes.json();
+        if (!pubRes.ok) throw new Error(pubData.error || 'Error al interactuar con las APIs sociales');
+        
+        // Verifica si hubo un grace error (falta de tokens que el backend devuelve como success: true pero error interno)
+        if (pubData.results?.instagram?.status === 'error' || pubData.results?.tiktok?.status === 'error') {
+            throw new Error(pubData.results?.instagram?.error || pubData.results?.tiktok?.error || 'Error interno en tokens de redes sociales');
+        }
+        
+        setPublishStatus('success');
+      }
     } catch (err) {
       setRenderError(err.message);
+      if (publishStatus === 'publishing') {
+         setPublishStatus('error');
+      }
     } finally {
       setRendering(false);
     }
@@ -200,9 +230,32 @@ export default function GeneradorReelsPage({ searchParams }) {
                <h3 className="font-bold text-lg mb-2">Exportar Vídeo</h3>
                <p className="text-white/80 text-sm mb-4">Pulsa para renderizar el vídeo final MP4. Tarda unos 15-30 segundos según la longitud.</p>
                
+               <div className="flex flex-col gap-2 mb-4 bg-white/10 p-3 rounded-lg border border-white/20">
+                 <label className="flex items-center gap-2 cursor-pointer">
+                   <input type="checkbox" checked={autoPublishIg} onChange={e => setAutoPublishIg(e.target.checked)} className="rounded text-indigo-500 bg-white/20 border-white/30" />
+                   <span className="text-sm font-medium">Auto-publicar en Instagram Reels</span>
+                 </label>
+                 <label className="flex items-center gap-2 cursor-pointer">
+                   <input type="checkbox" checked={autoPublishTt} onChange={e => setAutoPublishTt(e.target.checked)} className="rounded text-indigo-500 bg-white/20 border-white/30" />
+                   <span className="text-sm font-medium">Auto-publicar en TikTok</span>
+                 </label>
+               </div>
+
                {renderError && (
                  <div className="mb-4 bg-red-500/20 border border-red-500/50 p-2 rounded text-xs text-red-100">
                    Error: {renderError}
+                 </div>
+               )}
+
+               {publishStatus === 'publishing' && (
+                 <div className="mb-4 bg-yellow-500/20 border border-yellow-500/50 p-2 rounded text-xs text-yellow-100 flex items-center gap-2">
+                   <Loader2 className="w-3 h-3 animate-spin" /> Conectando con Meta/TikTok API...
+                 </div>
+               )}
+
+               {publishStatus === 'success' && (
+                 <div className="mb-4 bg-green-500/20 border border-green-500/50 p-2 rounded text-xs text-green-100">
+                   ¡Petición enviada a las redes con éxito! (Nota: tardarán unos minutos en procesar y colgar el vídeo en tu feed).
                  </div>
                )}
 
