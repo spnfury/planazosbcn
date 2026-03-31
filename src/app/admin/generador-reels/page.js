@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { Player } from '@remotion/player';
 import { PlanazoReel } from '@/remotion/PlanazoReel';
 import { createClient } from '@/lib/supabase/client';
@@ -24,7 +24,8 @@ export default function GeneradorReelsPage({ searchParams }) {
     "¡Guarda este vídeo!"
   ]);
 
-  const planId = searchParams?.id;
+  const unwrappedParams = use(searchParams);
+  const planId = unwrappedParams?.id;
 
   useEffect(() => {
     async function fetchPlan() {
@@ -94,7 +95,7 @@ export default function GeneradorReelsPage({ searchParams }) {
           title: plan?.title || "Plan Extremo Editando",
           price: plan?.price || "GRATIS",
           zone: plan?.zone || "Barcelona",
-          images: plan?.images?.length ? plan.images : ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=1974&auto=format&fit=crop'],
+          images: plan?.image ? [plan.image] : ['https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=1974&auto=format&fit=crop'],
           hooks: hooks.filter(h => h.trim() !== '')
         })
       });
@@ -136,194 +137,191 @@ export default function GeneradorReelsPage({ searchParams }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        
-        {/* Cabecera */}
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/admin/restaurantes" className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-            <ArrowLeft className="w-6 h-6 text-gray-700" />
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Video className="w-8 h-8 text-blue-600" />
-              Generador de Reels con IA
-            </h1>
-            <p className="text-gray-500 mt-1">Crea vídeos verticales espectaculares a partir de tus planes automáticamente.</p>
-          </div>
+    <div style={{ padding: '0 2rem 5rem', color: '#fff' }}>
+      
+      {/* Cabecera */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem', marginTop: '1rem' }}>
+        <Link href="/admin/restaurantes" style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: '0 0 0.2rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Video className="w-6 h-6" style={{ color: '#bcfe2f' }} />
+            Generador de Reels con IA
+          </h1>
+          <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>Crea vídeos verticales espectaculares a partir de tus planes automáticamente.</p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem', alignItems: 'start' }}>
+        
+        {/* Columna Izquierda: Configuración */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          {/* Columna Izquierda: Configuración */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <Wand2 className="w-5 h-5 text-purple-500" /> Contenido del Reel
-                </h2>
-              </div>
-              
-              {!plan ? (
-                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm border border-yellow-200">
-                  No se ha seleccionado ningún plan. Vuelve al panel e inicia el generador desde un planazo específico.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Título Principal</label>
-                    <input 
-                      type="text" 
-                      value={plan.title || ''} 
-                      onChange={(e) => setPlan({...plan, title: e.target.value})}
-                      className="w-full border-gray-300 rounded-lg p-3 bg-gray-50 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-gray-900 shadow-sm"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Precio Mostrado</label>
-                    <input 
-                      type="text" 
-                      value={plan.price || ''} 
-                      onChange={(e) => setPlan({...plan, price: e.target.value})}
-                      className="w-full border-gray-300 rounded-lg p-3 bg-gray-50 border focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium text-gray-900 shadow-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                       <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Ganchos (Textos Animados)</label>
-                       <button 
-                         onClick={handleGenerateHooks}
-                         disabled={generatingHooks}
-                         className="flex items-center gap-1 text-xs px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-md font-bold transition-colors disabled:opacity-50"
-                       >
-                         {generatingHooks ? <Loader2 className="w-3 h-3 animate-spin"/> : <Wand2 className="w-3 h-3"/>}
-                         Magic IA
-                       </button>
-                    </div>
-                    {hooks.map((hook, i) => (
-                      <input 
-                        key={i}
-                        type="text" 
-                        value={hook} 
-                        onChange={(e) => {
-                          const newHooks = [...hooks];
-                          newHooks[i] = e.target.value;
-                          setHooks(newHooks);
-                        }}
-                        className="w-full text-sm border-gray-300 rounded-lg p-2.5 mb-2 bg-gray-50 border focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-medium text-gray-900 shadow-sm"
-                      />
-                    ))}
-                    <button 
-                      onClick={() => setHooks([...hooks, "Nuevo gancho..."])}
-                      className="text-sm text-purple-600 font-semibold hover:text-purple-800 transition-colors mt-1"
-                    >
-                      + Añadir texto
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-lg border border-indigo-400 text-white">
-               <h3 className="font-bold text-lg mb-2">Exportar Vídeo</h3>
-               <p className="text-white/80 text-sm mb-4">Pulsa para renderizar el vídeo final MP4. Tarda unos 15-30 segundos según la longitud.</p>
-               
-               <div className="flex flex-col gap-2 mb-4 bg-white/10 p-3 rounded-lg border border-white/20">
-                 <label className="flex items-center gap-2 cursor-pointer">
-                   <input type="checkbox" checked={autoPublishIg} onChange={e => setAutoPublishIg(e.target.checked)} className="rounded text-indigo-500 bg-white/20 border-white/30" />
-                   <span className="text-sm font-medium">Auto-publicar en Instagram Reels</span>
-                 </label>
-                 <label className="flex items-center gap-2 cursor-pointer">
-                   <input type="checkbox" checked={autoPublishTt} onChange={e => setAutoPublishTt(e.target.checked)} className="rounded text-indigo-500 bg-white/20 border-white/30" />
-                   <span className="text-sm font-medium">Auto-publicar en TikTok</span>
-                 </label>
-               </div>
-
-               {renderError && (
-                 <div className="mb-4 bg-red-500/20 border border-red-500/50 p-2 rounded text-xs text-red-100">
-                   Error: {renderError}
-                 </div>
-               )}
-
-               {publishStatus === 'publishing' && (
-                 <div className="mb-4 bg-yellow-500/20 border border-yellow-500/50 p-2 rounded text-xs text-yellow-100 flex items-center gap-2">
-                   <Loader2 className="w-3 h-3 animate-spin" /> Conectando con Meta/TikTok API...
-                 </div>
-               )}
-
-               {publishStatus === 'success' && (
-                 <div className="mb-4 bg-green-500/20 border border-green-500/50 p-2 rounded text-xs text-green-100">
-                   ¡Petición enviada a las redes con éxito! (Nota: tardarán unos minutos en procesar y colgar el vídeo en tu feed).
-                 </div>
-               )}
-
-               {renderUrl ? (
-                 <a 
-                   href={renderUrl}
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   download={`planazos-reel-${plan?.slug || 'video'}.mp4`}
-                   className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-400 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md mt-4"
-                 >
-                   <Download className="w-5 h-5" /> 
-                   Descargar MP4
-                 </a>
-               ) : (
-                 <button 
-                   disabled={!plan || rendering} 
-                   onClick={handleRenderReel}
-                   className="w-full flex items-center justify-center gap-2 bg-white text-indigo-700 hover:bg-gray-100 font-bold py-3 px-4 rounded-xl transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                 >
-                   {rendering ? <Loader2 className="w-5 h-5 animate-spin" /> : <Video className="w-5 h-5" />}
-                   {rendering ? 'Renderizando...' : 'Renderizar MP4'}
-                 </button>
-               )}
-            </div>
-          </div>
-
-          {/* Columna Derecha: Previsualización de Remotion */}
-          <div className="lg:col-span-2 flex justify-center items-center bg-gray-900 rounded-3xl p-8 shadow-inner overflow-hidden relative min-h-[600px]">
-            <div className="absolute top-4 left-6 z-10">
-              <span className="bg-red-500/80 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold font-mono tracking-widest animate-pulse border border-red-400">
-                PREVIEW EN DIRECTO
-              </span>
-            </div>
+          <div style={{ background: '#161625', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 1.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Wand2 className="w-5 h-5" style={{ color: '#d8b4fe' }} /> Contenido del Reel
+            </h2>
             
-            {loading ? (
-              <div className="text-white flex flex-col items-center">
-                <Video className="w-12 h-12 text-gray-700 animate-bounce mb-4" />
-                <p>Cargando datos del plan...</p>
+            {!plan ? (
+              <div style={{ padding: '1rem', background: 'rgba(255,193,7,0.1)', color: '#ffc107', borderRadius: '8px', fontSize: '0.85rem' }}>
+                Cargando datos del plan... O no se seleccionó ninguno.
               </div>
             ) : (
-              <div className="rounded-[40px] overflow-hidden shadow-2xl ring-8 ring-gray-800 bg-black" style={{ width: '320px', height: '568px' }}>
-                 <Player
-                   component={PlanazoReel}
-                   inputProps={{
-                     title: plan?.title || "Plan Extremo Editando",
-                     price: plan?.price || "GRATIS",
-                     zone: plan?.zone || "Barcelona",
-                     images: plan?.images?.length ? plan.images : ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=1974&auto=format&fit=crop'],
-                     hooks: hooks.filter(h => h.trim() !== '')
-                   }}
-                   durationInFrames={450}
-                   fps={30}
-                   compositionWidth={1080}
-                   compositionHeight={1920}
-                   style={{
-                     width: '320px',
-                     height: '568px'
-                   }}
-                   controls
-                   autoPlay
-                   loop
-                 />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Título Principal</label>
+                  <input 
+                    type="text" 
+                    value={plan.title || ''} 
+                    onChange={(e) => setPlan({...plan, title: e.target.value})}
+                    style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem' }}
+                  />
+                </div>
+                
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Precio Mostrado</label>
+                  <input 
+                    type="text" 
+                    value={plan.price || ''} 
+                    onChange={(e) => setPlan({...plan, price: e.target.value})}
+                    style={{ width: '100%', padding: '0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.9rem' }}
+                  />
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                     <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: '600', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Ganchos Animados</label>
+                     <button 
+                       onClick={handleGenerateHooks}
+                       disabled={generatingHooks}
+                       style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', fontSize: '0.75rem', padding: '0.3rem 0.6rem', background: 'rgba(168,85,247,0.2)', color: '#d8b4fe', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                     >
+                       {generatingHooks ? <Loader2 className="w-3 h-3 animate-spin"/> : <Wand2 className="w-3 h-3"/>}
+                       Magic IA
+                     </button>
+                  </div>
+                  {hooks.map((hook, i) => (
+                    <input 
+                      key={i}
+                      type="text" 
+                      value={hook} 
+                      onChange={(e) => {
+                        const newHooks = [...hooks];
+                        newHooks[i] = e.target.value;
+                        setHooks(newHooks);
+                      }}
+                      style={{ width: '100%', padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', fontSize: '0.85rem', marginBottom: '0.4rem' }}
+                    />
+                  ))}
+                  <button 
+                    onClick={() => setHooks([...hooks, "Nuevo gancho..."])}
+                    style={{ fontSize: '0.8rem', color: '#d8b4fe', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.2rem', fontWeight: '600' }}
+                  >
+                    + Añadir texto
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
+          <div style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7e22ce 100%)', padding: '1.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+             <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', margin: '0 0 0.5rem 0' }}>Exportar Vídeo</h3>
+             <p style={{ fontSize: '0.85rem', opacity: 0.8, margin: '0 0 1rem 0' }}>Pulsa para renderizar el vídeo final MP4. Tarda unos 15-30 segundos según la longitud.</p>
+             
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', marginBottom: '1rem' }}>
+               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                 <input type="checkbox" checked={autoPublishIg} onChange={e => setAutoPublishIg(e.target.checked)} />
+                 Auto-publicar en Instagram Reels
+               </label>
+               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
+                 <input type="checkbox" checked={autoPublishTt} onChange={e => setAutoPublishTt(e.target.checked)} />
+                 Auto-publicar en TikTok
+               </label>
+             </div>
+
+             {renderError && (
+               <div style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.5)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.8rem', color: '#fca5a5', marginBottom: '1rem' }}>
+                 Error: {renderError}
+               </div>
+             )}
+
+             {publishStatus === 'publishing' && (
+               <div style={{ background: 'rgba(234,179,8,0.2)', border: '1px solid rgba(234,179,8,0.5)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.8rem', color: '#fde047', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                 <Loader2 className="w-3 h-3 animate-spin" /> Conectando con Meta/TikTok...
+               </div>
+             )}
+
+             {publishStatus === 'success' && (
+               <div style={{ background: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.5)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.8rem', color: '#86efac', marginBottom: '1rem' }}>
+                 ¡Petición enviada (espera unos min)!
+               </div>
+             )}
+
+             {renderUrl ? (
+               <a 
+                 href={renderUrl}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 download={`planazos-reel-${plan?.slug || 'video'}.mp4`}
+                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#22c55e', color: 'white', fontWeight: 'bold', padding: '1rem', borderRadius: '8px', textDecoration: 'none', transition: '0.2s' }}
+               >
+                 <Download className="w-5 h-5" /> 
+                 Descargar MP4
+               </a>
+             ) : (
+               <button 
+                 disabled={!plan || rendering} 
+                 onClick={handleRenderReel}
+                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: 'white', color: '#4f46e5', fontWeight: 'bold', padding: '1rem', borderRadius: '8px', border: 'none', cursor: (!plan || rendering) ? 'not-allowed' : 'pointer', opacity: (!plan || rendering) ? 0.7 : 1 }}
+               >
+                 {rendering ? <Loader2 className="w-5 h-5 animate-spin" /> : <Video className="w-5 h-5" />}
+                 {rendering ? 'Renderizando...' : 'Renderizar MP4'}
+               </button>
+             )}
+          </div>
         </div>
+
+        {/* Columna Derecha: Previsualización de Remotion */}
+        <div style={{ background: '#09090b', borderRadius: '24px', padding: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', overflow: 'hidden', minHeight: '600px', boxShadow: 'inset 0 0 50px rgba(0,0,0,0.5)' }}>
+          <div style={{ position: 'absolute', top: '1rem', left: '1.5rem', zIndex: 10 }}>
+            <span style={{ background: 'rgba(239,68,68,0.8)', backdropFilter: 'blur(4px)', color: 'white', padding: '0.3rem 0.6rem', borderRadius: '50px', fontSize: '0.65rem', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: '0.1em', border: '1px solid rgba(239,68,68,0.5)' }}>
+              🔴 LIVE PREVIEW
+            </span>
+          </div>
+          
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'rgba(255,255,255,0.5)' }}>
+              <Video className="w-10 h-10 mb-2" style={{ animation: 'bounce 1s infinite' }} />
+              <p>Cargando previsualización...</p>
+            </div>
+          ) : (
+            <div style={{ borderRadius: '32px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', outline: '8px solid #161625', backgroundColor: '#000', width: '320px', height: '568px' }}>
+               <Player
+                 component={PlanazoReel}
+                 inputProps={{
+                   title: plan?.title || "Plan Extremo Editando",
+                   price: plan?.price || "GRATIS",
+                   zone: plan?.zone || "Barcelona",
+                   images: plan?.image ? [plan.image] : ['https://images.unsplash.com/photo-1542204165-65bf26472b9b?q=80&w=1974&auto=format&fit=crop'],
+                   hooks: hooks.filter(h => h.trim() !== '')
+                 }}
+                 durationInFrames={450}
+                 fps={30}
+                 compositionWidth={1080}
+                 compositionHeight={1920}
+                 style={{
+                   width: '320px',
+                   height: '568px'
+                 }}
+                 controls
+                 autoPlay
+                 loop
+               />
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
