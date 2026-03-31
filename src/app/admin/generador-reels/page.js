@@ -14,8 +14,7 @@ export default function GeneradorReelsPage({ searchParams }) {
   const [rendering, setRendering] = useState(false);
   const [renderUrl, setRenderUrl] = useState(null);
   const [renderError, setRenderError] = useState(null);
-  const [autoPublishIg, setAutoPublishIg] = useState(false);
-  const [autoPublishTt, setAutoPublishTt] = useState(false);
+  const [sendTelegram, setSendTelegram] = useState(true);
   const [publishStatus, setPublishStatus] = useState(null);
 
   const [hooks, setHooks] = useState([
@@ -104,7 +103,7 @@ export default function GeneradorReelsPage({ searchParams }) {
       
       setRenderUrl(data.url);
 
-      if (autoPublishIg || autoPublishTt) {
+      if (sendTelegram) {
         setPublishStatus('publishing');
         const pubRes = await fetch('/api/admin/publish-social', {
            method: 'POST',
@@ -112,16 +111,15 @@ export default function GeneradorReelsPage({ searchParams }) {
            body: JSON.stringify({
              videoUrl: data.url,
              caption: `${plan?.title} - ${plan?.description?.slice(0,90)}... #planesbcn #planesenbarcelona`,
-             instagram: autoPublishIg,
-             tiktok: autoPublishTt
+             telegram: sendTelegram
            })
         });
         const pubData = await pubRes.json();
-        if (!pubRes.ok) throw new Error(pubData.error || 'Error al interactuar con las APIs sociales');
+        if (!pubRes.ok) throw new Error(pubData.error || 'Error al interactuar con el Bot de Telegram');
         
         // Verifica si hubo un grace error (falta de tokens que el backend devuelve como success: true pero error interno)
-        if (pubData.results?.instagram?.status === 'error' || pubData.results?.tiktok?.status === 'error') {
-            throw new Error(pubData.results?.instagram?.error || pubData.results?.tiktok?.error || 'Error interno en tokens de redes sociales');
+        if (pubData.results?.telegram?.status === 'error') {
+            throw new Error(pubData.results?.telegram?.error || 'Error interno en tokens de Telegram');
         }
         
         setPublishStatus('success');
@@ -231,12 +229,8 @@ export default function GeneradorReelsPage({ searchParams }) {
              
              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', marginBottom: '1rem' }}>
                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-                 <input type="checkbox" checked={autoPublishIg} onChange={e => setAutoPublishIg(e.target.checked)} />
-                 Auto-publicar en Instagram Reels
-               </label>
-               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-                 <input type="checkbox" checked={autoPublishTt} onChange={e => setAutoPublishTt(e.target.checked)} />
-                 Auto-publicar en TikTok
+                 <input type="checkbox" checked={sendTelegram} onChange={e => setSendTelegram(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#25D366' }} />
+                 📱 Enviar al móvil por Bot de Telegram automáticamente
                </label>
              </div>
 
@@ -248,13 +242,13 @@ export default function GeneradorReelsPage({ searchParams }) {
 
              {publishStatus === 'publishing' && (
                <div style={{ background: 'rgba(234,179,8,0.2)', border: '1px solid rgba(234,179,8,0.5)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.8rem', color: '#fde047', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                 <Loader2 className="w-3 h-3 animate-spin" /> Conectando con Meta/TikTok...
+                 <Loader2 className="w-3 h-3 animate-spin" /> Enviando Reel a tu Telegram...
                </div>
              )}
 
              {publishStatus === 'success' && (
                <div style={{ background: 'rgba(34,197,94,0.2)', border: '1px solid rgba(34,197,94,0.5)', padding: '0.5rem', borderRadius: '6px', fontSize: '0.8rem', color: '#86efac', marginBottom: '1rem' }}>
-                 ¡Petición enviada (espera unos min)!
+                 ¡Reel enviado! Revisa tus mensajes de Telegram.
                </div>
              )}
 

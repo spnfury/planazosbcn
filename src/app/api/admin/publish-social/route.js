@@ -22,99 +22,49 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { videoUrl, caption, instagram, tiktok } = body;
+    const { videoUrl, caption, telegram } = body;
 
     if (!videoUrl) {
       return NextResponse.json({ error: 'Falta la URL del vídeo a publicar' }, { status: 400 });
     }
 
     let results = {
-      instagram: { status: 'skipped' },
-      tiktok: { status: 'skipped' }
+      telegram: { status: 'skipped' }
     };
 
-    // 1. PUBLICACIÓN EN INSTAGRAM REELS (Meta Graph API)
-    if (instagram) {
-      const igAccountId = process.env.IG_ACCOUNT_ID;
-      const igAccessToken = process.env.IG_ACCESS_TOKEN;
+    // PUBLICACIÓN VIA TELEGRAM BOT
+    if (telegram) {
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      const chatId = process.env.TELEGRAM_CHAT_ID;
 
-      if (!igAccountId || !igAccessToken) {
-        results.instagram = { 
+      if (!botToken || !chatId) {
+        results.telegram = { 
           status: 'error', 
-          error: 'Faltan credenciales de Meta Graph API (IG_ACCOUNT_ID, IG_ACCESS_TOKEN) en el entorno.' 
+          error: 'Faltan credenciales del Bot de Telegram (TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID) en el entorno.' 
         };
       } else {
         try {
-          // Fase 1: Crear Contenedor de Reel
-          console.log("Iniciando subida a IG (Fase 1)...");
-          const createCmd = await fetch(`https://graph.facebook.com/v19.0/${igAccountId}/media?media_type=REELS&video_url=${encodeURIComponent(videoUrl)}&caption=${encodeURIComponent(caption)}&access_token=${igAccessToken}`, {
-            method: 'POST'
-          });
-          
-          const createData = await createCmd.json();
-          if (createData.error) throw new Error(createData.error.message);
-          
-          const containerId = createData.id;
-          
-          // Fase 2: Publicar y confirmar (Requeriría Webhooks o Polling, simplificamos con delay de 10s para este ejemplo y no bloquear a Vercel más de lo necesario).
-          // NOTA: En un entorno de producción masivo, esto debe ir en un sistema de colas (AWS SQS, Upstash, o Meta Webhooks).
-          console.log(`Contenedor IG creado (${containerId}). Esperando procesamiento...`);
-          await new Promise(resolve => setTimeout(resolve, 15000));
-          
-          const publishCmd = await fetch(`https://graph.facebook.com/v19.0/${igAccountId}/media_publish?creation_id=${containerId}&access_token=${igAccessToken}`, {
-            method: 'POST'
-          });
-          
-          const publishData = await publishCmd.json();
-          if (publishData.error) throw new Error(publishData.error.message);
-
-          results.instagram = { status: 'success', id: publishData.id };
-        } catch (igErr) {
-          console.error("Error publicando en Instagram:", igErr);
-          results.instagram = { status: 'error', error: igErr.message };
-        }
-      }
-    }
-
-    // 2. PUBLICACIÓN EN TIKTOK DIRECT POST API
-    if (tiktok) {
-      const tiktokAccessToken = process.env.TIKTOK_ACCESS_TOKEN;
-
-      if (!tiktokAccessToken) {
-        results.tiktok = { 
-          status: 'error', 
-          error: 'Faltan credenciales de TikTok Developer (TIKTOK_ACCESS_TOKEN) en el entorno.' 
-        };
-      } else {
-        try {
-          // API v2 Content Posting: Inicializamos el "pull" desde una URL pública
-          // Nota de la API de TikTok (Requiere scope video.publish)
-          const ttCmd = await fetch(`https://open.tiktokapis.com/v2/post/publish/video/init/`, {
+          console.log("Enviando Reel generado al teléfono vía Telegram...");
+          const telegramCmd = await fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${tiktokAccessToken}`,
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              post_info: {
-                title: caption,
-                privacy_level: 'PUBLIC_TO_EVERYONE',
-                disable_comment: false
-              },
-              source_info: {
-                source: 'PULL_FROM_URL',
-                video_url: videoUrl
-              }
+              chat_id: chatId,
+              video: videoUrl,
+              caption: caption,
+              supports_streaming: true
             })
           });
-
-          const ttData = await ttCmd.json();
-          if (ttData.error) throw new Error(ttData.error.message || 'Error en API de TikTok');
           
-          results.tiktok = { status: 'success', publish_id: ttData.data.publish_id };
-        } catch (ttErr) {
-          console.error("Error publicando en TikTok:", ttErr);
-          results.tiktok = { status: 'error', error: ttErr.message };
+          const tgData = await telegramCmd.json();
+          if (!tgData.ok) {
+            throw new Error(tgData.description || 'Error desconocido de Telegram');
+          }
+
+          results.telegram = { status: 'success', message_id: tgData.result.message_id };
+        } catch (tgErr) {
+          console.error("Error enviando por Telegram:", tgErr);
+          results.telegram = { status: 'error', error: tgErr.message };
         }
       }
     }
