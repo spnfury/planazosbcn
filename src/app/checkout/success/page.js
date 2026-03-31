@@ -232,7 +232,7 @@ function SuccessContent() {
                     <p className={styles.chatNoticeText}>
                       Entra en la página del plan para hablar con el resto de personas que se han apuntado.
                     </p>
-                    <Link href={`/planes/${plan.slug}`} className={styles.chatNoticeLink} id="go-to-chat">
+                    <Link href={`/planes/${plan.slug}?chat=true`} className={styles.chatNoticeLink} id="go-to-chat">
                       Ir al chat del plan →
                     </Link>
                   </div>

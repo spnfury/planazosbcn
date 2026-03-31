@@ -53,10 +53,12 @@ export default function AuthProvider({ children }) {
 
   async function signOut() {
     await supabase.auth.signOut();
+    sessionStorage.removeItem('restaurant_user');
     setSession(null);
     setUser(null);
-    // Redirect after clearing state
-    window.location.href = '/admin/login';
+    // Redirect to appropriate login page
+    const isRestaurant = window.location.pathname.startsWith('/restaurant');
+    window.location.href = isRestaurant ? '/restaurant/login' : '/admin/login';
   }
 
   // Proactively refresh the session token to prevent expiry

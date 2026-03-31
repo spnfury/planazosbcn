@@ -200,15 +200,27 @@ export default function CuentaPage() {
                         <span className={`${styles.statusBadge} ${status.className}`}>
                           {status.emoji} {status.label}
                         </span>
-                        {res.status === 'paid' && res.qr_code && (
-                          <Link
-                            href={`/cuenta/entrada/${res.id}`}
-                            className={styles.viewTicketBtn}
-                            id={`view-ticket-${res.id}`}
-                          >
-                            Ver entrada →
-                          </Link>
-                        )}
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {res.status === 'paid' && res.plans?.slug && (
+                            <Link
+                              href={`/planes/${res.plans.slug}?chat=true`}
+                              className={styles.viewTicketBtn}
+                              style={{ backgroundColor: '#EFF6FF', color: '#1E40AF', border: '1px solid #BFDBFE' }}
+                              id={`chat-plan-${res.id}`}
+                            >
+                              💬 Ir al chat
+                            </Link>
+                          )}
+                          {res.status === 'paid' && res.qr_code && (
+                            <Link
+                              href={`/cuenta/entrada/${res.id}`}
+                              className={styles.viewTicketBtn}
+                              id={`view-ticket-${res.id}`}
+                            >
+                              Ver entrada →
+                            </Link>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

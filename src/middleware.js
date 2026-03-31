@@ -41,6 +41,7 @@ export async function middleware(request) {
       data: { user },
     } = await supabase.auth.getUser()
 
+    // Protect /admin routes (except login)
     if (
       !user &&
       request.nextUrl.pathname.startsWith('/admin') &&
@@ -49,6 +50,17 @@ export async function middleware(request) {
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/admin/login'
+      return NextResponse.redirect(url)
+    }
+
+    // Protect /restaurant routes (except login)
+    if (
+      !user &&
+      request.nextUrl.pathname.startsWith('/restaurant') &&
+      request.nextUrl.pathname !== '/restaurant/login'
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/restaurant/login'
       return NextResponse.redirect(url)
     }
   } catch (err) {
@@ -71,4 +83,3 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico|comercios|api/admin/restaurants/instagram|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
-

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { createClient } from '@/lib/supabase/server';
+import { Resend } from 'resend';
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function GET(request) {
   try {
@@ -88,7 +91,39 @@ export async function GET(request) {
       };
     });
 
-    return NextResponse.json({ messages: mapped });
+    // Fetch all paid reservations to get member info
+    const { data: reservations } = await supabaseAdmin
+      .from('reservations')
+      .select('user_id, quantity, customer_email')
+      .eq('plan_id', planId)
+      .eq('status', 'paid');
+
+    const totalMembers = (reservations || []).reduce((sum, r) => sum + (r.quantity || 1), 0);
+
+    // Get unique member profiles
+    const memberUserIds = [...new Set((reservations || []).map(r => r.user_id).filter(Boolean))];
+    let members = [];
+    if (memberUserIds.length > 0) {
+      const { data: memberProfiles } = await supabaseAdmin
+        .from('profiles')
+        .select('id, full_name, avatar_url, show_profile')
+        .in('id', memberUserIds);
+
+      members = (memberProfiles || [])
+        .filter(p => p.show_profile !== false)
+        .map(p => ({
+          id: p.id,
+          name: p.full_name || 'Anónimo',
+          avatar: p.avatar_url || null,
+          isYou: p.id === user.id,
+        }));
+    }
+
+    return NextResponse.json({
+      messages: mapped,
+      members,
+      totalMembers,
+    });
   } catch (err) {
     console.error('Chat GET error:', err);
     return NextResponse.json({ error: 'Error del servidor' }, { status: 500 });
@@ -138,6 +173,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No tienes reserva en este plan' }, { status: 403 });
     }
 
+    // Check if this is the very first message 
+    const { count } = await supabaseAdmin
+      .from('chat_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('plan_id', planId);
+    
+    const isFirstMessage = count === 0;
+
     // Insert message
     const { data: newMsg, error } = await supabaseAdmin
       .from('chat_messages')
@@ -165,6 +208,62 @@ export async function POST(request) {
       .select('full_name, avatar_url, show_profile')
       .eq('id', user.id)
       .single();
+
+    if (isFirstMessage && resend) {
+      // Get plan details
+      const { data: plan } = await supabaseAdmin
+        .from('plans')
+        .select('title, slug')
+        .eq('id', planId)
+        .single();
+        
+      if (plan) {
+         // Get all attendees except the sender
+         const { data: reservations } = await supabaseAdmin
+           .from('reservations')
+           .select('customer_email')
+           .eq('plan_id', planId)
+           .eq('status', 'paid');
+           
+         const emailsToNotify = [...new Set((reservations || [])
+            .map(r => r.customer_email)
+            .filter(email => email && email !== user.email))].slice(0, 49); // Resend BCC limit 50 total recipients
+            
+         if (emailsToNotify.length > 0) {
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+            const chatUrl = `${baseUrl}/planes/${plan.slug}?chat=true`;
+            
+            try {
+              await resend.emails.send({
+                from: 'PlanazosBCN <hola@planazosbcn.com>',
+                to: ['hola@planazosbcn.com'], // Send to selves
+                bcc: emailsToNotify, // BCC participants to protect privacy
+                subject: `💬 ¡El chat de ${plan.title} ha cobrado vida!`,
+                html: `
+                  <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+                    <h2 style="color: #000;">¡Hola! 👋</h2>
+                    <p>Alguien acaba de romper el hielo y ha enviado el primer mensaje en el grupo de tu plan <strong>${plan.title}</strong>.</p>
+                    <p>Entra al chat para saludar a los demás asistentes e ir organizando los detalles.</p>
+                    
+                    <div style="margin: 30px 0; text-align: center;">
+                      <a href="${chatUrl}" style="background-color: #e74c3c; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                        Ver mensajes y responder
+                      </a>
+                    </div>
+                    
+                    <p style="color: #666; font-size: 0.9em; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                      Recibes este email porque tienes una reserva activa en este plan. PlanazosBCN
+                    </p>
+                  </div>
+                `
+              });
+              console.log(`✉️ First message email sent for plan ${planId} to ${emailsToNotify.length} participants.`);
+            } catch (emailErr) {
+               console.error('Error sending first chat message email:', emailErr);
+            }
+         }
+      }
+    }
 
     return NextResponse.json({
       message: {
