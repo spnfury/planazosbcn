@@ -474,7 +474,7 @@ export default function GeneradorReelsPage() {
               {renderUrl && (
                 <div className={styles.renderComplete}>
                   <span>✅ Vídeo renderizado con éxito!</span>
-                  <a href={renderUrl} target="_blank" rel="noopener noreferrer" className={styles.downloadBtn}>
+                  <a href={`${renderUrl}?download=`} download="planazo-reel.mp4" className={styles.downloadBtn}>
                     ⬇️ Descargar MP4
                   </a>
                 </div>
