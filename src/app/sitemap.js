@@ -1,4 +1,5 @@
 import { CATEGORIES } from '@/data/plans';
+import { ETIQUETAS } from '@/data/planConstants';
 import { supabase } from '@/lib/supabase';
 
 export default async function sitemap() {
@@ -40,6 +41,14 @@ export default async function sitemap() {
     priority: 0.8,
   }));
 
+  // Hashtag / Tag pages
+  const tagPages = ETIQUETAS.map((tag) => ({
+    url: `${baseUrl}/planes/tag/${tag.id}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily',
+    priority: 0.8,
+  }));
+
   // Individual plan pages
   let planPages = [];
   try {
@@ -57,5 +66,5 @@ export default async function sitemap() {
     console.error('Error fetching plans for sitemap:', err);
   }
 
-  return [...staticPages, ...categoryPages, ...planPages];
+  return [...staticPages, ...categoryPages, ...tagPages, ...planPages];
 }

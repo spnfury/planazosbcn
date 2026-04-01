@@ -17,8 +17,7 @@ export default function PlanCard({ plan, featured = false }) {
   const emoji = CATEGORY_EMOJIS[plan.category] || '📍';
 
   return (
-    <Link
-      href={`/planes/${plan.slug}`}
+    <article
       className={`${styles.card} ${featured ? styles.featured : ''}`}
       id={`plan-${plan.slug}`}
     >
@@ -61,7 +60,11 @@ export default function PlanCard({ plan, featured = false }) {
           )}
         </div>
 
-        <h3 className={styles.title}>{plan.title}</h3>
+        <h3 className={styles.title}>
+          <Link href={`/planes/${plan.slug}`} className={styles.stretchedLink}>
+            {plan.title}
+          </Link>
+        </h3>
         <p className={styles.description}>{plan.excerpt}</p>
 
         <div className={styles.footer}>
@@ -80,9 +83,9 @@ export default function PlanCard({ plan, featured = false }) {
             {plan.etiquetas.slice(0, 3).map((etId) => {
               const et = getEtiqueta(etId);
               return (
-                <span key={etId} className={styles.etiquetaMini}>
+                <Link href={`/planes/tag/${etId}`} key={etId} className={styles.etiquetaMini}>
                   {et.emoji} {et.label}
-                </span>
+                </Link>
               );
             })}
             {plan.etiquetas.length > 3 && (
@@ -91,6 +94,6 @@ export default function PlanCard({ plan, featured = false }) {
           </div>
         )}
       </div>
-    </Link>
+    </article>
   );
 }

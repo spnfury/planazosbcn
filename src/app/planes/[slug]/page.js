@@ -114,14 +114,57 @@ export default async function PlanDetailPage({ params }) {
     
   const relatedPlans = (relatedPlansData || []).map(mapPlanData);
 
-  // If it's an evento type, render the dark FourVenues layout
+  // Generate JSON-LD
+  let parsedDate;
+  if (plan.date && !plan.date.includes('SÁB') && plan.date !== 'Gratis') {
+    // Basic attempt to parse if possible, or fallback to current date for schema validation
+    parsedDate = new Date(); 
+  }
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: plan.title,
+    description: plan.excerpt || plan.description,
+    image: plan.image,
+    startDate: new Date().toISOString(), // Google requires valid ISO
+    location: {
+      '@type': 'Place',
+      name: plan.venue || plan.zone || 'Barcelona',
+      address: plan.address || plan.zone || 'Barcelona, España'
+    },
+  };
+
+  if (plan.price) {
+    jsonLd.offers = {
+      '@type': 'Offer',
+      price: plan.price === 'Gratis' ? '0' : String(plan.price).replace(/[^0-9.]/g, ''),
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      url: `https://planazosbcn.com/planes/${plan.slug}`
+    };
+  }
+
   if (plan.type === 'evento') {
-    return <EventLayout plan={plan} relatedPlans={relatedPlans} />;
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <EventLayout plan={plan} relatedPlans={relatedPlans} />
+      </>
+    );
   }
 
   // Default plan layout (light theme)
   return (
-    <div className={styles.page}>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className={styles.page}>
       {/* Breadcrumb */}
       <div className={`container ${styles.breadcrumb}`}>
         <Link href="/" className={styles.crumb}>Inicio</Link>
@@ -298,9 +341,9 @@ export default async function PlanDetailPage({ params }) {
                     {plan.etiquetas.map((etId) => {
                       const et = getEtiqueta(etId);
                       return (
-                        <span key={etId} className={styles.etiquetaBadge}>
+                        <Link href={`/planes/tag/${etId}`} key={etId} className={styles.etiquetaBadge}>
                           {et.emoji} {et.label}
-                        </span>
+                        </Link>
                       );
                     })}
                   </div>
@@ -402,6 +445,7 @@ export default async function PlanDetailPage({ params }) {
 
       <PlanChat planId={plan.id} />
     </div>
+    </>
   );
 }
 
@@ -581,9 +625,9 @@ function EventLayout({ plan, relatedPlans }) {
                         {plan.etiquetas.map((etId) => {
                           const et = getEtiqueta(etId);
                           return (
-                            <span key={etId} className={styles.eventEtiquetaBadge}>
+                            <Link href={`/planes/tag/${etId}`} key={etId} className={styles.eventEtiquetaBadge}>
                               {et.emoji} {et.label}
-                            </span>
+                            </Link>
                           );
                         })}
                       </div>

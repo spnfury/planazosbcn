@@ -151,6 +151,8 @@
   flex-wrap: wrap;
   gap: 0.35rem;
   padding-top: var(--space-2);
+  position: relative;
+  z-index: 2;
 }
 
 .etiquetaMini {
@@ -165,6 +167,13 @@
   font-size: 0.65rem;
   font-weight: var(--font-semibold);
   white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.etiquetaMini:hover {
+  background: rgba(245, 158, 11, 0.15);
+  transform: translateY(-2px);
 }
 
 .etiquetaMore {
@@ -176,4 +185,13 @@
   color: var(--color-text-muted);
   font-size: 0.6rem;
   font-weight: var(--font-semibold);
+  position: relative;
+  z-index: 2;
+}
+
+.stretchedLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }

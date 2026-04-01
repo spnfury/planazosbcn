@@ -46,8 +46,26 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'PlanazosBCN',
+    url: 'https://planazosbcn.com',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://planazosbcn.com/planes?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <html lang="es">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body>
         <AuthProvider>
           <LayoutShell>{children}</LayoutShell>
