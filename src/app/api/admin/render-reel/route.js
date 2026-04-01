@@ -7,7 +7,7 @@ export async function POST(req) {
     const props = await req.json();
     console.log('Proxying render request to Oracle render farm...');
 
-    const res = await fetch('https://occur-handy-cow-relating.trycloudflare.com/api/render', {
+    const res = await fetch('https://message-township-archive-automotive.trycloudflare.com/api/render', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json'
