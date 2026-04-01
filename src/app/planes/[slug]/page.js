@@ -79,7 +79,7 @@ export default async function PlanDetailPage({ params }) {
 
   try {
     const [ticketsRes, guestListRes, scheduleRes, tagsRes, reelsRes] = await Promise.allSettled([
-      supabase.from('plan_tickets').select('id, name, price, description, sold_out, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
+      supabase.from('plan_tickets').select('id, name, price, description, capacity, spots_taken, sold_out, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
       supabase.from('plan_guest_lists').select('id, name, time_range, price, description, sold_out, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
       supabase.from('plan_schedule').select('time, description, sort_order').eq('plan_id', rawPlan.id).order('sort_order'),
       supabase.from('plan_tags').select('tag').eq('plan_id', rawPlan.id),

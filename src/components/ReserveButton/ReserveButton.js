@@ -227,11 +227,11 @@ export default function ReserveButton({
               </div>
 
               {/* Ticket selector (if tickets exist) */}
-              {tickets.length > 0 && (
+              {tickets.filter(t => t.name).length > 0 && (
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Tipo de entrada</label>
                   <div className={styles.ticketSelector}>
-                    {tickets.map((ticket) => {
+                    {tickets.filter(t => t.name).map((ticket) => {
                       const isSoldOut = ticket.sold_out;
                       const isActive = selectedTicketId === ticket.id;
                       return (
@@ -481,7 +481,7 @@ export default function ReserveButton({
               <button
                 className={styles.submitBtn}
                 onClick={handleSubmit}
-                disabled={loading || (plan.price !== 'Gratis' && tickets.length > 0 && !selectedTicketId)}
+                disabled={loading || (plan.price !== 'Gratis' && tickets.filter(t => t.name).length > 0 && !selectedTicketId)}
               >
                 {loading ? (
                   <>

@@ -757,8 +757,8 @@ export default function NuevoPlanPage() {
           </div>
         )}
 
-        {/* Tickets (for events) */}
-        {form.type === 'evento' && (
+        {/* Tickets */}
+        {(form.type === 'evento' || tickets.length > 0) && (
           <div className={styles.formSection}>
             <h3 className={styles.formSectionTitle}>🎟️ Entradas</h3>
             {tickets.map((ticket, i) => (

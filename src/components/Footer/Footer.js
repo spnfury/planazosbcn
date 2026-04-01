@@ -52,11 +52,16 @@ export default function Footer() {
             © {new Date().getFullYear()} PlanazosBCN. Todos los derechos reservados.
           </p>
           <div className={styles.socials}>
-            <a href="#" className={styles.social} aria-label="Instagram" id="social-instagram">
+            <a href="https://www.instagram.com/planazosbcnreal" target="_blank" rel="noopener noreferrer" className={styles.social} aria-label="Instagram" id="social-instagram">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                 <circle cx="12" cy="12" r="5" />
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+            </a>
+            <a href="https://www.tiktok.com/@planazosbcn.com" target="_blank" rel="noopener noreferrer" className={styles.social} aria-label="TikTok" id="social-tiktok">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5v3a8 8 0 0 1-5-3Z" />
               </svg>
             </a>
             <a href="#" className={styles.social} aria-label="WhatsApp" id="social-whatsapp">
