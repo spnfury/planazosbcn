@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const maxDuration = 300; // Allow enough time for video rendering
+
 export async function POST(req) {
   try {
     const props = await req.json();
@@ -17,10 +19,13 @@ export async function POST(req) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Render Farm Error (${res.status}): ${errorText}`);
+      let is408 = res.status === 408;
+      throw new Error(`Render Farm Error (${res.status}): ${is408 ? 'La conexión finalizó por un timeout de red.' : errorText}`);
     }
 
-    const data = await res.json();
+    const textPayload = await res.text();
+    // Parse the JSON manually stripping leading whitespaces injected by keep-alive heartbeats
+    const data = JSON.parse(textPayload.trim());
     return NextResponse.json(data);
 
   } catch (error) {
