@@ -318,14 +318,23 @@ export default function EditPlanPage({ params }) {
           <p className={styles.pageSubtitle}>{form.title}</p>
         </div>
         {form.slug && (
-          <Link 
-            href={`/planes/${form.slug}`} 
-            target="_blank" 
-            className={styles.actionBtn}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
-          >
-            ↗ Ver en la web
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Link 
+              href={`/planes/${form.slug}`} 
+              target="_blank" 
+              className={styles.actionBtn}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+            >
+              ↗ Ver en la web
+            </Link>
+            <Link
+              href={`/admin/generador-reels?id=${planId}`}
+              className={styles.btnPrimary}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0.5rem 1rem', background: 'linear-gradient(to right, #8B5CF6, #EC4899)', border: 'none', borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              🎬 Generar Reel
+            </Link>
+          </div>
         )}
       </div>
 

@@ -5,8 +5,9 @@ import { CATEGORIES } from '@/data/plans';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
 
-// Force dynamic rendering so admin changes appear instantly
-export const dynamic = 'force-dynamic';
+// ISR: regenerate every 60 seconds so admin changes appear quickly
+// while keeping pages statically cached for fast loads (critical for SEO)
+export const revalidate = 60;
 
 
 // Helper function to map snake_case from DB to camelCase for PlanCard

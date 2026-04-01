@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+let groq;
+function getGroq() {
+  if (!groq) {
+    groq = new Groq({ apiKey: process.env.GROQ_API_KEY || 'placeholder' });
+  }
+  return groq;
+}
 
 // Define available actions per page context
 function getSystemPrompt(context) {
@@ -99,7 +103,7 @@ export async function POST(req) {
       })),
     ];
 
-    const chatCompletion = await groq.chat.completions.create({
+    const chatCompletion = await getGroq().chat.completions.create({
       messages: groqMessages,
       model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },

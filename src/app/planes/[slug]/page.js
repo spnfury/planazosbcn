@@ -14,8 +14,8 @@ import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import { formatDate } from '@/lib/formatDate';
 import styles from './page.module.css';
 
-// Force dynamic rendering so admin changes appear instantly
-export const dynamic = 'force-dynamic';
+// ISR: regenerate every 60s for fast cached pages (critical for SEO)
+export const revalidate = 60;
 
 
 // Helper function to map snake_case from DB to camelCase

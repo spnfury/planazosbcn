@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/admin/restaurantes/usuarios', icon: '🏪', label: 'Comercios' },
   { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
   { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
+  { href: '/admin/generador-reels', icon: '🎬', label: 'Reels IA' },
   { href: '/admin/logs', icon: '📝', label: 'Logs' },
 ];
 
