@@ -605,6 +605,38 @@
   letter-spacing: 0.05em;
 }
 
+.renderComplete {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  color: #34D399;
+  font-size: 0.85rem;
+  text-align: center;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.downloadBtn {
+  display: inline-block;
+  padding: 0.65rem;
+  background: #10B981;
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.downloadBtn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
 .emptyScript {
   padding: 1.5rem 0;
   text-align: center;

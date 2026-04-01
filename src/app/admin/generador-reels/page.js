@@ -20,6 +20,8 @@ export default function GeneradorReelsPage() {
   const [currentSegment, setCurrentSegment] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [editingSegment, setEditingSegment] = useState(null);
+  const [rendering, setRendering] = useState(false);
+  const [renderUrl, setRenderUrl] = useState(null);
   const intervalRef = useRef(null);
   const previewRef = useRef(null);
 
@@ -130,9 +132,54 @@ export default function GeneradorReelsPage() {
   }
 
   function getSegmentMedia(segment) {
-    if (segment.mediaUrl) return segment.mediaUrl;
+    if (segment.mediaUrl && segment.mediaType === 'image') return segment.mediaUrl;
     if (plan?.image) return plan.image;
     return null;
+  }
+
+  async function handleRenderVideo() {
+    setRendering(true);
+    setError('');
+    setRenderUrl(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const images = script.segments
+        .map((seg) => getSegmentMedia(seg) || plan.image)
+        .filter(Boolean);
+        
+      const hooks = [script.hook, ...script.segments.map((s) => s.overlayText)].filter(Boolean);
+
+      const inputProps = {
+        title: plan.title,
+        price: plan.price || 'Planazo',
+        zone: plan.zone || 'Barcelona',
+        images: images.length > 0 ? images : [plan.image || ''],
+        hooks: hooks.length > 0 ? hooks : ['Planazo Increíble'],
+      };
+
+      const res = await fetch('/api/admin/render-reel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(inputProps),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error renderizando video MP4');
+      
+      if (data.url) {
+        setRenderUrl(data.url);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRendering(false);
+    }
   }
 
   function getInstagramEmbedUrl(url) {
@@ -408,18 +455,30 @@ export default function GeneradorReelsPage() {
               </p>
               <div className={styles.exportOptions}>
                 <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled />
-                  Auto-publicar en Instagram Reels
+                  <input type="checkbox" disabled={rendering} />
+                  Auto-publicar en Instagram Reels (Pronto)
                 </label>
                 <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled />
-                  Auto-publicar en TikTok
+                  <input type="checkbox" disabled={rendering} />
+                  Auto-publicar en TikTok (Pronto)
                 </label>
               </div>
-              <button className={styles.renderBtn} disabled>
-                <span>🎬</span> Renderizar MP4
-                <span className={styles.comingSoon}>Próximamente</span>
+              <button 
+                className={styles.renderBtn} 
+                disabled={rendering} 
+                onClick={handleRenderVideo}
+              >
+                <span>🎬</span> {rendering ? 'Renderizando (15-30s)...' : 'Renderizar MP4'}
               </button>
+
+              {renderUrl && (
+                <div className={styles.renderComplete}>
+                  <span>✅ Vídeo renderizado con éxito!</span>
+                  <a href={renderUrl} target="_blank" rel="noopener noreferrer" className={styles.downloadBtn}>
+                    ⬇️ Descargar MP4
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </div>
