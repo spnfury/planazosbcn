@@ -1,10 +1,4 @@
 import { NextResponse } from 'next/server';
-import { bundle } from '@remotion/bundler';
-import { getCompositions, renderMedia } from '@remotion/renderer';
-import path from 'path';
-import os from 'os';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import fs from 'fs';
 
 export async function POST(req) {
   try {
