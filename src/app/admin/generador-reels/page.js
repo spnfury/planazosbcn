@@ -451,7 +451,7 @@ export default function GeneradorReelsPage() {
                 <h3>Exportar Vídeo</h3>
               </div>
               <p className={styles.exportDesc}>
-                Pulsa para renderizar el vídeo final MP4. Tarda unos 15-30 segundos según la longitud.
+                Pulsa para renderizar el vídeo final MP4. Tarda unos 60 segundos según la complejidad.
               </p>
               <div className={styles.exportOptions}>
                 <label className={styles.checkboxLabel}>
@@ -468,7 +468,7 @@ export default function GeneradorReelsPage() {
                 disabled={rendering} 
                 onClick={handleRenderVideo}
               >
-                <span>🎬</span> {rendering ? 'Renderizando (15-30s)...' : 'Renderizar MP4'}
+                <span>🎬</span> {rendering ? 'Renderizando (~60s)...' : 'Renderizar MP4'}
               </button>
 
               {renderUrl && (
