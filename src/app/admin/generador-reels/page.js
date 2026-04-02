@@ -500,10 +500,10 @@ export default function GeneradorReelsPage() {
                       className={`${styles.previewMedia} ${styles[`transition_${script.segments[currentSegment]?.transition}`]}`}
                       key={`seg-${currentSegment}`}
                     >
-                      {script.segments[currentSegment]?.mediaType === 'reel' && script.segments[currentSegment]?.mediaUrl ? (
+                      {script.segments[currentSegment]?.mediaType === 'reel' && (script.segments[currentSegment]?.mediaUrl || plan?.plan_reels?.[0]?.url) ? (
                         <div className={styles.reelEmbed}>
                           {(() => {
-                            const url = script.segments[currentSegment].mediaUrl;
+                            const url = script.segments[currentSegment]?.mediaUrl || plan?.plan_reels?.[0]?.url;
                             const embedUrl = getInstagramEmbedUrl(url);
                             if (url.includes('.mp4')) {
                               return (
@@ -565,6 +565,9 @@ export default function GeneradorReelsPage() {
                     {/* Dark gradient overlay */}
                     <div className={styles.previewGradient} />
 
+                    {/* Safe zone guidelines (TikTok & IG rules) */}
+                    <div className={styles.safeZoneGuidelines}></div>
+
                     {/* Overlay Text */}
                     <div className={styles.previewOverlay}>
                       <p className={styles.overlayTextDisplay} key={`text-${currentSegment}`}>
@@ -599,14 +602,6 @@ export default function GeneradorReelsPage() {
                           }}
                         />
                       ))}
-                    </div>
-
-                    {/* Right-side social icons (decorative) */}
-                    <div className={styles.socialIcons}>
-                      <div className={styles.socialIcon}>❤️</div>
-                      <div className={styles.socialIcon}>💬</div>
-                      <div className={styles.socialIcon}>📤</div>
-                      <div className={styles.socialIcon}>🔖</div>
                     </div>
                   </>
                 ) : plan ? (

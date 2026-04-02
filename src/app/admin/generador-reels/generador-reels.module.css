@@ -852,12 +852,23 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
+/* Safe Zone Guidelines (Optional, useful to build the layout) */
+.safeZoneGuidelines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Uncomment the borders below to see safe boundaries while developing
+  border-top: 60px solid rgba(255, 0, 0, 0.1);
+  border-bottom: 200px solid rgba(255, 0, 0, 0.1);
+  border-right: 50px solid rgba(255, 0, 0, 0.1); */
+}
+
 /* Bottom plan info */
 .previewBottom {
   position: absolute;
-  bottom: 2.5rem;
+  bottom: 150px; /* Safe zone for TikTok / IG Reels (leaves room for caption & UI) */
   left: 0;
-  right: 0;
+  right: 50px; /* Leaves room for the right-side icons natively */
   padding: 0 1rem;
   pointer-events: none;
 }
