@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, Img, interpolate, spring, Sequence } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, Img, Video, interpolate, spring, Sequence } from 'remotion';
 
 export const PlanazoReel = ({ 
   title = "Planazo Increíble", 
@@ -12,31 +12,53 @@ export const PlanazoReel = ({
   ]
 }) => {
   const frame = useCurrentFrame();
-  const { fps, width, height } = useVideoConfig();
+  const { fps, width, height, durationInFrames } = useVideoConfig();
 
-  // Asegurarse de tener al menos una foto para el background
-  const bgImage = images.length > 0 ? images[0] : 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=1974&auto=format&fit=crop';
+  // Asegurarse de tener al menos una foto/video para el background
+  const mediaList = images && images.length > 0 
+    ? images 
+    : ['https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=1974&auto=format&fit=crop'];
   
-  // Efecto Ken Burns: Escala de 1 a 1.2 suavemente a lo largo del vídeo (ej: 15 seg = 450 frames a 30fps)
-  const scale = interpolate(frame, [0, 450], [1, 1.2], {
-    extrapolateRight: 'clamp',
-  });
+  const framesPerMedia = Math.ceil(durationInFrames / mediaList.length);
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000' }}>
-      {/* Background Image con Zoom */}
-      <AbsoluteFill style={{ transform: `scale(${scale})` }}>
-        <Img 
-          src={bgImage} 
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-        />
-      </AbsoluteFill>
+      {/* Background Media con Sequence para "montajes" */}
+      {mediaList.map((item, index) => {
+        const isVideo = item.toLowerCase().includes('.mp4') || item.toLowerCase().includes('.mov') || item.toLowerCase().includes('.webm');
+        const startFrame = index * framesPerMedia;
+        
+        // Efecto Ken Burns: aplicado individualmente si es imagen para evitar saltos raros
+        const scale = interpolate(frame - startFrame, [0, framesPerMedia], [1, 1.2], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        });
+
+        return (
+          <Sequence key={index} from={startFrame} durationInFrames={framesPerMedia}>
+            <AbsoluteFill style={{ transform: isVideo ? 'none' : `scale(${scale})` }}>
+              {isVideo ? (
+                <Video 
+                  src={item} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  muted 
+                />
+              ) : (
+                <Img 
+                  src={item} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+              )}
+            </AbsoluteFill>
+          </Sequence>
+        );
+      })}
 
       {/* Capa Oscura (Dimmer) para que el texto resalte siempre */}
       <AbsoluteFill style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} />
 
-      {/* Secuencia de Ganchos (Titles) */}
-      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '40px' }}>
+      {/* Secuencia de Ganchos (Titles) - Añadido padding limitativo para safe zones */}
+      <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '40px', paddingBottom: '100px' }}>
         {hooks.map((text, index) => {
           // Cada texto dura 3.5 segundos = 105 frames a 30fps
           const enterFrame = index * 105;
@@ -61,6 +83,7 @@ export const PlanazoReel = ({
               key={index}
               style={{
                 position: 'absolute',
+                width: '85%', // Prevent going into borders
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 900,
                 fontSize: '85px',
@@ -88,7 +111,12 @@ export const PlanazoReel = ({
 
       {/* Footer Permanente con Info del Planazo (Aparece a los 2 segundos) */}
       <Sequence from={60}>
-        <AbsoluteFill style={{ justifyContent: 'flex-end', padding: '50px' }}>
+        <AbsoluteFill style={{ 
+            justifyContent: 'flex-end', 
+            padding: '50px',
+            paddingBottom: '380px', // SAFE ZONE TIKTOK/IG: Espacio para caption y canción en la parte inferior
+            paddingRight: '180px'   // SAFE ZONE TIKTOK/IG: Espacio lateral derecho para comentarios, likes y shares
+        }}>
            <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -103,9 +131,9 @@ export const PlanazoReel = ({
                  alignSelf: 'flex-start',
                  backgroundColor: '#FF3366',
                  color: 'white',
-                 fontSize: '50px',
+                 fontSize: '45px',
                  fontWeight: 800,
-                 padding: '10px 30px',
+                 padding: '10px 25px',
                  borderRadius: '50px',
                  boxShadow: '0 8px 16px rgba(255, 51, 102, 0.4)',
                  transform: `scale(${interpolate(spring({ frame: frame - 70, fps, config: { damping: 10 } }), [0, 1], [0, 1])})`
@@ -117,12 +145,12 @@ export const PlanazoReel = ({
               <div style={{
                  backgroundColor: 'rgba(0, 0, 0, 0.65)',
                  backdropFilter: 'blur(15px)',
-                 padding: '40px',
+                 padding: '35px',
                  borderRadius: '30px',
                  border: '1px solid rgba(255,255,255,0.1)'
               }}>
-                 <h2 style={{ color: 'white', fontSize: '65px', fontWeight: 800, margin: '0 0 10px 0', lineHeight: 1 }}>{title}</h2>
-                 <p style={{ color: '#aaa', fontSize: '40px', fontWeight: 500, margin: 0 }}>📍 {zone}</p>
+                 <h2 style={{ color: 'white', fontSize: '50px', fontWeight: 800, margin: '0 0 10px 0', lineHeight: 1.1 }}>{title}</h2>
+                 <p style={{ color: '#bbb', fontSize: '30px', fontWeight: 500, margin: 0 }}>📍 {zone}</p>
               </div>
            </div>
         </AbsoluteFill>
