@@ -542,6 +542,11 @@ function EventLayout({ plan, relatedPlans }) {
                   {ticket.description && (
                     <div className={styles.ticketDesc}>{ticket.description}</div>
                   )}
+                  {ticket.capacity > 0 && !ticket.soldOut && (
+                    <div className={styles.ticketRemaining}>
+                      ⏱️ Quedan {Math.max(0, ticket.capacity - (ticket.spots_taken || 0))} plazas
+                    </div>
+                  )}
                 </div>
                 <div className={styles.ticketRight}>
                   <span className={styles.ticketPrice}>

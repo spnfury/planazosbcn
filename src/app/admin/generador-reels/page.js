@@ -502,15 +502,48 @@ export default function GeneradorReelsPage() {
                     >
                       {script.segments[currentSegment]?.mediaType === 'reel' && script.segments[currentSegment]?.mediaUrl ? (
                         <div className={styles.reelEmbed}>
-                          <img
-                            src={plan.image || '/logo-planazosbcn.png'}
-                            alt="Reel preview"
-                            className={styles.previewImage}
-                          />
-                          <div className={styles.reelPlayOverlay}>
-                            <span>▶</span>
-                            <small>Reel de Instagram</small>
-                          </div>
+                          {(() => {
+                            const url = script.segments[currentSegment].mediaUrl;
+                            const embedUrl = getInstagramEmbedUrl(url);
+                            if (url.includes('.mp4')) {
+                              return (
+                                <video 
+                                  src={url} 
+                                  className={styles.previewImage} 
+                                  autoPlay 
+                                  muted 
+                                  loop 
+                                  playsInline
+                                  style={{ objectFit: 'cover' }}
+                                />
+                              );
+                            } else if (embedUrl !== url) {
+                              return (
+                                <iframe
+                                  src={embedUrl}
+                                  className={styles.previewImage}
+                                  frameBorder="0"
+                                  scrolling="no"
+                                  allowTransparency="true"
+                                  style={{ width: '100%', height: '100%', border: 'none' }}
+                                ></iframe>
+                              );
+                            } else {
+                              return (
+                                <>
+                                  <img
+                                    src={plan.image || '/logo-planazosbcn.png'}
+                                    alt="Reel preview"
+                                    className={styles.previewImage}
+                                  />
+                                  <div className={styles.reelPlayOverlay}>
+                                    <span>▶</span>
+                                    <small>Reel de Instagram</small>
+                                  </div>
+                                </>
+                              );
+                            }
+                          })()}
                         </div>
                       ) : (
                         <img

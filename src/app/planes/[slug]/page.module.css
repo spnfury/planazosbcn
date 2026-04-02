@@ -491,6 +491,16 @@
   white-space: pre-line;
 }
 
+.ticketRemaining {
+  font-size: var(--text-xs);
+  color: var(--event-accent-light);
+  margin-top: 4px;
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .ticketRight {
   display: flex;
   align-items: center;

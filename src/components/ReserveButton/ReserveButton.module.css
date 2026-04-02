@@ -171,6 +171,16 @@
   margin-top: 2px;
 }
 
+.ticketRemaining {
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  margin-top: 4px;
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .ticketOptionPrice {
   font-weight: 800;
   font-size: var(--text-base);
