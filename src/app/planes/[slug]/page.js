@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
@@ -177,7 +178,14 @@ export default async function PlanDetailPage({ params }) {
       {/* Hero Image */}
       <div className={`container ${styles.heroWrap}`}>
         <div className={styles.hero}>
-          <img src={plan.image} alt={plan.title} className={styles.heroImage} />
+          <Image 
+            src={plan.image || '/apple-icon.png'} 
+            alt={plan.title} 
+            className={styles.heroImage} 
+            fill 
+            priority
+            sizes="100vw"
+          />
           <div className={styles.heroOverlay} />
           <div className={styles.heroContent}>
             {plan.sponsored && (
@@ -468,10 +476,13 @@ function EventLayout({ plan, relatedPlans }) {
         <div className={styles.eventHeader}>
           {/* Poster */}
           <div className={styles.eventPoster}>
-            <img
-              src={posterSrc}
+            <Image
+              src={posterSrc || '/apple-icon.png'}
               alt={plan.title}
               className={styles.eventPosterImg}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 300px"
             />
           </div>
 

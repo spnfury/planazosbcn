@@ -9,6 +9,36 @@ import styles from './Dossier.module.css';
 export default function DossierClient() {
   const dossierRef = useRef(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(null);
+
+  const handleCheckout = async (planName, amount, productId) => {
+    try {
+      setLoadingCheckout(planName);
+      
+      const res = await fetch('/api/checkout/b2b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planName,
+          amount,
+          productId,
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Error al iniciar el pago: ' + (data.error || 'Desconocido'));
+        setLoadingCheckout(null);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión al iniciar el pago.');
+      setLoadingCheckout(null);
+    }
+  };
 
   const generatePDF = async () => {
     try {
@@ -182,7 +212,7 @@ export default function DossierClient() {
                   <div className={styles.dPriceHeader}>
                     <div className={styles.dBadgeNew}>Popular</div>
                     <h3>Plan Visibilidad</h3>
-                    <div className={styles.dPriceValue}>Contactar</div>
+                    <div className={styles.dPriceValue}>49€ <span>/mes</span></div>
                   </div>
                   <ul className={styles.dPriceList}>
                     <li><CheckCircle size={16} color="#dd6b20" /> Todo lo del Plan Básico</li>
@@ -192,7 +222,14 @@ export default function DossierClient() {
                     <li><CheckCircle size={16} color="#dd6b20" /> Badge &quot;Recomendado&quot;</li>
                     <li className={styles.dPriceDisabled}>Sin promoción en RRSS</li>
                   </ul>
-                  <div className={styles.dPriceActionMid}>Hablemos</div>
+                  <button 
+                    className={styles.dPriceActionMid} 
+                    style={{ width: '100%', border: 'none', cursor: 'pointer' }}
+                    onClick={() => handleCheckout('Visibilidad', 49, 'sub_visibilidad')}
+                    disabled={loadingCheckout !== null}
+                  >
+                    {loadingCheckout === 'Visibilidad' ? 'Cargando...' : 'Comprar Suscripción'}
+                  </button>
                 </div>
 
                 {/* Plan Premium */}
@@ -200,7 +237,7 @@ export default function DossierClient() {
                   <div className={styles.dRibbon}>Máximo ROI</div>
                   <div className={styles.dPriceHeaderPremium}>
                     <h3>Plan Premium</h3>
-                    <div className={styles.dPriceValue}>Contactar</div>
+                    <div className={styles.dPriceValue}>149€ <span>/mes</span></div>
                   </div>
                   <ul className={styles.dPriceList}>
                     <li><CheckCircle size={16} color="#e53e3e" /> Todo lo del Plan Visibilidad</li>
@@ -210,7 +247,14 @@ export default function DossierClient() {
                     <li><CheckCircle size={16} color="#e53e3e" /> Reportes mensuales de visitas</li>
                     <li><CheckCircle size={16} color="#e53e3e" /> Reservas integradas</li>
                   </ul>
-                  <div className={styles.dPriceActionPremium}>Hablemos</div>
+                  <button 
+                    className={styles.dPriceActionPremium} 
+                    style={{ width: '100%', border: 'none', cursor: 'pointer' }}
+                    onClick={() => handleCheckout('Premium', 149, 'sub_premium')}
+                    disabled={loadingCheckout !== null}
+                  >
+                    {loadingCheckout === 'Premium' ? 'Cargando...' : 'Comprar Premium'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -254,6 +298,13 @@ export default function DossierClient() {
                   <h4>Creación de Reel</h4>
                   <div className={styles.dServicePrice}>100€<span>/reel</span></div>
                   <p>Producción profesional de reel para Instagram y TikTok</p>
+                  <button 
+                    onClick={() => handleCheckout('Creación Reel Anual/Puntual', 100, 'servicio_reel')}
+                    className={styles.dPriceActionMid}
+                    style={{ width: '100%', border: 'none', padding: '0.4rem', marginTop: '0.5rem', fontSize: '0.8rem', cursor: 'pointer' }}
+                  >
+                    Contratar
+                  </button>
                 </div>
 
                 <div className={styles.dServiceCard}>

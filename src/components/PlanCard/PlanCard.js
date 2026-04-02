@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getEtiqueta } from '@/data/planConstants';
 import { formatDate } from '@/lib/formatDate';
 import styles from './PlanCard.module.css';
@@ -22,11 +23,12 @@ export default function PlanCard({ plan, featured = false }) {
       id={`plan-${plan.slug}`}
     >
       <div className={styles.imageWrap}>
-        <img
-          src={plan.image}
+        <Image
+          src={plan.image || '/apple-icon.png'}
           alt={plan.title}
           className={styles.image}
-          loading="lazy"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         <div className={styles.overlay} />
         {plan.sponsored && (
