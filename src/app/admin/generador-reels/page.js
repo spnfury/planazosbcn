@@ -23,6 +23,8 @@ export default function GeneradorReelsPage() {
   const [editingSegment, setEditingSegment] = useState(null);
   const [rendering, setRendering] = useState(false);
   const [renderUrl, setRenderUrl] = useState(null);
+  const [publishingIg, setPublishingIg] = useState(false);
+  const [publishingTiktok, setPublishingTiktok] = useState(false);
   const intervalRef = useRef(null);
   const previewRef = useRef(null);
 
@@ -180,6 +182,51 @@ export default function GeneradorReelsPage() {
       setError(err.message);
     } finally {
       setRendering(false);
+    }
+  }
+
+  async function handlePublishIg() {
+    if (!renderUrl) return;
+    setPublishingIg(true);
+    try {
+      const res = await fetch('/api/social/instagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: renderUrl,
+          caption: script?.caption || plan?.title || '',
+          coverUrl: plan?.image || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en Instagram');
+      alert('✅ Publicado correctamente en Instagram!');
+    } catch (err) {
+      alert(`❌ Error en Instagram: ${err.message}`);
+    } finally {
+      setPublishingIg(false);
+    }
+  }
+
+  async function handlePublishTiktok() {
+    if (!renderUrl) return;
+    setPublishingTiktok(true);
+    try {
+      const res = await fetch('/api/social/tiktok', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: renderUrl,
+          caption: script?.caption || plan?.title || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en TikTok');
+      alert('✅ Publicado correctamente en TikTok!');
+    } catch (err) {
+      alert(`❌ Error en TikTok: ${err.message}`);
+    } finally {
+      setPublishingTiktok(false);
     }
   }
 
@@ -465,12 +512,12 @@ export default function GeneradorReelsPage() {
               </p>
               <div className={styles.exportOptions}>
                 <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled={rendering} />
-                  Auto-publicar en Instagram Reels (Pronto)
+                  <input type="checkbox" disabled={true} />
+                  Auto-publicar en Instagram Reels (Mejor publicarlo manual abajo)
                 </label>
                 <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled={rendering} />
-                  Auto-publicar en TikTok (Pronto)
+                  <input type="checkbox" disabled={true} />
+                  Auto-publicar en TikTok (Mejor publicarlo manual abajo)
                 </label>
               </div>
               <button 
@@ -487,6 +534,26 @@ export default function GeneradorReelsPage() {
                   <a href={`${renderUrl}?download=`} download="planazo-reel.mp4" className={styles.downloadBtn}>
                     ⬇️ Descargar MP4
                   </a>
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                    <button 
+                      onClick={handlePublishIg} 
+                      disabled={publishingIg}
+                      className={styles.renderBtn} 
+                      style={{ background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', flex: 1, padding: '10px' }}
+                    >
+                      {publishingIg ? '⏳ Publicando...' : '📸 Publicar en Instagram'}
+                    </button>
+                    
+                    <button 
+                      onClick={handlePublishTiktok} 
+                      disabled={publishingTiktok}
+                      className={styles.renderBtn} 
+                      style={{ background: '#000000', color: 'white', flex: 1, padding: '10px' }}
+                    >
+                      {publishingTiktok ? '⏳ Publicando...' : '🎵 Publicar en TikTok'}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

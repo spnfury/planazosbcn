@@ -74,6 +74,7 @@ export default function NuevoPlanPage() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [publishingState, setPublishingState] = useState({});
 
   // Listen for AI Assistant fill_form events
   useEffect(() => {
@@ -321,6 +322,51 @@ export default function NuevoPlanPage() {
     } catch (err) {
       setError(err.message || 'Error al guardar');
       setSaving(false);
+    }
+  }
+
+  async function handlePublishIg(videoUrl, index) {
+    if (!videoUrl) return;
+    setPublishingState(prev => ({ ...prev, [`ig-${index}`]: true }));
+    try {
+      const res = await fetch('/api/social/instagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: videoUrl,
+          caption: form?.title || '',
+          coverUrl: form?.image || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en Instagram');
+      alert('✅ Publicado correctamente en Instagram!');
+    } catch (err) {
+      alert(`❌ Error en Instagram: ${err.message}`);
+    } finally {
+      setPublishingState(prev => ({ ...prev, [`ig-${index}`]: false }));
+    }
+  }
+
+  async function handlePublishTiktok(videoUrl, index) {
+    if (!videoUrl) return;
+    setPublishingState(prev => ({ ...prev, [`ttk-${index}`]: true }));
+    try {
+      const res = await fetch('/api/social/tiktok', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: videoUrl,
+          caption: form?.title || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en TikTok');
+      alert('✅ Publicado correctamente en TikTok!');
+    } catch (err) {
+      alert(`❌ Error en TikTok: ${err.message}`);
+    } finally {
+      setPublishingState(prev => ({ ...prev, [`ttk-${index}`]: false }));
     }
   }
 
@@ -972,6 +1018,30 @@ export default function NuevoPlanPage() {
                 }}
                 onError={setError}
               />
+              
+              {url && url.includes('.mp4') && (
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  <button
+                    type="button"
+                    title="Publicar en IG"
+                    disabled={publishingState[`ig-${i}`]}
+                    onClick={() => handlePublishIg(url, i)}
+                    style={{ background: 'linear-gradient(45deg, #f09433, #dc2743)', border: 'none', borderRadius: '4px', padding: '0 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    {publishingState[`ig-${i}`] ? '⏳' : '📸'}
+                  </button>
+                  <button
+                    type="button"
+                    title="Publicar en TikTok"
+                    disabled={publishingState[`ttk-${i}`]}
+                    onClick={() => handlePublishTiktok(url, i)}
+                    style={{ background: '#000', border: 'none', borderRadius: '4px', padding: '0 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    {publishingState[`ttk-${i}`] ? '⏳' : '🎵'}
+                  </button>
+                </div>
+              )}
+
               <button
                 type="button"
                 className={styles.removeBtn}

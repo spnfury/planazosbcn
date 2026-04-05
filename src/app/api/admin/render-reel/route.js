@@ -7,7 +7,12 @@ export async function POST(req) {
     const props = await req.json();
     console.log('Proxying render request to Oracle render farm...');
 
-    const res = await fetch('https://message-township-archive-automotive.trycloudflare.com/api/render', {
+    const renderFarmUrl = process.env.RENDER_FARM_URL;
+    if (!renderFarmUrl) {
+      throw new Error('RENDER_FARM_URL no está configurada en las variables de entorno.');
+    }
+
+    const res = await fetch(`${renderFarmUrl}/api/render`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json'
