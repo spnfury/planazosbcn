@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import MediaUploaderButton from '@/components/MediaUploaderButton';
 import styles from './generador-reels.module.css';
 
 export default function GeneradorReelsPage() {
@@ -373,12 +374,21 @@ export default function GeneradorReelsPage() {
                             </div>
                             <div className={styles.editorField}>
                               <label>URL del medio</label>
-                              <input
-                                type="url"
-                                value={seg.mediaUrl || ''}
-                                onChange={(e) => updateSegment(i, 'mediaUrl', e.target.value)}
-                                placeholder="https://..."
-                              />
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <input
+                                  type="url"
+                                  value={seg.mediaUrl || ''}
+                                  onChange={(e) => updateSegment(i, 'mediaUrl', e.target.value)}
+                                  placeholder="https://..."
+                                  style={{ flex: 1 }}
+                                />
+                                <MediaUploaderButton
+                                  className={styles.actionBtn}
+                                  text="📤 Subir"
+                                  onUpload={(url) => updateSegment(i, 'mediaUrl', url)}
+                                  onError={(err) => alert(err)}
+                                />
+                              </div>
                             </div>
                             <div className={styles.editorRow}>
                               <div className={styles.editorField}>

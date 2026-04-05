@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
+import MediaUploaderButton from '@/components/MediaUploaderButton';
 import { AGE_GROUPS, ETIQUETAS } from '@/data/planConstants';
 import styles from '../../admin.module.css';
 
@@ -695,15 +696,15 @@ export default function EditPlanPage({ params }) {
 
         {/* Instagram Reels */}
         <div className={styles.formSection}>
-          <h3 className={styles.formSectionTitle}>📸 Instagram Reels</h3>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram para promocionar este plan</p>
+          <h3 className={styles.formSectionTitle}>📸 Instagram Reels & Videos</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram o sube vídeos RAW para promocionar este plan</p>
           {reels.map((url, i) => (
             <div key={i} className={styles.listItem} style={{ marginBottom: '0.5rem' }}>
               <div className={styles.listItemFields} style={{ flex: 1 }}>
                 <input
                   type="url"
                   className={styles.formInput}
-                  placeholder="https://www.instagram.com/reel/XXXXX/"
+                  placeholder="https://www.instagram.com/reel/XXXXX/ o URL de vídeo"
                   value={url}
                   onChange={(e) => {
                     const copy = [...reels];
@@ -712,6 +713,16 @@ export default function EditPlanPage({ params }) {
                   }}
                 />
               </div>
+              <MediaUploaderButton
+                className={styles.actionBtn}
+                text="📤 Subir vídeo"
+                onUpload={(newUrl) => {
+                  const copy = [...reels];
+                  copy[i] = newUrl;
+                  setReels(copy);
+                }}
+                onError={setError}
+              />
               <button
                 type="button"
                 className={styles.removeBtn}
@@ -724,10 +735,10 @@ export default function EditPlanPage({ params }) {
               type="button"
               className={styles.addBtn}
               onClick={() => setReels([...reels, ''])}
-            >＋ Añadir reel</button>
+            >＋ Añadir reel / vídeo</button>
           )}
           {reels.length >= 12 && (
-            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels alcanzado</p>
+            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels/vídeos alcanzado</p>
           )}
         </div>
 

@@ -29,26 +29,38 @@ export default function InstagramReels({ reels = [] }) {
         {reels.map((reel, i) => {
           const url = getReelUrl(reel);
           if (!url) return null;
-          const embedUrl = `${url}/embed/`;
+          const isVideo = url.toLowerCase().endsWith('.mp4') || url.toLowerCase().endsWith('.webm') || url.toLowerCase().endsWith('.mov');
+          const embedUrl = isVideo ? url : `${url}/embed/`;
 
           return (
             <div key={i} className={styles.reelCard}>
               <div className={styles.reelFrame}>
                 {mounted ? (
-                  <iframe
-                    src={embedUrl}
-                    className={styles.reelIframe}
-                    frameBorder="0"
-                    scrolling="no"
-                    allowTransparency="true"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                    title={`Instagram Reel ${i + 1}`}
-                  />
+                  isVideo ? (
+                    <video
+                      src={embedUrl}
+                      className={styles.reelIframe}
+                      controls
+                      playsInline
+                      style={{ objectFit: 'cover' }}
+                      title={`Video Reel ${i + 1}`}
+                    />
+                  ) : (
+                    <iframe
+                      src={embedUrl}
+                      className={styles.reelIframe}
+                      frameBorder="0"
+                      scrolling="no"
+                      allowTransparency="true"
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
+                      title={`Instagram Reel ${i + 1}`}
+                    />
+                  )
                 ) : (
                   <div className={styles.reelPlaceholder}>
                     <div className={styles.reelSpinner} />
-                    <span>Cargando reel...</span>
+                    <span>Cargando...</span>
                   </div>
                 )}
               </div>
