@@ -1,85 +1,36 @@
 import { NextResponse } from 'next/server';
-import { bundle } from '@remotion/bundler';
-import { getCompositions, renderMedia } from '@remotion/renderer';
-import path from 'path';
-import os from 'os';
-import { supabaseAdmin } from '@/lib/supabase-server';
-import fs from 'fs';
+
+export const maxDuration = 300; // Allow enough time for video rendering
 
 export async function POST(req) {
   try {
     const props = await req.json();
+    console.log('Proxying render request to Oracle render farm...');
 
-    const webpackOverride = (config) => {
-      return config;
-    };
-
-    const entryPath = path.resolve(process.cwd(), 'src/remotion/index.js');
-    console.log('Bundling Remotion project at:', entryPath);
-    
-    if (!fs.existsSync(entryPath)) {
-      throw new Error(`Entry point not found at ${entryPath}`);
+    const renderFarmUrl = process.env.RENDER_FARM_URL;
+    if (!renderFarmUrl) {
+      throw new Error('RENDER_FARM_URL no está configurada en las variables de entorno.');
     }
 
-    // Use Remotion bundler to pack the code
-    const bundleLocation = await bundle({
-      entryPoint: entryPath,
-      webpackOverride,
+    const res = await fetch(`${renderFarmUrl}/api/render`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(props),
+      // Set high timeout since video rendering takes time. Next.js natively handles fetches but Vercel limits route timeout itself.
     });
 
-    const compositionId = 'PlanazoReel';
-
-    console.log('Fetching compositions from bundle:', bundleLocation);
-    const comps = await getCompositions(bundleLocation, {
-      inputProps: props,
-    });
-    
-    const composition = comps.find((c) => c.id === compositionId);
-    if (!composition) {
-      throw new Error(`No composition found with ID ${compositionId}`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      let is408 = res.status === 408;
+      throw new Error(`Render Farm Error (${res.status}): ${is408 ? 'La conexión finalizó por un timeout de red.' : errorText}`);
     }
 
-    const outputDir = path.join(process.cwd(), 'public', 'tmp');
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-    
-    const outputFilename = `reel-${Date.now()}.mp4`;
-    const outputPath = path.join(outputDir, outputFilename);
-
-    console.log('Rendering media to:', outputPath);
-    await renderMedia({
-      composition,
-      serveUrl: bundleLocation,
-      codec: 'h264',
-      outputLocation: outputPath,
-      inputProps: props,
-    });
-
-    console.log('Render complete! Uploading to Supabase...');
-    const buffer = fs.readFileSync(outputPath);
-
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('docs')
-      .upload(`reels/${outputFilename}`, buffer, {
-        contentType: 'video/mp4',
-        cacheControl: '31536000',
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error('Supabase upload error:', uploadError);
-      throw uploadError;
-    }
-
-    // Delete temp file asynchronously
-    fs.promises.unlink(outputPath).catch(err => console.error('Failed to rm local temp mp4:', err));
-
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('docs')
-      .getPublicUrl(`reels/${outputFilename}`);
-
-    return NextResponse.json({ success: true, url: publicUrl });
+    const textPayload = await res.text();
+    // Parse the JSON manually stripping leading whitespaces injected by keep-alive heartbeats
+    const data = JSON.parse(textPayload.trim());
+    return NextResponse.json(data);
 
   } catch (error) {
     console.error('Render API error:', error);

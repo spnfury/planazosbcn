@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getEtiqueta } from '@/data/planConstants';
 import { formatDate } from '@/lib/formatDate';
 import styles from './PlanCard.module.css';
@@ -17,17 +18,17 @@ export default function PlanCard({ plan, featured = false }) {
   const emoji = CATEGORY_EMOJIS[plan.category] || '📍';
 
   return (
-    <Link
-      href={`/planes/${plan.slug}`}
+    <article
       className={`${styles.card} ${featured ? styles.featured : ''}`}
       id={`plan-${plan.slug}`}
     >
       <div className={styles.imageWrap}>
-        <img
-          src={plan.image}
+        <Image
+          src={plan.image || '/apple-icon.png'}
           alt={plan.title}
           className={styles.image}
-          loading="lazy"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         <div className={styles.overlay} />
         {plan.sponsored && (
@@ -61,7 +62,11 @@ export default function PlanCard({ plan, featured = false }) {
           )}
         </div>
 
-        <h3 className={styles.title}>{plan.title}</h3>
+        <h3 className={styles.title}>
+          <Link href={`/planes/${plan.slug}`} className={styles.stretchedLink}>
+            {plan.title}
+          </Link>
+        </h3>
         <p className={styles.description}>{plan.excerpt}</p>
 
         <div className={styles.footer}>
@@ -80,9 +85,9 @@ export default function PlanCard({ plan, featured = false }) {
             {plan.etiquetas.slice(0, 3).map((etId) => {
               const et = getEtiqueta(etId);
               return (
-                <span key={etId} className={styles.etiquetaMini}>
+                <Link href={`/planes/tag/${etId}`} key={etId} className={styles.etiquetaMini}>
                   {et.emoji} {et.label}
-                </span>
+                </Link>
               );
             })}
             {plan.etiquetas.length > 3 && (
@@ -91,6 +96,6 @@ export default function PlanCard({ plan, featured = false }) {
           </div>
         )}
       </div>
-    </Link>
+    </article>
   );
 }

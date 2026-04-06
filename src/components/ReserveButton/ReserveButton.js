@@ -251,6 +251,11 @@ export default function ReserveButton({
                             {ticket.description && (
                               <div className={styles.ticketOptionDesc}>{ticket.description}</div>
                             )}
+                            {ticket.capacity > 0 && !isSoldOut && (
+                              <div className={styles.ticketRemaining}>
+                                ⏱️ Quedan {Math.max(0, ticket.capacity - (ticket.spots_taken || 0))} plazas
+                              </div>
+                            )}
                           </div>
                           {isSoldOut ? (
                             <span className={styles.soldOutBadge}>Agotadas</span>

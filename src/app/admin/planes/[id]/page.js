@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
+import MediaUploaderButton from '@/components/MediaUploaderButton';
 import { AGE_GROUPS, ETIQUETAS } from '@/data/planConstants';
 import styles from '../../admin.module.css';
 
@@ -39,6 +40,7 @@ export default function EditPlanPage({ params }) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [publishingState, setPublishingState] = useState({});
 
   useEffect(() => {
     async function load() {
@@ -306,6 +308,51 @@ export default function EditPlanPage({ params }) {
     }
   }
 
+  async function handlePublishIg(videoUrl, index) {
+    if (!videoUrl) return;
+    setPublishingState(prev => ({ ...prev, [`ig-${index}`]: true }));
+    try {
+      const res = await fetch('/api/social/instagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: videoUrl,
+          caption: form?.title || '',
+          coverUrl: form?.image || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en Instagram');
+      alert('✅ Publicado correctamente en Instagram!');
+    } catch (err) {
+      alert(`❌ Error en Instagram: ${err.message}`);
+    } finally {
+      setPublishingState(prev => ({ ...prev, [`ig-${index}`]: false }));
+    }
+  }
+
+  async function handlePublishTiktok(videoUrl, index) {
+    if (!videoUrl) return;
+    setPublishingState(prev => ({ ...prev, [`ttk-${index}`]: true }));
+    try {
+      const res = await fetch('/api/social/tiktok', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: videoUrl,
+          caption: form?.title || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en TikTok');
+      alert('✅ Publicado correctamente en TikTok!');
+    } catch (err) {
+      alert(`❌ Error en TikTok: ${err.message}`);
+    } finally {
+      setPublishingState(prev => ({ ...prev, [`ttk-${index}`]: false }));
+    }
+  }
+
   if (loading || !form) {
     return <p style={{ color: 'rgba(255,255,255,0.4)' }}>Cargando...</p>;
   }
@@ -318,14 +365,23 @@ export default function EditPlanPage({ params }) {
           <p className={styles.pageSubtitle}>{form.title}</p>
         </div>
         {form.slug && (
-          <Link 
-            href={`/planes/${form.slug}`} 
-            target="_blank" 
-            className={styles.actionBtn}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
-          >
-            ↗ Ver en la web
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <Link 
+              href={`/planes/${form.slug}`} 
+              target="_blank" 
+              className={styles.actionBtn}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
+            >
+              ↗ Ver en la web
+            </Link>
+            <Link
+              href={`/admin/generador-reels?id=${planId}`}
+              className={styles.btnPrimary}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0.5rem 1rem', background: 'linear-gradient(to right, #8B5CF6, #EC4899)', border: 'none', borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              🎬 Generar Reel
+            </Link>
+          </div>
         )}
       </div>
 
@@ -686,15 +742,15 @@ export default function EditPlanPage({ params }) {
 
         {/* Instagram Reels */}
         <div className={styles.formSection}>
-          <h3 className={styles.formSectionTitle}>📸 Instagram Reels</h3>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram para promocionar este plan</p>
+          <h3 className={styles.formSectionTitle}>📸 Instagram Reels & Videos</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram o sube vídeos RAW para promocionar este plan</p>
           {reels.map((url, i) => (
             <div key={i} className={styles.listItem} style={{ marginBottom: '0.5rem' }}>
               <div className={styles.listItemFields} style={{ flex: 1 }}>
                 <input
                   type="url"
                   className={styles.formInput}
-                  placeholder="https://www.instagram.com/reel/XXXXX/"
+                  placeholder="https://www.instagram.com/reel/XXXXX/ o URL de vídeo"
                   value={url}
                   onChange={(e) => {
                     const copy = [...reels];
@@ -703,6 +759,40 @@ export default function EditPlanPage({ params }) {
                   }}
                 />
               </div>
+              <MediaUploaderButton
+                className={styles.actionBtn}
+                text="📤 Subir vídeo"
+                onUpload={(newUrl) => {
+                  const copy = [...reels];
+                  copy[i] = newUrl;
+                  setReels(copy);
+                }}
+                onError={setError}
+              />
+
+              {url && url.includes('.mp4') && (
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  <button
+                    type="button"
+                    title="Publicar en IG"
+                    disabled={publishingState[`ig-${i}`]}
+                    onClick={() => handlePublishIg(url, i)}
+                    style={{ background: 'linear-gradient(45deg, #f09433, #dc2743)', border: 'none', borderRadius: '4px', padding: '0 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    {publishingState[`ig-${i}`] ? '⏳' : '📸'}
+                  </button>
+                  <button
+                    type="button"
+                    title="Publicar en TikTok"
+                    disabled={publishingState[`ttk-${i}`]}
+                    onClick={() => handlePublishTiktok(url, i)}
+                    style={{ background: '#000', border: 'none', borderRadius: '4px', padding: '0 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    {publishingState[`ttk-${i}`] ? '⏳' : '🎵'}
+                  </button>
+                </div>
+              )}
+
               <button
                 type="button"
                 className={styles.removeBtn}
@@ -715,10 +805,10 @@ export default function EditPlanPage({ params }) {
               type="button"
               className={styles.addBtn}
               onClick={() => setReels([...reels, ''])}
-            >＋ Añadir reel</button>
+            >＋ Añadir reel / vídeo</button>
           )}
           {reels.length >= 12 && (
-            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels alcanzado</p>
+            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels/vídeos alcanzado</p>
           )}
         </div>
 

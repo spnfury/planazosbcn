@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import ImageUploader from '@/components/ImageUploader';
+import MediaUploaderButton from '@/components/MediaUploaderButton';
 import { AGE_GROUPS, ETIQUETAS } from '@/data/planConstants';
 import styles from '../../admin.module.css';
 
@@ -73,6 +74,7 @@ export default function NuevoPlanPage() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [publishingState, setPublishingState] = useState({});
 
   // Listen for AI Assistant fill_form events
   useEffect(() => {
@@ -320,6 +322,51 @@ export default function NuevoPlanPage() {
     } catch (err) {
       setError(err.message || 'Error al guardar');
       setSaving(false);
+    }
+  }
+
+  async function handlePublishIg(videoUrl, index) {
+    if (!videoUrl) return;
+    setPublishingState(prev => ({ ...prev, [`ig-${index}`]: true }));
+    try {
+      const res = await fetch('/api/social/instagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: videoUrl,
+          caption: form?.title || '',
+          coverUrl: form?.image || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en Instagram');
+      alert('✅ Publicado correctamente en Instagram!');
+    } catch (err) {
+      alert(`❌ Error en Instagram: ${err.message}`);
+    } finally {
+      setPublishingState(prev => ({ ...prev, [`ig-${index}`]: false }));
+    }
+  }
+
+  async function handlePublishTiktok(videoUrl, index) {
+    if (!videoUrl) return;
+    setPublishingState(prev => ({ ...prev, [`ttk-${index}`]: true }));
+    try {
+      const res = await fetch('/api/social/tiktok', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: videoUrl,
+          caption: form?.title || ''
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error publicando en TikTok');
+      alert('✅ Publicado correctamente en TikTok!');
+    } catch (err) {
+      alert(`❌ Error en TikTok: ${err.message}`);
+    } finally {
+      setPublishingState(prev => ({ ...prev, [`ttk-${index}`]: false }));
     }
   }
 
@@ -944,15 +991,15 @@ export default function NuevoPlanPage() {
 
         {/* Instagram Reels */}
         <div className={styles.formSection}>
-          <h3 className={styles.formSectionTitle}>📸 Instagram Reels</h3>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram para promocionar este plan</p>
+          <h3 className={styles.formSectionTitle}>📸 Instagram Reels & Videos</h3>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', marginBottom: '0.75rem' }}>Añade hasta 12 URLs de reels de Instagram o sube vídeos RAW para promocionar este plan</p>
           {reels.map((url, i) => (
             <div key={i} className={styles.listItem} style={{ marginBottom: '0.5rem' }}>
               <div className={styles.listItemFields} style={{ flex: 1 }}>
                 <input
                   type="url"
                   className={styles.formInput}
-                  placeholder="https://www.instagram.com/reel/XXXXX/"
+                  placeholder="https://www.instagram.com/reel/XXXXX/ o URL de vídeo"
                   value={url}
                   onChange={(e) => {
                     const copy = [...reels];
@@ -961,6 +1008,40 @@ export default function NuevoPlanPage() {
                   }}
                 />
               </div>
+              <MediaUploaderButton
+                className={styles.actionBtn}
+                text="📤 Subir vídeo"
+                onUpload={(newUrl) => {
+                  const copy = [...reels];
+                  copy[i] = newUrl;
+                  setReels(copy);
+                }}
+                onError={setError}
+              />
+              
+              {url && url.includes('.mp4') && (
+                <div style={{ display: 'flex', gap: '5px' }}>
+                  <button
+                    type="button"
+                    title="Publicar en IG"
+                    disabled={publishingState[`ig-${i}`]}
+                    onClick={() => handlePublishIg(url, i)}
+                    style={{ background: 'linear-gradient(45deg, #f09433, #dc2743)', border: 'none', borderRadius: '4px', padding: '0 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    {publishingState[`ig-${i}`] ? '⏳' : '📸'}
+                  </button>
+                  <button
+                    type="button"
+                    title="Publicar en TikTok"
+                    disabled={publishingState[`ttk-${i}`]}
+                    onClick={() => handlePublishTiktok(url, i)}
+                    style={{ background: '#000', border: 'none', borderRadius: '4px', padding: '0 8px', color: '#fff', cursor: 'pointer' }}
+                  >
+                    {publishingState[`ttk-${i}`] ? '⏳' : '🎵'}
+                  </button>
+                </div>
+              )}
+
               <button
                 type="button"
                 className={styles.removeBtn}
@@ -973,10 +1054,10 @@ export default function NuevoPlanPage() {
               type="button"
               className={styles.addBtn}
               onClick={() => setReels([...reels, ''])}
-            >＋ Añadir reel</button>
+            >＋ Añadir reel / vídeo</button>
           )}
           {reels.length >= 12 && (
-            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels alcanzado</p>
+            <p style={{ color: 'rgba(245,158,11,0.7)', fontSize: '0.8rem', marginTop: '0.5rem' }}>Máximo de 12 reels/vídeos alcanzado</p>
           )}
         </div>
 

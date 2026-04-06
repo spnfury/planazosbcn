@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import InstagramReels from '@/components/InstagramReels/InstagramReels';
 
-// Force dynamic rendering so admin changes appear instantly
-export const dynamic = 'force-dynamic';
+// ISR: regenerate every 60s for fast cached pages (critical for SEO)
+export const revalidate = 60;
 
 
 export async function generateMetadata({ params }) {

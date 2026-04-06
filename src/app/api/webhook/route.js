@@ -29,6 +29,36 @@ export async function POST(request) {
     const session = event.data.object;
 
     try {
+      // --- FLUJO B2B ---
+      if (session.metadata?.b2b === 'true') {
+        const planName = session.metadata.planName || 'Plan Comercial';
+        const commerceName = session.metadata.commerceName || 'Un local';
+        const customerEmail = session.customer_details?.email || session.customer_email;
+        
+        console.log(`✅ B2B Pago de Suscripción confirmado: ${commerceName} - ${planName}`);
+        
+        // Avisar a los admins inmediatamente para que activen la visibilidad manualmente
+        await notifyAdmins({
+          subject: `💸 NUEVO CLIENTE B2B: ${commerceName}`,
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+              <h2>¡Ha entrado una factura B2B! 💸</h2>
+              <p>Un local acaba de pagar en Stripe por visibilidad/servicios.</p>
+              <br/>
+              <p><strong>Comercio/Local:</strong> ${commerceName}</p>
+              <p><strong>Email Cliente:</strong> ${customerEmail}</p>
+              <p><strong>Plan Contratado:</strong> ${planName}</p>
+              <p><strong>Importe:</strong> ${(session.amount_total / 100).toFixed(2)}€</p>
+              <hr/>
+              <p>Acción Requerida: Entra a Supabase y pon <code>featured = true</code> en el/los planes de este cliente. Escríbele al email de arriba para recoger sus videos/fotos si aún no los has pedido.</p>
+            </div>
+          `,
+        });
+        
+        return NextResponse.json({ received: true });
+      }
+
+      // --- FLUJO B2C (Reservas) ---
       // Update reservation status to paid
       const { data: reservation, error: resError } = await supabaseAdmin
         .from('reservations')

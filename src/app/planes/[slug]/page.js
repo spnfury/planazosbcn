@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import CapacityBar from '@/components/CapacityBar/CapacityBar';
@@ -14,8 +15,8 @@ import { getEtiqueta, getAgeGroup } from '@/data/planConstants';
 import { formatDate } from '@/lib/formatDate';
 import styles from './page.module.css';
 
-// Force dynamic rendering so admin changes appear instantly
-export const dynamic = 'force-dynamic';
+// ISR: regenerate every 60s for fast cached pages (critical for SEO)
+export const revalidate = 60;
 
 
 // Helper function to map snake_case from DB to camelCase
@@ -114,14 +115,57 @@ export default async function PlanDetailPage({ params }) {
     
   const relatedPlans = (relatedPlansData || []).map(mapPlanData);
 
-  // If it's an evento type, render the dark FourVenues layout
+  // Generate JSON-LD
+  let parsedDate;
+  if (plan.date && !plan.date.includes('SÁB') && plan.date !== 'Gratis') {
+    // Basic attempt to parse if possible, or fallback to current date for schema validation
+    parsedDate = new Date(); 
+  }
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: plan.title,
+    description: plan.excerpt || plan.description,
+    image: plan.image,
+    startDate: new Date().toISOString(), // Google requires valid ISO
+    location: {
+      '@type': 'Place',
+      name: plan.venue || plan.zone || 'Barcelona',
+      address: plan.address || plan.zone || 'Barcelona, España'
+    },
+  };
+
+  if (plan.price) {
+    jsonLd.offers = {
+      '@type': 'Offer',
+      price: plan.price === 'Gratis' ? '0' : String(plan.price).replace(/[^0-9.]/g, ''),
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      url: `https://planazosbcn.com/planes/${plan.slug}`
+    };
+  }
+
   if (plan.type === 'evento') {
-    return <EventLayout plan={plan} relatedPlans={relatedPlans} />;
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <EventLayout plan={plan} relatedPlans={relatedPlans} />
+      </>
+    );
   }
 
   // Default plan layout (light theme)
   return (
-    <div className={styles.page}>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className={styles.page}>
       {/* Breadcrumb */}
       <div className={`container ${styles.breadcrumb}`}>
         <Link href="/" className={styles.crumb}>Inicio</Link>
@@ -134,7 +178,14 @@ export default async function PlanDetailPage({ params }) {
       {/* Hero Image */}
       <div className={`container ${styles.heroWrap}`}>
         <div className={styles.hero}>
-          <img src={plan.image} alt={plan.title} className={styles.heroImage} />
+          <Image 
+            src={plan.image || '/apple-icon.png'} 
+            alt={plan.title} 
+            className={styles.heroImage} 
+            fill 
+            priority
+            sizes="100vw"
+          />
           <div className={styles.heroOverlay} />
           <div className={styles.heroContent}>
             {plan.sponsored && (
@@ -298,9 +349,9 @@ export default async function PlanDetailPage({ params }) {
                     {plan.etiquetas.map((etId) => {
                       const et = getEtiqueta(etId);
                       return (
-                        <span key={etId} className={styles.etiquetaBadge}>
+                        <Link href={`/planes/tag/${etId}`} key={etId} className={styles.etiquetaBadge}>
                           {et.emoji} {et.label}
-                        </span>
+                        </Link>
                       );
                     })}
                   </div>
@@ -402,6 +453,7 @@ export default async function PlanDetailPage({ params }) {
 
       <PlanChat planId={plan.id} />
     </div>
+    </>
   );
 }
 
@@ -424,10 +476,13 @@ function EventLayout({ plan, relatedPlans }) {
         <div className={styles.eventHeader}>
           {/* Poster */}
           <div className={styles.eventPoster}>
-            <img
-              src={posterSrc}
+            <Image
+              src={posterSrc || '/apple-icon.png'}
               alt={plan.title}
               className={styles.eventPosterImg}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 300px"
             />
           </div>
 
@@ -486,6 +541,11 @@ function EventLayout({ plan, relatedPlans }) {
                   <div className={styles.ticketName}>{ticket.name}</div>
                   {ticket.description && (
                     <div className={styles.ticketDesc}>{ticket.description}</div>
+                  )}
+                  {ticket.capacity > 0 && !ticket.soldOut && (
+                    <div className={styles.ticketRemaining}>
+                      ⏱️ Quedan {Math.max(0, ticket.capacity - (ticket.spots_taken || 0))} plazas
+                    </div>
                   )}
                 </div>
                 <div className={styles.ticketRight}>
@@ -581,9 +641,9 @@ function EventLayout({ plan, relatedPlans }) {
                         {plan.etiquetas.map((etId) => {
                           const et = getEtiqueta(etId);
                           return (
-                            <span key={etId} className={styles.eventEtiquetaBadge}>
+                            <Link href={`/planes/tag/${etId}`} key={etId} className={styles.eventEtiquetaBadge}>
                               {et.emoji} {et.label}
-                            </span>
+                            </Link>
                           );
                         })}
                       </div>
