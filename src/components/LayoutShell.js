@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Header from '@/components/Header/Header';
 import Footer from '@/components/Footer/Footer';
+import WhatsAppCTA from '@/components/WhatsAppCTA/WhatsAppCTA';
 
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
@@ -16,6 +17,7 @@ export default function LayoutShell({ children }) {
     <>
       <Header />
       <main style={{ paddingTop: 'var(--header-height)' }}>{children}</main>
+      <WhatsAppCTA />
       <Footer />
     </>
   );

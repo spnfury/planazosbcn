@@ -11,14 +11,14 @@ export async function POST(req) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
+    const { data: adminUser, error: queryError } = await supabase
+      .from('admin_users')
+      .select('id')
       .eq('id', user.id)
       .single();
 
-    if (profile?.role !== 'admin') {
-      return NextResponse.json({ error: 'Permisos insuficientes' }, { status: 403 });
+    if (!adminUser || queryError) {
+      return NextResponse.json({ error: 'Permisos insuficientes (No en admin_users)' }, { status: 403 });
     }
 
     const body = await req.json();
