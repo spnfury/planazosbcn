@@ -190,7 +190,6 @@ export default function GeneradorReelsPage() {
       if (data.url) {
         setRenderUrl(data.url);
         
-<<<<<<< HEAD
         if (sendTelegram) {
           setPublishStatus('publishing');
           const pubRes = await fetch('/api/admin/publish-social', {
@@ -205,20 +204,19 @@ export default function GeneradorReelsPage() {
           const pubData = await pubRes.json();
           if (!pubRes.ok) throw new Error(pubData.error || 'Error al interactuar con el Bot de Telegram');
           
-          // Verifica si hubo un grace error
           if (pubData.results?.telegram?.status === 'error') {
               throw new Error(pubData.results?.telegram?.error || 'Error interno en tokens de Telegram');
           }
           
           setPublishStatus('success');
-=======
-        // Auto-publish if checkboxes are checked
+        }
+
+        // Auto-publish social if checkboxes are checked
         if (autoPublishIg) {
           autoPublishToIg(data.url);
         }
         if (autoPublishTiktok) {
           autoPublishToTiktok(data.url);
->>>>>>> 0046c20 (fds)
         }
       }
     } catch (err) {
@@ -562,20 +560,14 @@ export default function GeneradorReelsPage() {
                 Pulsa para renderizar el vídeo final MP4. Tarda unos 60 segundos según la complejidad.
               </p>
               <div className={styles.exportOptions}>
-<<<<<<< HEAD
                 <label className={styles.checkboxLabel}>
                   <input type="checkbox" checked={sendTelegram} onChange={e => setSendTelegram(e.target.checked)} />
                   📱 Enviar al móvil por Bot de Telegram automáticamente
                 </label>
-                <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled={true} />
-                  Auto-publicar en Instagram Reels (Mejor publicarlo manual abajo)
-=======
                 <label className={styles.checkboxLabel} style={{ cursor: 'pointer' }}>
                   <input type="checkbox" checked={autoPublishIg} onChange={(e) => setAutoPublishIg(e.target.checked)} disabled={rendering} />
                   📸 Auto-publicar en Instagram Reels
                   {publishingIg && <span style={{ marginLeft: '8px', color: '#f09433' }}>⏳ Publicando...</span>}
->>>>>>> 0046c20 (fds)
                 </label>
                 <label className={styles.checkboxLabel} style={{ cursor: 'pointer' }}>
                   <input type="checkbox" checked={autoPublishTiktok} onChange={(e) => setAutoPublishTiktok(e.target.checked)} disabled={rendering} />

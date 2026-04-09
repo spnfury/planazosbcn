@@ -11,6 +11,7 @@ import styles from './admin.module.css';
 const NAV_ITEMS = [
   { href: '/admin', icon: '📊', label: 'Dashboard' },
   { href: '/admin/planes', icon: '📋', label: 'Planes' },
+  { href: '/admin/eventos', icon: '🎉', label: 'Eventos Rápidos' },
   { href: '/admin/restaurantes', icon: '🍽️', label: 'Restaurantes' },
   { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
   { href: '/admin/tareas', icon: '✅', label: 'Tareas' },

@@ -4,6 +4,12 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 
 async function checkAdmin(request) {
   const authHeader = request.headers.get('authorization');
+
+  // Bypass para local si estamos en desarrollo
+  if (process.env.NODE_ENV === 'development') {
+    return { id: 'local-dev-user', email: 'admin@planazosbcn.com' };
+  }
+
   if (!authHeader?.startsWith('Bearer ')) return null;
 
   const token = authHeader.replace('Bearer ', '');
