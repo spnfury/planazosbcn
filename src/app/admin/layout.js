@@ -8,19 +8,57 @@ import { useAuth } from '@/components/Auth/AuthProvider';
 import AdminAssistant from '@/components/AdminAssistant/AdminAssistant';
 import styles from './admin.module.css';
 
-const NAV_ITEMS = [
-  { href: '/admin', icon: '📊', label: 'Dashboard' },
+// Grouped navigation sections
+const NAV_SECTIONS = [
+  {
+    label: null, // No label for the primary section
+    items: [
+      { href: '/admin', icon: '📊', label: 'Estadísticas' },
+    ],
+  },
+  {
+    label: 'Contenido',
+    items: [
+      { href: '/admin/planes', icon: '📋', label: 'Planes' },
+      { href: '/admin/eventos', icon: '🎉', label: 'Eventos Rápidos' },
+      { href: '/admin/restaurantes', icon: '🍽️', label: 'Restaurantes' },
+    ],
+  },
+  {
+    label: 'Operaciones',
+    items: [
+      { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
+      { href: '/admin/scanner', icon: '📱', label: 'Scanner QR' },
+      { href: '/admin/tareas', icon: '✅', label: 'Tareas' },
+    ],
+  },
+  {
+    label: 'Usuarios',
+    items: [
+      { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
+      { href: '/admin/restaurantes/usuarios', icon: '🏪', label: 'Comercios' },
+      { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
+    ],
+  },
+  {
+    label: 'Herramientas',
+    items: [
+      { href: '/admin/generador-reels', icon: '🎬', label: 'Reels IA' },
+      { href: '/admin/logs', icon: '📝', label: 'Logs' },
+    ],
+  },
+];
+
+// Flat list for convenience
+const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
+
+// Mobile bottom bar: only show the most important items
+const MOBILE_TAB_ITEMS = [
+  { href: '/admin', icon: '📊', label: 'Inicio' },
   { href: '/admin/planes', icon: '📋', label: 'Planes' },
-  { href: '/admin/eventos', icon: '🎉', label: 'Eventos Rápidos' },
-  { href: '/admin/restaurantes', icon: '🍽️', label: 'Restaurantes' },
   { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
+  { href: '/admin/scanner', icon: '📱', label: 'Scanner' },
   { href: '/admin/tareas', icon: '✅', label: 'Tareas' },
-  { href: '/admin/scanner', icon: '📱', label: 'Scanner QR' },
-  { href: '/admin/restaurantes/usuarios', icon: '🏪', label: 'Comercios' },
-  { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
-  { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
-  { href: '/admin/generador-reels', icon: '🎬', label: 'Reels IA' },
-  { href: '/admin/logs', icon: '📝', label: 'Logs' },
 ];
 
 export default function AdminLayout({ children }) {
@@ -100,7 +138,6 @@ export default function AdminLayout({ children }) {
       <header className={styles.mobileHeader}>
         <div className={styles.mobileLogoGroup}>
           <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
-
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
         <button
@@ -113,11 +150,28 @@ export default function AdminLayout({ children }) {
         </button>
       </header>
 
-      {/* Mobile dropdown menu for secondary actions */}
+      {/* Mobile dropdown menu — shows ALL nav items + actions */}
       {menuOpen && (
         <>
           <div className={styles.overlay} onClick={() => setMenuOpen(false)} />
           <div className={styles.mobileDropdown}>
+            {NAV_SECTIONS.map((section, idx) => (
+              <div key={idx}>
+                {section.label && (
+                  <div className={styles.mobileDropdownLabel}>{section.label}</div>
+                )}
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`${styles.mobileDropdownItem} ${isActive(item.href) ? styles.mobileDropdownItemActive : ''}`}
+                  >
+                    <span>{item.icon}</span> {item.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+            <div className={styles.mobileDropdownDivider} />
             <Link href="/" className={styles.mobileDropdownItem} target="_blank">
               🌐 Ver web pública
             </Link>
@@ -136,20 +190,26 @@ export default function AdminLayout({ children }) {
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
           <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
-
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
 
         <nav className={styles.sidebarNav}>
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ''}`}
-            >
-              <span className={styles.navIcon}>{item.icon}</span>
-              {item.label}
-            </Link>
+          {NAV_SECTIONS.map((section, idx) => (
+            <div key={idx} className={styles.navSection}>
+              {section.label && (
+                <div className={styles.navSectionLabel}>{section.label}</div>
+              )}
+              {section.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ''}`}
+                >
+                  <span className={styles.navIcon}>{item.icon}</span>
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
 
@@ -170,9 +230,9 @@ export default function AdminLayout({ children }) {
         {children}
       </main>
 
-      {/* Mobile bottom tab bar — app-like navigation */}
+      {/* Mobile bottom tab bar — only key items */}
       <nav className={styles.bottomTabBar} id="bottom-tab-bar">
-        {NAV_ITEMS.map((item) => (
+        {MOBILE_TAB_ITEMS.map((item) => (
           <Link
             key={item.href}
             href={item.href}
