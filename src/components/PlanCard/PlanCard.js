@@ -69,32 +69,34 @@ export default function PlanCard({ plan, featured = false }) {
         </h3>
         <p className={styles.description}>{plan.excerpt}</p>
 
-        <div className={styles.footer}>
-          {plan.date && (
-            <span className={styles.date}>
-              📅️ {formatDate(plan.date)}
-            </span>
+        <div className={styles.contentBottom}>
+          {plan.etiquetas && plan.etiquetas.length > 0 && (
+            <div className={styles.etiquetas}>
+              {plan.etiquetas.slice(0, 3).map((etId) => {
+                const et = getEtiqueta(etId);
+                return (
+                  <Link href={`/planes/tag/${etId}`} key={etId} className={styles.etiquetaMini}>
+                    {et.emoji} {et.label}
+                  </Link>
+                );
+              })}
+              {plan.etiquetas.length > 3 && (
+                <span className={styles.etiquetaMore}>+{plan.etiquetas.length - 3}</span>
+              )}
+            </div>
           )}
-          <span className={styles.cta}>
-            Ver más →
-          </span>
-        </div>
 
-        {plan.etiquetas && plan.etiquetas.length > 0 && (
-          <div className={styles.etiquetas}>
-            {plan.etiquetas.slice(0, 3).map((etId) => {
-              const et = getEtiqueta(etId);
-              return (
-                <Link href={`/planes/tag/${etId}`} key={etId} className={styles.etiquetaMini}>
-                  {et.emoji} {et.label}
-                </Link>
-              );
-            })}
-            {plan.etiquetas.length > 3 && (
-              <span className={styles.etiquetaMore}>+{plan.etiquetas.length - 3}</span>
+          <div className={styles.footer}>
+            {plan.date && (
+              <span className={styles.date}>
+                📅️ {formatDate(plan.date)}
+              </span>
             )}
+            <span className={styles.cta}>
+              Ver más →
+            </span>
           </div>
-        )}
+        </div>
       </div>
     </article>
   );

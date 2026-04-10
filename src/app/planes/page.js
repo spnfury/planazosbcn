@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import PlansFilters from './PlansFilters';
 import { supabase } from '@/lib/supabase';
+import { parsePlanDate, isPastEvent } from '@/lib/formatDate';
 import styles from './page.module.css';
 
 // ISR: regenerate every 60s for fast cached pages (critical for SEO)
@@ -17,58 +18,11 @@ const mapPlanData = (plan) => ({
   ageRestriction: plan.age_restriction,
 });
 
-// Map Spanish month abbreviations to JS month indices
-const MONTH_MAP = {
-  'ene': 0, 'enero': 0,
-  'feb': 1, 'febrero': 1,
-  'mar': 2, 'marzo': 2,
-  'abr': 3, 'abril': 3,
-  'may': 4, 'mayo': 4,
-  'jun': 5, 'junio': 5,
-  'jul': 6, 'julio': 6,
-  'ago': 7, 'agosto': 7,
-  'sep': 8, 'sept': 8, 'septiembre': 8,
-  'oct': 9, 'octubre': 9,
-  'nov': 10, 'noviembre': 10,
-  'dic': 11, 'diciembre': 11,
-};
-
 // Map JS day index to Spanish day id
 const DAY_MAP = {
   0: 'domingo', 1: 'lunes', 2: 'martes', 3: 'miercoles',
   4: 'jueves', 5: 'viernes', 6: 'sabado',
 };
-
-/**
- * Parse a Spanish text date like "SÁB. 28 MARZO 2026" into a JS Date.
- */
-function parseSpanishDate(dateStr) {
-  if (!dateStr) return null;
-  const clean = dateStr.replace(/[.,]/g, '').toLowerCase().trim();
-  const parts = clean.split(/\s+/).filter(Boolean);
-  let day = null, month = null, year = null;
-
-  for (const part of parts) {
-    const num = parseInt(part, 10);
-    if (!isNaN(num)) {
-      if (num > 31) {
-        year = num;
-      } else if (day === null) {
-        day = num;
-      } else {
-        year = num > 100 ? num : 2000 + num;
-      }
-    } else if (MONTH_MAP[part] !== undefined) {
-      month = MONTH_MAP[part];
-    }
-  }
-
-  if (day !== null && month !== null) {
-    if (year === null) year = new Date().getFullYear();
-    return new Date(year, month, day);
-  }
-  return null;
-}
 
 /**
  * Determines if a plan is "tardeo" or "nocturno" based on its data.
@@ -105,7 +59,9 @@ export default async function PlanesPage({ searchParams }) {
     console.error('Error fetching plans:', error);
   }
 
-  let plans = (data || []).map(mapPlanData);
+  let plans = (data || [])
+    .map(mapPlanData)
+    .filter(plan => !isPastEvent(plan.date));
 
   // Apply filters server-side
   if (activeCategory !== 'all') {
@@ -114,7 +70,7 @@ export default async function PlanesPage({ searchParams }) {
 
   if (activeDay !== 'all') {
     plans = plans.filter((p) => {
-      const parsed = parseSpanishDate(p.date);
+      const parsed = parsePlanDate(p.date);
       if (!parsed) return false;
       return DAY_MAP[parsed.getDay()] === activeDay;
     });

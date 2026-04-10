@@ -3,6 +3,7 @@ import PlanCard from '@/components/PlanCard/PlanCard';
 import Newsletter from '@/components/Newsletter/Newsletter';
 import { CATEGORIES } from '@/data/plans';
 import { supabase } from '@/lib/supabase';
+import { isPastEvent } from '@/lib/formatDate';
 import styles from './page.module.css';
 
 // ISR: regenerate every 60 seconds so admin changes appear quickly
@@ -32,7 +33,9 @@ export default async function Home() {
     console.error('Error fetching plans:', error);
   }
 
-  const allPlans = (plansData || []).map(mapPlanData);
+  const allPlans = (plansData || [])
+    .map(mapPlanData)
+    .filter(plan => !isPastEvent(plan.date));
 
 
   // Build dynamic counts per category from actual Supabase data

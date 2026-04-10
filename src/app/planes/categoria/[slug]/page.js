@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import { CATEGORIES, getCategoryBySlug } from '@/data/plans';
 import { supabase } from '@/lib/supabase';
+import { isPastEvent } from '@/lib/formatDate';
 import styles from './page.module.css';
 
 // ISR: regenerate every 60s for fast cached pages (critical for SEO)
@@ -67,7 +68,9 @@ export default async function CategoryPage({ params }) {
     console.error('Error fetching plans for category:', error);
   }
 
-  const plans = (plansData || []).map(mapPlanData);
+  const plans = (plansData || [])
+    .map(mapPlanData)
+    .filter(plan => !isPastEvent(plan.date));
 
   // JSON-LD Structured Data
   const jsonLd = {

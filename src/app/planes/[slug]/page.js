@@ -146,7 +146,10 @@ export default async function PlanDetailPage({ params }) {
     };
   }
 
-  if (plan.type === 'evento') {
+  // Only use the dark EventLayout for club-style events that have tickets or guest lists.
+  // Simple events (created from flyers) use the normal plan layout with sidebar + CTA.
+  const hasTicketsOrLists = (plan.tickets?.length > 0) || (plan.guestList?.length > 0);
+  if (plan.type === 'evento' && hasTicketsOrLists) {
     return (
       <>
         <script
@@ -253,11 +256,33 @@ export default async function PlanDetailPage({ params }) {
                 </div>
               </div>
             )}
+            {/* Event-specific: time */}
+            {plan.type === 'evento' && plan.timeStart && (
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>🕐</span>
+                <div>
+                  <span className={styles.infoLabel}>Horario</span>
+                  <span className={styles.infoValue}>
+                    {plan.timeStart}{plan.timeEnd ? ` → ${plan.timeEnd}` : ''}
+                  </span>
+                </div>
+              </div>
+            )}
+            {/* Event-specific: venue */}
+            {plan.type === 'evento' && plan.venue && (
+              <div className={styles.infoCard}>
+                <span className={styles.infoIcon}>🎉</span>
+                <div>
+                  <span className={styles.infoLabel}>Lugar</span>
+                  <span className={styles.infoValue}>{plan.venue}</span>
+                </div>
+              </div>
+            )}
             {plan.zone && plan.type !== 'sorpresa' && (
               <div className={styles.infoCard}>
                 <span className={styles.infoIcon}>📍</span>
                 <div>
-                  <span className={styles.infoLabel}>Zona</span>
+                  <span className={styles.infoLabel}>{plan.type === 'evento' ? 'Dirección' : 'Zona'}</span>
                   <span className={styles.infoValue}>
                     <a
                       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${plan.address || plan.zone}, Barcelona`)}`}
@@ -265,7 +290,7 @@ export default async function PlanDetailPage({ params }) {
                       rel="noopener noreferrer"
                       className={styles.locationValueLink}
                     >
-                      {plan.zone}, Barcelona
+                      {plan.type === 'evento' ? (plan.address || plan.zone) : `${plan.zone}, Barcelona`}
                     </a>
                   </span>
                 </div>
@@ -397,22 +422,56 @@ export default async function PlanDetailPage({ params }) {
               />
             )}
 
-            <ReserveButton 
-              plan={plan} 
-              tickets={plan.tickets}
-              label={plan.type === 'sorpresa' ? 'Regalar ahora' : 'Reservar ahora'}
-            />
+            {/* CTA for eventos: link to external registration URL */}
+            {plan.type === 'evento' ? (
+              <>
+                {plan.url ? (
+                  <a
+                    href={plan.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn--primary btn--large"
+                    style={{ width: '100%', display: 'inline-block', textAlign: 'center', marginBottom: '0.75rem' }}
+                    id="event-register"
+                  >
+                    🎟️ Apuntarme al evento
+                  </a>
+                ) : (
+                  <a
+                    href={`https://wa.me/34600000000?text=${encodeURIComponent('Hola! Me interesa el evento "' + plan.title + '"')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn--primary btn--large"
+                    style={{ width: '100%', display: 'inline-block', textAlign: 'center', marginBottom: '0.75rem', background: '#25D366' }}
+                    id="event-whatsapp"
+                  >
+                    💬 Me interesa este evento
+                  </a>
+                )}
+                <a href="#info" className="btn btn--secondary btn--large" style={{ width: '100%', display: 'inline-block', textAlign: 'center' }} id="event-info">
+                  Ver más información
+                </a>
+              </>
+            ) : (
+              <>
+                <ReserveButton 
+                  plan={plan} 
+                  tickets={plan.tickets}
+                  label={plan.type === 'sorpresa' ? 'Regalar ahora' : 'Reservar ahora'}
+                />
 
-            <PlanStatus 
-              planId={plan.id} 
-              planSlug={plan.slug}
-              capacity={plan.capacity}
-              spotsTaken={plan.spots_taken || 0}
-            />
+                <PlanStatus 
+                  planId={plan.id} 
+                  planSlug={plan.slug}
+                  capacity={plan.capacity}
+                  spotsTaken={plan.spots_taken || 0}
+                />
 
-            <a href="#info" className="btn btn--secondary btn--large" style={{ width: '100%', display: 'inline-block', textAlign: 'center' }} id="plan-info">
-              Más información
-            </a>
+                <a href="#info" className="btn btn--secondary btn--large" style={{ width: '100%', display: 'inline-block', textAlign: 'center' }} id="plan-info">
+                  Más información
+                </a>
+              </>
+            )}
 
             <p className={styles.ctaNote}>
               ¿Tienes dudas?{' '}

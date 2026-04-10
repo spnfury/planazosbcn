@@ -197,6 +197,7 @@ export default function EventosRapidosPage() {
         shipping_cost: 0,
         venue: eventData.venue || '',
         address: eventData.address || '',
+        url: eventData.url || null,
         time_start: eventData.time_start || '',
         time_end: eventData.time_end || '',
         capacity: 100,
@@ -680,18 +681,17 @@ export default function EventosRapidosPage() {
                 />
               </div>
 
-              {eventData.url && (
-                <div className={`${styles.formGroup} ${styles.formGridFull}`}>
-                  <label className={styles.formLabel}>🔗 URL de registro</label>
-                  <input
-                    type="url"
-                    className={styles.formInput}
-                    value={eventData.url || ''}
-                    onChange={(e) => updateEventField('url', e.target.value)}
-                    id="event-url"
-                  />
-                </div>
-              )}
+              <div className={`${styles.formGroup} ${styles.formGridFull}`}>
+                <label className={styles.formLabel}>🔗 URL de registro (opcional)</label>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  value={eventData.url || ''}
+                  onChange={(e) => updateEventField('url', e.target.value)}
+                  placeholder="https://..."
+                  id="event-url"
+                />
+              </div>
 
               {eventData.organizer && (
                 <div className={`${styles.formGroup} ${styles.formGridFull}`}>
