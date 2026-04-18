@@ -1,48 +1,54 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import styles from './ReserveButton.module.css';
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import styles from "./ReserveButton.module.css";
 
 export default function ReserveButton({
   plan,
   tickets = [],
-  className = '',
-  label = 'Reservar ahora',
-  variant = 'primary', // 'primary' | 'event'
+  className = "",
+  label = "Reservar ahora",
+  variant = "primary", // 'primary' | 'event'
+  initialTicketId = null,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedTicketId, setSelectedTicketId] = useState(
-    tickets && tickets.length > 0 ? (tickets.find(t => !t.sold_out)?.id || null) : null
+    initialTicketId ??
+      (tickets && tickets.length > 0
+        ? tickets.find((t) => !t.sold_out)?.id || null
+        : null),
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [userId, setUserId] = useState(null);
-  const [promoCode, setPromoCode] = useState('');
+  const [promoCode, setPromoCode] = useState("");
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [shippingData, setShippingData] = useState({
-    name: '',
-    address: '',
-    phone: '',
-    date: '',
-    message: ''
+    name: "",
+    address: "",
+    phone: "",
+    date: "",
+    message: "",
   });
 
   // Pre-fill email if user is logged in
   useEffect(() => {
     async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
-        setEmail(user.email || '');
+        setEmail(user.email || "");
         setUserId(user.id);
         // Try to get name from profile
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
           .single();
         if (profile?.full_name) {
           setName(profile.full_name);
@@ -55,25 +61,25 @@ export default function ReserveButton({
   // Close on escape
   useEffect(() => {
     function handleEsc(e) {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === "Escape") setIsOpen(false);
     }
     if (isOpen) {
-      document.addEventListener('keydown', handleEsc);
-      document.body.style.overflow = 'hidden';
+      document.addEventListener("keydown", handleEsc);
+      document.body.style.overflow = "hidden";
     }
     return () => {
-      document.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = '';
+      document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
   // Calculate price — use precio_reserva if available (matches backend checkout logic)
   const getUnitPrice = () => {
     if (selectedTicketId && tickets.length > 0) {
-      const ticket = tickets.find(t => t.id === selectedTicketId);
+      const ticket = tickets.find((t) => t.id === selectedTicketId);
       if (ticket) return parseFloat(ticket.price) || 0;
     }
-    if (plan.price === 'Gratis') return 0;
+    if (plan.price === "Gratis") return 0;
     // If the plan has a reservation price, charge only that amount
     if (plan.precio_reserva && plan.precio_reserva > 0) {
       return Number(plan.precio_reserva);
@@ -81,22 +87,29 @@ export default function ReserveButton({
     return parseFloat(plan.price) || 0;
   };
 
-  const SECRET_PROMO_CODE = 'PLANAZOS-DEV-100X-FREE-2026';
+  const SECRET_PROMO_CODE = "PLANAZOS-DEV-100X-FREE-2026";
   const isPromoApplied = promoCode === SECRET_PROMO_CODE;
 
   const unitPrice = getUnitPrice();
   const fullPrice = parseFloat(plan.price) || 0;
-  const isPreReserve = Boolean(plan.precio_reserva && plan.precio_reserva > 0 && !selectedTicketId && plan.price !== 'Gratis');
-  const shippingCost = plan?.type === 'sorpresa' ? parseFloat(plan.shipping_cost || 0) : 0;
-  const baseTotalPrice = (unitPrice * quantity) + shippingCost;
+  const isPreReserve = Boolean(
+    plan.precio_reserva &&
+    plan.precio_reserva > 0 &&
+    !selectedTicketId &&
+    plan.price !== "Gratis",
+  );
+  const shippingCost =
+    plan?.type === "sorpresa" ? parseFloat(plan.shipping_cost || 0) : 0;
+  const baseTotalPrice = unitPrice * quantity + shippingCost;
   const totalPrice = isPromoApplied ? 0 : baseTotalPrice;
   const isFree = totalPrice === 0;
 
   // Max available spots
   const getMaxQuantity = () => {
     if (selectedTicketId && tickets.length > 0) {
-      const ticket = tickets.find(t => t.id === selectedTicketId);
-      if (ticket) return Math.max(0, (ticket.capacity || 0) - (ticket.spots_taken || 0));
+      const ticket = tickets.find((t) => t.id === selectedTicketId);
+      if (ticket)
+        return Math.max(0, (ticket.capacity || 0) - (ticket.spots_taken || 0));
     }
     if (plan.capacity > 0) {
       return Math.max(0, plan.capacity - (plan.spots_taken || 0));
@@ -107,15 +120,15 @@ export default function ReserveButton({
   const maxQuantity = Math.min(getMaxQuantity(), 10);
 
   const handleSubmit = async () => {
-    setError('');
+    setError("");
 
     if (!email) {
-      setError('El email es obligatorio');
+      setError("El email es obligatorio");
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Introduce un email válido');
+      setError("Introduce un email válido");
       return;
     }
 
@@ -129,9 +142,16 @@ export default function ReserveButton({
         customerName: name || undefined,
       };
 
-      if (plan.type === 'sorpresa') {
-        if (!shippingData.name || !shippingData.address || !shippingData.phone || !shippingData.date) {
-          setError('Por favor completa todos los datos de envío obligatorios (Nombre, Dirección, Teléfono, Fecha)');
+      if (plan.type === "sorpresa") {
+        if (
+          !shippingData.name ||
+          !shippingData.address ||
+          !shippingData.phone ||
+          !shippingData.date
+        ) {
+          setError(
+            "Por favor completa todos los datos de envío obligatorios (Nombre, Dirección, Teléfono, Fecha)",
+          );
           setLoading(false);
           return;
         }
@@ -151,16 +171,16 @@ export default function ReserveButton({
         body.promoCode = promoCode;
       }
 
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Error al procesar la reserva');
+        throw new Error(data.error || "Error al procesar la reserva");
       }
 
       // Redirect to Stripe checkout or success page (for free plans)
@@ -174,8 +194,8 @@ export default function ReserveButton({
   return (
     <>
       <button
-        className={className || 'btn btn--primary btn--large'}
-        style={!className ? { width: '100%', textAlign: 'center' } : undefined}
+        className={className || "btn btn--primary btn--large"}
+        style={!className ? { width: "100%", textAlign: "center" } : undefined}
         onClick={() => setIsOpen(true)}
         id="reserve-btn"
       >
@@ -183,14 +203,17 @@ export default function ReserveButton({
       </button>
 
       {isOpen && (
-        <div className={styles.overlay} onClick={(e) => {
-          if (e.target === e.currentTarget) setIsOpen(false);
-        }}>
+        <div
+          className={styles.overlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsOpen(false);
+          }}
+        >
           <div className={styles.modal} role="dialog" aria-modal="true">
             {/* Header */}
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>
-                {isFree ? '📋 Reservar plaza' : '🎫 Comprar entrada'}
+                {isFree ? "📋 Reservar plaza" : "🎫 Comprar entrada"}
               </h2>
               <button
                 className={styles.closeBtn}
@@ -221,52 +244,69 @@ export default function ReserveButton({
                     </span>
                   )}
                   <span className={styles.planSummaryPrice}>
-                    {isFree ? 'Gratis' : `${fullPrice}€`}
+                    {isFree ? "Gratis" : `${fullPrice}€`}
                   </span>
                 </div>
               </div>
 
               {/* Ticket selector (if tickets exist) */}
-              {tickets.filter(t => t.name).length > 0 && (
+              {tickets.filter((t) => t.name).length > 0 && (
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Tipo de entrada</label>
                   <div className={styles.ticketSelector}>
-                    {tickets.filter(t => t.name).map((ticket) => {
-                      const isSoldOut = ticket.sold_out;
-                      const isActive = selectedTicketId === ticket.id;
-                      return (
-                        <button
-                          key={ticket.id}
-                          type="button"
-                          className={[
-                            styles.ticketOption,
-                            isActive ? styles.ticketOptionActive : '',
-                            isSoldOut ? styles.ticketOptionDisabled : '',
-                          ].join(' ')}
-                          onClick={() => !isSoldOut && setSelectedTicketId(isActive ? null : ticket.id)}
-                          disabled={isSoldOut}
-                        >
-                          <div>
-                            <div className={styles.ticketOptionName}>{ticket.name}</div>
-                            {ticket.description && (
-                              <div className={styles.ticketOptionDesc}>{ticket.description}</div>
-                            )}
-                            {ticket.capacity > 0 && !isSoldOut && (
-                              <div className={styles.ticketRemaining}>
-                                ⏱️ Quedan {Math.max(0, ticket.capacity - (ticket.spots_taken || 0))} plazas
+                    {tickets
+                      .filter((t) => t.name)
+                      .map((ticket) => {
+                        const isSoldOut = ticket.sold_out;
+                        const isActive = selectedTicketId === ticket.id;
+                        return (
+                          <button
+                            key={ticket.id}
+                            type="button"
+                            className={[
+                              styles.ticketOption,
+                              isActive ? styles.ticketOptionActive : "",
+                              isSoldOut ? styles.ticketOptionDisabled : "",
+                            ].join(" ")}
+                            onClick={() =>
+                              !isSoldOut && setSelectedTicketId(ticket.id)
+                            }
+                            disabled={isSoldOut}
+                          >
+                            <div>
+                              <div className={styles.ticketOptionName}>
+                                {ticket.name}
                               </div>
+                              {ticket.description && (
+                                <div className={styles.ticketOptionDesc}>
+                                  {ticket.description}
+                                </div>
+                              )}
+                              {ticket.capacity > 0 && !isSoldOut && (
+                                <div className={styles.ticketRemaining}>
+                                  ⏱️ Quedan{" "}
+                                  {Math.max(
+                                    0,
+                                    ticket.capacity - (ticket.spots_taken || 0),
+                                  )}{" "}
+                                  plazas
+                                </div>
+                              )}
+                            </div>
+                            {isSoldOut ? (
+                              <span className={styles.soldOutBadge}>
+                                Agotadas
+                              </span>
+                            ) : (
+                              <span className={styles.ticketOptionPrice}>
+                                {ticket.price === "Gratis"
+                                  ? "Gratis"
+                                  : `${ticket.price}€`}
+                              </span>
                             )}
-                          </div>
-                          {isSoldOut ? (
-                            <span className={styles.soldOutBadge}>Agotadas</span>
-                          ) : (
-                            <span className={styles.ticketOptionPrice}>
-                              {ticket.price === 'Gratis' ? 'Gratis' : `${ticket.price}€`}
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
               )}
@@ -289,7 +329,7 @@ export default function ReserveButton({
               {/* Email */}
               <div className={styles.formGroup}>
                 <label htmlFor="reserve-email" className={styles.label}>
-                  Email <span style={{ color: 'var(--color-error)' }}>*</span>
+                  Email <span style={{ color: "var(--color-error)" }}>*</span>
                 </label>
                 <input
                   id="reserve-email"
@@ -305,23 +345,38 @@ export default function ReserveButton({
               {/* Promo Code */}
               <div className={styles.formGroup}>
                 {!showPromoInput && !promoCode ? (
-                  <button 
-                    type="button" 
-                    className={styles.promoToggleBtn} 
+                  <button
+                    type="button"
+                    className={styles.promoToggleBtn}
                     onClick={() => setShowPromoInput(true)}
                   >
                     ¿Tienes un código promocional?
                   </button>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
                       <label htmlFor="reserve-promo" className={styles.label}>
                         Código promocional
                       </label>
-                      <button 
-                        type="button" 
-                        onClick={() => { setShowPromoInput(false); setPromoCode(''); }}
-                        style={{ background: 'none', border: 'none', fontSize: '0.8rem', color: 'var(--color-text-muted)', cursor: 'pointer' }}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowPromoInput(false);
+                          setPromoCode("");
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          fontSize: "0.8rem",
+                          color: "var(--color-text-muted)",
+                          cursor: "pointer",
+                        }}
                       >
                         Cancelar
                       </button>
@@ -335,7 +390,14 @@ export default function ReserveButton({
                       placeholder="Introduce tu código"
                     />
                     {isPromoApplied && (
-                      <p style={{ color: 'var(--color-primary)', fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: 'bold' }}>
+                      <p
+                        style={{
+                          color: "var(--color-primary)",
+                          fontSize: "0.9rem",
+                          marginTop: "0.5rem",
+                          fontWeight: "bold",
+                        }}
+                      >
                         ✅ Código aplicado: ¡Total a pagar 0€!
                       </p>
                     )}
@@ -344,21 +406,35 @@ export default function ReserveButton({
               </div>
 
               {/* Shipping Data (for sorpresa plans) */}
-              {plan?.type === 'sorpresa' && (
+              {plan?.type === "sorpresa" && (
                 <div className={styles.shippingForm}>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                  <h3
+                    style={{
+                      fontSize: "1.1rem",
+                      marginBottom: "1rem",
+                      marginTop: "1rem",
+                      borderTop: "1px solid var(--border-color)",
+                      paddingTop: "1rem",
+                    }}
+                  >
                     📦 Datos de Envío
                   </h3>
-                  
+
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      Nombre y Apellidos del destinatario <span style={{ color: 'var(--color-error)' }}>*</span>
+                      Nombre y Apellidos del destinatario{" "}
+                      <span style={{ color: "var(--color-error)" }}>*</span>
                     </label>
                     <input
                       type="text"
                       className={styles.input}
                       value={shippingData.name}
-                      onChange={(e) => setShippingData({ ...shippingData, name: e.target.value })}
+                      onChange={(e) =>
+                        setShippingData({
+                          ...shippingData,
+                          name: e.target.value,
+                        })
+                      }
                       placeholder="Para quién es el regalo"
                       required
                     />
@@ -366,28 +442,40 @@ export default function ReserveButton({
 
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      Dirección de entrega <span style={{ color: 'var(--color-error)' }}>*</span>
+                      Dirección de entrega{" "}
+                      <span style={{ color: "var(--color-error)" }}>*</span>
                     </label>
                     <textarea
                       className={styles.input}
                       value={shippingData.address}
-                      onChange={(e) => setShippingData({ ...shippingData, address: e.target.value })}
+                      onChange={(e) =>
+                        setShippingData({
+                          ...shippingData,
+                          address: e.target.value,
+                        })
+                      }
                       placeholder="Calle, número, piso, puerta, código postal y ciudad..."
                       rows="3"
-                      style={{ resize: 'vertical' }}
+                      style={{ resize: "vertical" }}
                       required
                     />
                   </div>
 
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      Teléfono de contacto (importante para mensajero) <span style={{ color: 'var(--color-error)' }}>*</span>
+                      Teléfono de contacto (importante para mensajero){" "}
+                      <span style={{ color: "var(--color-error)" }}>*</span>
                     </label>
                     <input
                       type="tel"
                       className={styles.input}
                       value={shippingData.phone}
-                      onChange={(e) => setShippingData({ ...shippingData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setShippingData({
+                          ...shippingData,
+                          phone: e.target.value,
+                        })
+                      }
                       placeholder="Ej. +34 600 000 000"
                       required
                     />
@@ -395,13 +483,19 @@ export default function ReserveButton({
 
                   <div className={styles.formGroup}>
                     <label className={styles.label}>
-                      Fecha deseada de entrega <span style={{ color: 'var(--color-error)' }}>*</span>
+                      Fecha deseada de entrega{" "}
+                      <span style={{ color: "var(--color-error)" }}>*</span>
                     </label>
                     <input
                       type="date"
                       className={styles.input}
                       value={shippingData.date}
-                      onChange={(e) => setShippingData({ ...shippingData, date: e.target.value })}
+                      onChange={(e) =>
+                        setShippingData({
+                          ...shippingData,
+                          date: e.target.value,
+                        })
+                      }
                       required
                     />
                   </div>
@@ -413,10 +507,15 @@ export default function ReserveButton({
                     <textarea
                       className={styles.input}
                       value={shippingData.message}
-                      onChange={(e) => setShippingData({ ...shippingData, message: e.target.value })}
+                      onChange={(e) =>
+                        setShippingData({
+                          ...shippingData,
+                          message: e.target.value,
+                        })
+                      }
                       placeholder="Escribe algo bonito..."
                       rows="2"
-                      style={{ resize: 'vertical' }}
+                      style={{ resize: "vertical" }}
                     />
                   </div>
                 </div>
@@ -429,7 +528,7 @@ export default function ReserveButton({
                   <button
                     type="button"
                     className={styles.quantityBtn}
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
                     aria-label="Menos"
                   >
@@ -439,7 +538,9 @@ export default function ReserveButton({
                   <button
                     type="button"
                     className={styles.quantityBtn}
-                    onClick={() => setQuantity(q => Math.min(maxQuantity, q + 1))}
+                    onClick={() =>
+                      setQuantity((q) => Math.min(maxQuantity, q + 1))
+                    }
                     disabled={quantity >= maxQuantity}
                     aria-label="Más"
                   >
@@ -449,9 +550,7 @@ export default function ReserveButton({
               </div>
 
               {/* Error */}
-              {error && (
-                <div className={styles.error}>{error}</div>
-              )}
+              {error && <div className={styles.error}>{error}</div>}
             </div>
 
             {/* Footer */}
@@ -463,22 +562,26 @@ export default function ReserveButton({
                     <span>{(fullPrice * quantity).toFixed(2)}€</span>
                   </div>
                 )}
-                {plan?.type === 'sorpresa' && shippingCost > 0 && (
+                {plan?.type === "sorpresa" && shippingCost > 0 && (
                   <div className={styles.breakdownRow}>
                     <span>Gastos de envío</span>
                     <span>{shippingCost.toFixed(2)}€</span>
                   </div>
                 )}
                 <div className={styles.totalRow}>
-                  <span className={styles.totalLabel}>{isPreReserve ? 'Pagas ahora' : 'Total'}</span>
+                  <span className={styles.totalLabel}>
+                    {isPreReserve ? "Pagas ahora" : "Total"}
+                  </span>
                   <span className={styles.totalAmount}>
-                    {isFree ? 'Gratis' : `${totalPrice.toFixed(2)}€`}
+                    {isFree ? "Gratis" : `${totalPrice.toFixed(2)}€`}
                   </span>
                 </div>
                 {isPreReserve && (
                   <div className={styles.breakdownNote}>
                     <span>Restante a pagar en el local:</span>
-                    <strong>{((fullPrice - unitPrice) * quantity).toFixed(2)}€</strong>
+                    <strong>
+                      {((fullPrice - unitPrice) * quantity).toFixed(2)}€
+                    </strong>
                   </div>
                 )}
               </div>
@@ -486,7 +589,12 @@ export default function ReserveButton({
               <button
                 className={styles.submitBtn}
                 onClick={handleSubmit}
-                disabled={loading || (plan.price !== 'Gratis' && tickets.filter(t => t.name).length > 0 && !selectedTicketId)}
+                disabled={
+                  loading ||
+                  (plan.price !== "Gratis" &&
+                    tickets.filter((t) => t.name).length > 0 &&
+                    !selectedTicketId)
+                }
               >
                 {loading ? (
                   <>
@@ -494,7 +602,7 @@ export default function ReserveButton({
                     Procesando...
                   </>
                 ) : isFree ? (
-                  '📋 Confirmar reserva gratuita'
+                  "📋 Confirmar reserva gratuita"
                 ) : (
                   `💳 Pagar ${totalPrice.toFixed(2)}€`
                 )}

@@ -30,7 +30,7 @@ function generateCode() {
   return crypto.randomBytes(4).toString('base64url').slice(0, 6).toLowerCase();
 }
 
-// GET /api/admin/qr-codes?plan_id=X — List QR codes for a plan with scan counts
+// GET /api/admin/qr-codes?plan_id=X or ?type=generic — List QR codes with scan counts
 export async function GET(request) {
   const user = await checkAdmin(request);
   if (!user) {
@@ -39,17 +39,25 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const planId = searchParams.get('plan_id');
+  const type = searchParams.get('type'); // 'generic' for non-plan QR codes
 
-  if (!planId) {
-    return NextResponse.json({ error: 'plan_id requerido' }, { status: 400 });
+  // Build query
+  let query = supabaseAdmin
+    .from('plan_qr_codes')
+    .select('*, plans(title, slug)')
+    .order('created_at', { ascending: false });
+
+  if (planId) {
+    query = query.eq('plan_id', planId);
+  } else if (type === 'generic') {
+    query = query.is('plan_id', null);
+  } else if (type === 'all') {
+    // No filter — return all
+  } else {
+    return NextResponse.json({ error: 'plan_id o type requerido' }, { status: 400 });
   }
 
-  // Get QR codes for this plan
-  const { data: qrCodes, error } = await supabaseAdmin
-    .from('plan_qr_codes')
-    .select('*')
-    .eq('plan_id', planId)
-    .order('created_at', { ascending: false });
+  const { data: qrCodes, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -60,7 +68,6 @@ export async function GET(request) {
 
   let scanStats = {};
   if (qrCodeIds.length > 0) {
-    // Get total scans per QR code
     const { data: scans } = await supabaseAdmin
       .from('plan_qr_scans')
       .select('qr_code_id, scanned_at')
@@ -90,7 +97,7 @@ export async function GET(request) {
   return NextResponse.json(result);
 }
 
-// POST /api/admin/qr-codes — Create new QR code
+// POST /api/admin/qr-codes — Create new QR code (plan-linked or generic)
 export async function POST(request) {
   const user = await checkAdmin(request);
   if (!user) {
@@ -98,10 +105,20 @@ export async function POST(request) {
   }
 
   try {
-    const { plan_id, label } = await request.json();
+    const { plan_id, label, target_url, target_type = 'plan' } = await request.json();
 
-    if (!plan_id || !label?.trim()) {
-      return NextResponse.json({ error: 'plan_id y label son requeridos' }, { status: 400 });
+    if (!label?.trim()) {
+      return NextResponse.json({ error: 'label es requerido' }, { status: 400 });
+    }
+
+    // For plan type, plan_id is required
+    if (target_type === 'plan' && !plan_id) {
+      return NextResponse.json({ error: 'plan_id es requerido para QR de tipo plan' }, { status: 400 });
+    }
+
+    // For generic type, target_url is required
+    if (target_type !== 'plan' && !target_url?.trim()) {
+      return NextResponse.json({ error: 'target_url es requerido para QR genéricos' }, { status: 400 });
     }
 
     // Generate unique code, retry if collision
@@ -119,9 +136,22 @@ export async function POST(request) {
       attempts++;
     }
 
+    const insertData = {
+      label: label.trim(),
+      code,
+      target_type,
+    };
+
+    if (target_type === 'plan') {
+      insertData.plan_id = Number(plan_id);
+    } else {
+      insertData.target_url = target_url.trim();
+      insertData.plan_id = null;
+    }
+
     const { data: qrCode, error } = await supabaseAdmin
       .from('plan_qr_codes')
-      .insert({ plan_id, label: label.trim(), code })
+      .insert(insertData)
       .select()
       .single();
 

@@ -1,25 +1,28 @@
-import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 async function checkAdmin(request) {
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
 
   // Bypass para local si estamos en desarrollo
-  if (process.env.NODE_ENV === 'development') {
-    return { id: 'local-dev-user', email: 'admin@planazosbcn.com' };
+  if (process.env.NODE_ENV === "development") {
+    return { id: "local-dev-user", email: "admin@planazosbcn.com" };
   }
 
-  if (!authHeader?.startsWith('Bearer ')) return null;
+  if (!authHeader?.startsWith("Bearer ")) return null;
 
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  const token = authHeader.replace("Bearer ", "");
+  const {
+    data: { user },
+    error,
+  } = await supabaseAdmin.auth.getUser(token);
   if (error || !user) return null;
 
   const { data: adminUser } = await supabaseAdmin
-    .from('admin_users')
-    .select('*')
-    .eq('id', user.id)
+    .from("admin_users")
+    .select("*")
+    .eq("id", user.id)
     .single();
 
   return adminUser ? user : null;
@@ -29,27 +32,29 @@ async function checkAdmin(request) {
 export async function GET(request, { params }) {
   const user = await checkAdmin(request);
   if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { id } = await params;
 
   const { data: plan, error } = await supabaseAdmin
-    .from('plans')
-    .select('*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*), plan_reels(*)')
-    .eq('id', id)
+    .from("plans")
+    .select(
+      "*, plan_tags(*), plan_tickets(*), plan_guest_lists(*), plan_schedule(*), plan_reels(*)",
+    )
+    .eq("id", id)
     .single();
 
   if (error || !plan) {
-    return NextResponse.json({ error: 'Plan no encontrado' }, { status: 404 });
+    return NextResponse.json({ error: "Plan no encontrado" }, { status: 404 });
   }
 
   // Get reservations for this plan
   const { data: reservations } = await supabaseAdmin
-    .from('reservations')
-    .select('*')
-    .eq('plan_id', id)
-    .order('created_at', { ascending: false });
+    .from("reservations")
+    .select("*")
+    .eq("plan_id", id)
+    .order("created_at", { ascending: false });
 
   return NextResponse.json({ ...plan, reservations: reservations || [] });
 }
@@ -58,7 +63,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   const user = await checkAdmin(request);
   if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { id } = await params;
@@ -69,9 +74,9 @@ export async function PUT(request, { params }) {
 
     // Update plan
     const { data: plan, error: planError } = await supabaseAdmin
-      .from('plans')
+      .from("plans")
       .update(planData)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -81,59 +86,91 @@ export async function PUT(request, { params }) {
 
     // Replace tags
     if (tags !== undefined) {
-      await supabaseAdmin.from('plan_tags').delete().eq('plan_id', id);
+      await supabaseAdmin.from("plan_tags").delete().eq("plan_id", id);
       if (tags.length) {
-        await supabaseAdmin.from('plan_tags').insert(
-          tags.map((tag) => ({ plan_id: id, tag }))
-        );
+        await supabaseAdmin
+          .from("plan_tags")
+          .insert(tags.map((tag) => ({ plan_id: id, tag })));
       }
     }
 
-    // Replace tickets
+    // Replace tickets (ignora filas vacías para no marcar el plan como club-style sin querer)
     if (tickets !== undefined) {
-      await supabaseAdmin.from('plan_tickets').delete().eq('plan_id', id);
-      if (tickets.length) {
-        await supabaseAdmin.from('plan_tickets').insert(
-          tickets.map((t, i) => ({ ...t, plan_id: id, sort_order: i }))
-        );
+      await supabaseAdmin.from("plan_tickets").delete().eq("plan_id", id);
+      const validTickets = tickets.filter(
+        (t) =>
+          t?.name &&
+          String(t.name).trim() !== "" &&
+          t?.price !== null &&
+          t?.price !== undefined &&
+          t?.price !== "",
+      );
+      if (validTickets.length) {
+        await supabaseAdmin
+          .from("plan_tickets")
+          .insert(
+            validTickets.map((t, i) => ({ ...t, plan_id: id, sort_order: i })),
+          );
       }
     }
 
-    // Replace guest lists
+    // Replace guest lists (ignora filas vacías)
     if (guestLists !== undefined) {
-      await supabaseAdmin.from('plan_guest_lists').delete().eq('plan_id', id);
-      if (guestLists.length) {
-        await supabaseAdmin.from('plan_guest_lists').insert(
-          guestLists.map((g, i) => ({ ...g, plan_id: id, sort_order: i }))
-        );
+      await supabaseAdmin.from("plan_guest_lists").delete().eq("plan_id", id);
+      const validGuestLists = guestLists.filter(
+        (g) =>
+          g?.name &&
+          String(g.name).trim() !== "" &&
+          g?.price !== null &&
+          g?.price !== undefined &&
+          g?.price !== "",
+      );
+      if (validGuestLists.length) {
+        await supabaseAdmin
+          .from("plan_guest_lists")
+          .insert(
+            validGuestLists.map((g, i) => ({
+              ...g,
+              plan_id: id,
+              sort_order: i,
+            })),
+          );
       }
     }
 
     // Replace schedule
     if (schedule !== undefined) {
-      await supabaseAdmin.from('plan_schedule').delete().eq('plan_id', id);
+      await supabaseAdmin.from("plan_schedule").delete().eq("plan_id", id);
       if (schedule.length) {
-        await supabaseAdmin.from('plan_schedule').insert(
-          schedule.map((s, i) => ({ ...s, plan_id: id, sort_order: i }))
-        );
+        await supabaseAdmin
+          .from("plan_schedule")
+          .insert(
+            schedule.map((s, i) => ({ ...s, plan_id: id, sort_order: i })),
+          );
       }
     }
 
     // Replace reels
     if (reels !== undefined) {
-      await supabaseAdmin.from('plan_reels').delete().eq('plan_id', id);
+      await supabaseAdmin.from("plan_reels").delete().eq("plan_id", id);
       if (reels.length) {
-        await supabaseAdmin.from('plan_reels').insert(
-          reels.map((url, i) => ({ plan_id: id, url: url.trim(), sort_order: i }))
-        );
+        await supabaseAdmin
+          .from("plan_reels")
+          .insert(
+            reels.map((url, i) => ({
+              plan_id: id,
+              url: url.trim(),
+              sort_order: i,
+            })),
+          );
       }
     }
 
     // Revalidate all pages that show plan data
-    revalidatePath('/', 'page');
-    revalidatePath('/planes', 'page');
-    revalidatePath(`/planes/${plan.slug}`, 'page');
-    revalidatePath('/planes/categoria', 'layout');
+    revalidatePath("/", "page");
+    revalidatePath("/planes", "page");
+    revalidatePath(`/planes/${plan.slug}`, "page");
+    revalidatePath("/planes/categoria", "layout");
 
     return NextResponse.json(plan);
   } catch (error) {
@@ -145,35 +182,32 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   const user = await checkAdmin(request);
   if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { id } = await params;
 
   try {
     // Delete related data first
-    await supabaseAdmin.from('plan_tags').delete().eq('plan_id', id);
-    await supabaseAdmin.from('plan_tickets').delete().eq('plan_id', id);
-    await supabaseAdmin.from('plan_guest_lists').delete().eq('plan_id', id);
-    await supabaseAdmin.from('plan_schedule').delete().eq('plan_id', id);
-    await supabaseAdmin.from('plan_reels').delete().eq('plan_id', id);
+    await supabaseAdmin.from("plan_tags").delete().eq("plan_id", id);
+    await supabaseAdmin.from("plan_tickets").delete().eq("plan_id", id);
+    await supabaseAdmin.from("plan_guest_lists").delete().eq("plan_id", id);
+    await supabaseAdmin.from("plan_schedule").delete().eq("plan_id", id);
+    await supabaseAdmin.from("plan_reels").delete().eq("plan_id", id);
 
     // Hard delete the plan
-    const { error } = await supabaseAdmin
-      .from('plans')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabaseAdmin.from("plans").delete().eq("id", id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Revalidate all pages that show plan data
-    revalidatePath('/', 'page');
-    revalidatePath('/planes', 'page');
-    revalidatePath('/planes/categoria', 'layout');
+    revalidatePath("/", "page");
+    revalidatePath("/planes", "page");
+    revalidatePath("/planes/categoria", "layout");
 
-    return NextResponse.json({ message: 'Plan eliminado permanentemente' });
+    return NextResponse.json({ message: "Plan eliminado permanentemente" });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

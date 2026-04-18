@@ -1,9 +1,10 @@
-import { Suspense } from 'react';
-import PlanCard from '@/components/PlanCard/PlanCard';
-import PlansFilters from './PlansFilters';
-import { supabase } from '@/lib/supabase';
-import { parsePlanDate, isPastEvent } from '@/lib/formatDate';
-import styles from './page.module.css';
+import { Suspense } from "react";
+import PlanCard from "@/components/PlanCard/PlanCard";
+import PlansFilters from "./PlansFilters";
+import { supabase } from "@/lib/supabase";
+import { parsePlanDate, isPastEvent } from "@/lib/formatDate";
+import { filterIncompletePlans } from "@/lib/filterIncompletePlans";
+import styles from "./page.module.css";
 
 // ISR: regenerate every 60s for fast cached pages (critical for SEO)
 export const revalidate = 60;
@@ -20,8 +21,13 @@ const mapPlanData = (plan) => ({
 
 // Map JS day index to Spanish day id
 const DAY_MAP = {
-  0: 'domingo', 1: 'lunes', 2: 'martes', 3: 'miercoles',
-  4: 'jueves', 5: 'viernes', 6: 'sabado',
+  0: "domingo",
+  1: "lunes",
+  2: "martes",
+  3: "miercoles",
+  4: "jueves",
+  5: "viernes",
+  6: "sabado",
 };
 
 /**
@@ -29,46 +35,47 @@ const DAY_MAP = {
  */
 function getTimeSlot(plan) {
   if (plan.etiquetas && Array.isArray(plan.etiquetas)) {
-    if (plan.etiquetas.includes('tardeo')) return 'tardeo';
-    if (plan.etiquetas.includes('nocturno')) return 'nocturno';
+    if (plan.etiquetas.includes("tardeo")) return "tardeo";
+    if (plan.etiquetas.includes("nocturno")) return "nocturno";
   }
   if (plan.time_start) {
-    const hour = parseInt(plan.time_start.split(':')[0], 10);
-    if (hour >= 14 && hour < 21) return 'tardeo';
-    if (hour >= 21 || hour < 6) return 'nocturno';
+    const hour = parseInt(plan.time_start.split(":")[0], 10);
+    if (hour >= 14 && hour < 21) return "tardeo";
+    if (hour >= 21 || hour < 6) return "nocturno";
   }
-  if (plan.category === 'nocturno') return 'nocturno';
+  if (plan.category === "nocturno") return "nocturno";
   return null;
 }
 
 export default async function PlanesPage({ searchParams }) {
   const params = await searchParams;
-  const activeCategory = params?.categoria || 'all';
-  const activeDay = params?.dia || 'all';
-  const activeTimeSlot = params?.horario || 'all';
-  const searchQuery = params?.q || '';
+  const activeCategory = params?.categoria || "all";
+  const activeDay = params?.dia || "all";
+  const activeTimeSlot = params?.horario || "all";
+  const searchQuery = params?.q || "";
 
   // Fetch all active plans from Supabase (server-side = indexable by Google!)
   const { data, error } = await supabase
-    .from('plans')
-    .select('*')
-    .eq('published', true)
-    .order('date', { ascending: true });
+    .from("plans")
+    .select("*")
+    .eq("published", true)
+    .order("date", { ascending: true });
 
   if (error) {
-    console.error('Error fetching plans:', error);
+    console.error("Error fetching plans:", error);
   }
 
   let plans = (data || [])
     .map(mapPlanData)
-    .filter(plan => !isPastEvent(plan.date));
+    .filter((plan) => !isPastEvent(plan.date));
+  plans = await filterIncompletePlans(plans);
 
   // Apply filters server-side
-  if (activeCategory !== 'all') {
+  if (activeCategory !== "all") {
     plans = plans.filter((p) => p.category === activeCategory);
   }
 
-  if (activeDay !== 'all') {
+  if (activeDay !== "all") {
     plans = plans.filter((p) => {
       const parsed = parsePlanDate(p.date);
       if (!parsed) return false;
@@ -76,7 +83,7 @@ export default async function PlanesPage({ searchParams }) {
     });
   }
 
-  if (activeTimeSlot !== 'all') {
+  if (activeTimeSlot !== "all") {
     plans = plans.filter((p) => getTimeSlot(p) === activeTimeSlot);
   }
 
@@ -86,11 +93,15 @@ export default async function PlanesPage({ searchParams }) {
       (p) =>
         p.title?.toLowerCase().includes(q) ||
         p.excerpt?.toLowerCase().includes(q) ||
-        p.zone?.toLowerCase().includes(q)
+        p.zone?.toLowerCase().includes(q),
     );
   }
 
-  const hasActiveFilters = activeCategory !== 'all' || activeDay !== 'all' || activeTimeSlot !== 'all' || searchQuery.trim();
+  const hasActiveFilters =
+    activeCategory !== "all" ||
+    activeDay !== "all" ||
+    activeTimeSlot !== "all" ||
+    searchQuery.trim();
 
   return (
     <div className={styles.page}>
@@ -113,7 +124,8 @@ export default async function PlanesPage({ searchParams }) {
       <section className="section section--compact">
         <div className="container">
           <p className={styles.resultCount}>
-            {plans.length} {plans.length === 1 ? 'plan encontrado' : 'planes encontrados'}
+            {plans.length}{" "}
+            {plans.length === 1 ? "plan encontrado" : "planes encontrados"}
           </p>
 
           {plans.length > 0 ? (
@@ -126,7 +138,9 @@ export default async function PlanesPage({ searchParams }) {
             <div className={styles.empty}>
               <span className={styles.emptyEmoji}>🔍</span>
               <h3 className={styles.emptyTitle}>No hay planes que coincidan</h3>
-              <p className={styles.emptyDesc}>Prueba con otra categoría o busca algo diferente</p>
+              <p className={styles.emptyDesc}>
+                Prueba con otra categoría o busca algo diferente
+              </p>
               <a
                 href="/planes"
                 className="btn btn--secondary"

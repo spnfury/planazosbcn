@@ -43,6 +43,7 @@ const NAV_SECTIONS = [
   {
     label: 'Herramientas',
     items: [
+      { href: '/admin/qr-codes', icon: '🔗', label: 'QR Tracking' },
       { href: '/admin/generador-reels', icon: '🎬', label: 'Reels IA' },
       { href: '/admin/logs', icon: '📝', label: 'Logs' },
     ],

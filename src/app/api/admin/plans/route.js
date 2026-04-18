@@ -1,29 +1,32 @@
-import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import { supabaseAdmin } from '@/lib/supabase-server';
+import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 // Helper: check admin auth from Authorization header
 async function checkAdmin(request) {
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
 
   // Bypass para local si estamos en desarrollo
-  if (process.env.NODE_ENV === 'development') {
-    return { id: 'local-dev-user', email: 'admin@planazosbcn.com' };
+  if (process.env.NODE_ENV === "development") {
+    return { id: "local-dev-user", email: "admin@planazosbcn.com" };
   }
 
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith("Bearer ")) {
     return null;
   }
 
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+  const token = authHeader.replace("Bearer ", "");
+  const {
+    data: { user },
+    error,
+  } = await supabaseAdmin.auth.getUser(token);
 
   if (error || !user) return null;
 
   const { data: adminUser } = await supabaseAdmin
-    .from('admin_users')
-    .select('*')
-    .eq('id', user.id)
+    .from("admin_users")
+    .select("*")
+    .eq("id", user.id)
     .single();
 
   return adminUser ? user : null;
@@ -33,24 +36,24 @@ async function checkAdmin(request) {
 export async function GET(request) {
   const user = await checkAdmin(request);
   if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
-  const category = searchParams.get('category');
-  const search = searchParams.get('search');
+  const category = searchParams.get("category");
+  const search = searchParams.get("search");
 
   let query = supabaseAdmin
-    .from('plans')
-    .select('*, plan_tickets(*), plan_tags(*)')
-    .order('created_at', { ascending: false });
+    .from("plans")
+    .select("*, plan_tickets(*), plan_tags(*)")
+    .order("created_at", { ascending: false });
 
   if (category) {
-    query = query.eq('category', category);
+    query = query.eq("category", category);
   }
 
   if (search) {
-    query = query.ilike('title', `%${search}%`);
+    query = query.ilike("title", `%${search}%`);
   }
 
   const { data: plans, error } = await query;
@@ -61,9 +64,9 @@ export async function GET(request) {
 
   // Get reservation counts per plan
   const { data: resCounts } = await supabaseAdmin
-    .from('reservations')
-    .select('plan_id, quantity')
-    .eq('status', 'paid');
+    .from("reservations")
+    .select("plan_id, quantity")
+    .eq("status", "paid");
 
   const revenueByPlan = {};
   if (resCounts) {
@@ -85,7 +88,7 @@ export async function GET(request) {
 export async function POST(request) {
   const user = await checkAdmin(request);
   if (!user) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   try {
@@ -94,7 +97,7 @@ export async function POST(request) {
 
     // Create plan
     const { data: plan, error: planError } = await supabaseAdmin
-      .from('plans')
+      .from("plans")
       .insert(planData)
       .select()
       .single();
@@ -105,39 +108,75 @@ export async function POST(request) {
 
     // Insert related data
     if (tags?.length) {
-      await supabaseAdmin.from('plan_tags').insert(
-        tags.map((tag) => ({ plan_id: plan.id, tag }))
-      );
+      await supabaseAdmin
+        .from("plan_tags")
+        .insert(tags.map((tag) => ({ plan_id: plan.id, tag })));
     }
 
-    if (tickets?.length) {
-      await supabaseAdmin.from('plan_tickets').insert(
-        tickets.map((t, i) => ({ ...t, plan_id: plan.id, sort_order: i }))
-      );
+    const validTickets = (tickets || []).filter(
+      (t) =>
+        t?.name &&
+        String(t.name).trim() !== "" &&
+        t?.price !== null &&
+        t?.price !== undefined &&
+        t?.price !== "",
+    );
+    if (validTickets.length) {
+      await supabaseAdmin
+        .from("plan_tickets")
+        .insert(
+          validTickets.map((t, i) => ({
+            ...t,
+            plan_id: plan.id,
+            sort_order: i,
+          })),
+        );
     }
 
-    if (guestLists?.length) {
-      await supabaseAdmin.from('plan_guest_lists').insert(
-        guestLists.map((g, i) => ({ ...g, plan_id: plan.id, sort_order: i }))
-      );
+    const validGuestLists = (guestLists || []).filter(
+      (g) =>
+        g?.name &&
+        String(g.name).trim() !== "" &&
+        g?.price !== null &&
+        g?.price !== undefined &&
+        g?.price !== "",
+    );
+    if (validGuestLists.length) {
+      await supabaseAdmin
+        .from("plan_guest_lists")
+        .insert(
+          validGuestLists.map((g, i) => ({
+            ...g,
+            plan_id: plan.id,
+            sort_order: i,
+          })),
+        );
     }
 
     if (schedule?.length) {
-      await supabaseAdmin.from('plan_schedule').insert(
-        schedule.map((s, i) => ({ ...s, plan_id: plan.id, sort_order: i }))
-      );
+      await supabaseAdmin
+        .from("plan_schedule")
+        .insert(
+          schedule.map((s, i) => ({ ...s, plan_id: plan.id, sort_order: i })),
+        );
     }
 
     if (reels?.length) {
-      await supabaseAdmin.from('plan_reels').insert(
-        reels.map((url, i) => ({ plan_id: plan.id, url: url.trim(), sort_order: i }))
-      );
+      await supabaseAdmin
+        .from("plan_reels")
+        .insert(
+          reels.map((url, i) => ({
+            plan_id: plan.id,
+            url: url.trim(),
+            sort_order: i,
+          })),
+        );
     }
 
     // Revalidate all pages that show plan data
-    revalidatePath('/', 'page');
-    revalidatePath('/planes', 'page');
-    revalidatePath('/planes/categoria', 'layout');
+    revalidatePath("/", "page");
+    revalidatePath("/planes", "page");
+    revalidatePath("/planes/categoria", "layout");
 
     return NextResponse.json(plan, { status: 201 });
   } catch (error) {

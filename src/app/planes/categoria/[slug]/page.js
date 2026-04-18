@@ -1,14 +1,14 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import PlanCard from '@/components/PlanCard/PlanCard';
-import { CATEGORIES, getCategoryBySlug } from '@/data/plans';
-import { supabase } from '@/lib/supabase';
-import { isPastEvent } from '@/lib/formatDate';
-import styles from './page.module.css';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import PlanCard from "@/components/PlanCard/PlanCard";
+import { CATEGORIES, getCategoryBySlug } from "@/data/plans";
+import { supabase } from "@/lib/supabase";
+import { isPastEvent } from "@/lib/formatDate";
+import { filterIncompletePlans } from "@/lib/filterIncompletePlans";
+import styles from "./page.module.css";
 
 // ISR: regenerate every 60s for fast cached pages (critical for SEO)
 export const revalidate = 60;
-
 
 // Helper function to map snake_case from DB to camelCase for PlanCard
 const mapPlanData = (plan) => ({
@@ -36,12 +36,12 @@ export async function generateMetadata({ params }) {
       title: category.metaTitle,
       description: category.metaDescription,
       url: `https://planazosbcn.com/planes/categoria/${category.slug}`,
-      siteName: 'PlanazosBCN',
-      locale: 'es_ES',
-      type: 'website',
+      siteName: "PlanazosBCN",
+      locale: "es_ES",
+      type: "website",
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: category.metaTitle,
       description: category.metaDescription,
     },
@@ -58,44 +58,45 @@ export default async function CategoryPage({ params }) {
 
   // Fetch plans for this category from Supabase
   const { data: plansData, error } = await supabase
-    .from('plans')
-    .select('*')
-    .eq('category', category.id)
-    .eq('published', true)
-    .order('date', { ascending: true });
+    .from("plans")
+    .select("*")
+    .eq("category", category.id)
+    .eq("published", true)
+    .order("date", { ascending: true });
 
   if (error) {
-    console.error('Error fetching plans for category:', error);
+    console.error("Error fetching plans for category:", error);
   }
 
-  const plans = (plansData || [])
+  const mappedPlans = (plansData || [])
     .map(mapPlanData)
-    .filter(plan => !isPastEvent(plan.date));
+    .filter((plan) => !isPastEvent(plan.date));
+  const plans = await filterIncompletePlans(mappedPlans);
 
   // JSON-LD Structured Data
   const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
     name: category.heroTitle,
     description: category.metaDescription,
     url: `https://planazosbcn.com/planes/categoria/${category.slug}`,
     breadcrumb: {
-      '@type': 'BreadcrumbList',
+      "@type": "BreadcrumbList",
       itemListElement: [
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: 1,
-          name: 'Inicio',
-          item: 'https://planazosbcn.com',
+          name: "Inicio",
+          item: "https://planazosbcn.com",
         },
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: 2,
-          name: 'Planes',
-          item: 'https://planazosbcn.com/planes',
+          name: "Planes",
+          item: "https://planazosbcn.com/planes",
         },
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
           position: 3,
           name: category.label,
           item: `https://planazosbcn.com/planes/categoria/${category.slug}`,
@@ -117,15 +118,25 @@ export default async function CategoryPage({ params }) {
           <div className="container">
             <ol className={styles.breadcrumbList}>
               <li>
-                <Link href="/" className={styles.crumb}>Inicio</Link>
-                <span className={styles.crumbSep} aria-hidden="true">›</span>
+                <Link href="/" className={styles.crumb}>
+                  Inicio
+                </Link>
+                <span className={styles.crumbSep} aria-hidden="true">
+                  ›
+                </span>
               </li>
               <li>
-                <Link href="/planes" className={styles.crumb}>Planes</Link>
-                <span className={styles.crumbSep} aria-hidden="true">›</span>
+                <Link href="/planes" className={styles.crumb}>
+                  Planes
+                </Link>
+                <span className={styles.crumbSep} aria-hidden="true">
+                  ›
+                </span>
               </li>
               <li>
-                <span className={styles.crumbActive} aria-current="page">{category.label}</span>
+                <span className={styles.crumbActive} aria-current="page">
+                  {category.label}
+                </span>
               </li>
             </ol>
           </div>
@@ -145,7 +156,9 @@ export default async function CategoryPage({ params }) {
         <section className="section section--compact">
           <div className="container">
             <p className={styles.resultCount}>
-              {plans.length} {plans.length === 1 ? 'plan encontrado' : 'planes encontrados'} en {category.label}
+              {plans.length}{" "}
+              {plans.length === 1 ? "plan encontrado" : "planes encontrados"} en{" "}
+              {category.label}
             </p>
 
             {plans.length > 0 ? (
@@ -157,11 +170,18 @@ export default async function CategoryPage({ params }) {
             ) : (
               <div className={styles.empty}>
                 <span className={styles.emptyEmoji}>🔍</span>
-                <h3 className={styles.emptyTitle}>Aún no hay planes en esta categoría</h3>
+                <h3 className={styles.emptyTitle}>
+                  Aún no hay planes en esta categoría
+                </h3>
                 <p className={styles.emptyDesc}>
-                  Estamos preparando planes increíbles de {category.label.toLowerCase()} para ti. ¡Vuelve pronto!
+                  Estamos preparando planes increíbles de{" "}
+                  {category.label.toLowerCase()} para ti. ¡Vuelve pronto!
                 </p>
-                <Link href="/planes" className="btn btn--primary" id="category-back-to-plans">
+                <Link
+                  href="/planes"
+                  className="btn btn--primary"
+                  id="category-back-to-plans"
+                >
                   Ver todos los planes
                 </Link>
               </div>
@@ -174,7 +194,9 @@ export default async function CategoryPage({ params }) {
           <div className="container">
             <div className="section-header">
               <span className="section-header__label">Más categorías</span>
-              <h2 className="section-header__title">Explora otros tipos de planes</h2>
+              <h2 className="section-header__title">
+                Explora otros tipos de planes
+              </h2>
             </div>
             <div className={styles.otherCategories}>
               {CATEGORIES.filter((c) => c.slug !== slug).map((cat) => (

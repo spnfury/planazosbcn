@@ -8,14 +8,14 @@ export async function GET(request, { params }) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Look up the QR code and its associated plan
+  // Look up the QR code — supports both plan-linked and generic QR codes
   const { data: qrCode, error } = await supabase
     .from('plan_qr_codes')
-    .select('id, plan_id, plans(slug)')
+    .select('id, plan_id, target_url, target_type, plans(slug)')
     .eq('code', code)
     .single();
 
-  if (error || !qrCode || !qrCode.plans?.slug) {
+  if (error || !qrCode) {
     // QR code not found — redirect to homepage
     return NextResponse.redirect(new URL('/', request.url));
   }
@@ -35,7 +35,24 @@ export async function GET(request, { params }) {
     referer,
   }).then(() => {});
 
-  // Redirect to the plan page
-  const destination = new URL(`/planes/${qrCode.plans.slug}`, request.url);
+  // Determine redirect destination
+  let destination;
+
+  if (qrCode.target_type === 'plan' && qrCode.plans?.slug) {
+    // Plan QR code → redirect to plan page
+    destination = new URL(`/planes/${qrCode.plans.slug}`, request.url);
+  } else if (qrCode.target_url) {
+    // Generic QR code → redirect to target URL
+    // If it's a relative URL, resolve it against the request origin
+    if (qrCode.target_url.startsWith('http')) {
+      destination = qrCode.target_url;
+    } else {
+      destination = new URL(qrCode.target_url, request.url);
+    }
+  } else {
+    // Fallback to homepage
+    destination = new URL('/', request.url);
+  }
+
   return NextResponse.redirect(destination, 302);
 }
