@@ -1071,7 +1071,7 @@ export default function EditPlanPage({ params }) {
                     name: "",
                     price: "",
                     description: "",
-                    capacity: 0,
+                    capacity: "",
                     spots_taken: 0,
                     sold_out: false,
                   },

@@ -79,12 +79,14 @@ export async function POST(request) {
         );
       }
 
-      const available = ticket.capacity - ticket.spots_taken;
-      if (quantity > available) {
-        return NextResponse.json(
-          { error: `Solo quedan ${available} entradas disponibles` },
-          { status: 400 },
-        );
+      if (ticket.capacity > 0) {
+        const available = ticket.capacity - ticket.spots_taken;
+        if (quantity > available) {
+          return NextResponse.json(
+            { error: `Solo quedan ${available} entradas disponibles` },
+            { status: 400 },
+          );
+        }
       }
 
       ticketData = ticket;

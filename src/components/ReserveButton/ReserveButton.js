@@ -108,8 +108,11 @@ export default function ReserveButton({
   const getMaxQuantity = () => {
     if (selectedTicketId && tickets.length > 0) {
       const ticket = tickets.find((t) => t.id === selectedTicketId);
-      if (ticket)
-        return Math.max(0, (ticket.capacity || 0) - (ticket.spots_taken || 0));
+      if (ticket) {
+        // capacity = 0 means unlimited
+        if (!ticket.capacity || ticket.capacity <= 0) return 10;
+        return Math.max(0, ticket.capacity - (ticket.spots_taken || 0));
+      }
     }
     if (plan.capacity > 0) {
       return Math.max(0, plan.capacity - (plan.spots_taken || 0));
