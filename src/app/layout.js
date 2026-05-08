@@ -1,8 +1,29 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import LayoutShell from '@/components/LayoutShell';
 import AuthProvider from '@/components/Auth/AuthProvider';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planazosbcn.com';
+
+// Search engine ownership verification. Codes pegados en variables de entorno
+// (Vercel) — aparecen como meta tags. Si no se setean, no se renderizan.
+const verification = {};
+if (process.env.GOOGLE_SITE_VERIFICATION) {
+  verification.google = process.env.GOOGLE_SITE_VERIFICATION;
+}
+if (process.env.YANDEX_VERIFICATION) {
+  verification.yandex = process.env.YANDEX_VERIFICATION;
+}
+if (process.env.BING_SITE_VERIFICATION || process.env.YAHOO_VERIFICATION) {
+  verification.other = {};
+  if (process.env.BING_SITE_VERIFICATION) {
+    verification.other['msvalidate.01'] = process.env.BING_SITE_VERIFICATION;
+  }
+  if (process.env.YAHOO_VERIFICATION) {
+    verification.other['y_key'] = process.env.YAHOO_VERIFICATION;
+  }
+}
 
 export const viewport = {
   themeColor: '#0f0f1a',
@@ -71,6 +92,7 @@ export const metadata = {
       'max-video-preview': -1,
     },
   },
+  ...(Object.keys(verification).length > 0 ? { verification } : {}),
 };
 
 export default function RootLayout({ children }) {
@@ -99,6 +121,8 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <LayoutShell>{children}</LayoutShell>
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
