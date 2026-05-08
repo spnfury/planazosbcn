@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import {
@@ -327,10 +328,13 @@ export default function PerfilPage() {
                 id="avatar-upload-btn"
               >
                 {(avatarPreview || profile.avatar_url) ? (
-                  <img
+                  <Image
                     src={avatarPreview || profile.avatar_url}
                     alt="Tu foto"
                     className={styles.avatarImg}
+                    width={120}
+                    height={120}
+                    unoptimized
                   />
                 ) : (
                   <div className={styles.avatarPlaceholder}>

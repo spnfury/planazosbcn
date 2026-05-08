@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
@@ -53,10 +54,13 @@ export default function Header() {
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.logo}>
-          <img
+          <Image
             src="/logo-planazosbcn.png"
             alt="PlanazosBCN"
             className={styles.logoImg}
+            width={140}
+            height={40}
+            priority
           />
         </Link>
 
@@ -141,7 +145,14 @@ export default function Header() {
             user ? (
               <Link href="/cuenta" className={styles.userBtn} id="desktop-account">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className={styles.userAvatarImg} />
+                  <Image
+                    src={avatarUrl}
+                    alt=""
+                    className={styles.userAvatarImg}
+                    width={36}
+                    height={36}
+                    unoptimized
+                  />
                 ) : (
                   <span className={styles.userAvatar}>
                     {(user.user_metadata?.full_name || user.email)?.[0]?.toUpperCase() || '?'}

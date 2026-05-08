@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import MediaUploaderButton from '@/components/MediaUploaderButton';
 import styles from './generador-reels.module.css';
@@ -339,7 +340,7 @@ export default function GeneradorReelsPage() {
             </div>
             <div className={styles.planSummary}>
               {plan.image && (
-                <img src={plan.image} alt={plan.title} className={styles.planThumb} />
+                <Image src={plan.image} alt={plan.title} className={styles.planThumb} width={64} height={64} unoptimized style={{ objectFit: 'cover' }} />
               )}
               <div className={styles.planInfo}>
                 <h4>{plan.title}</h4>
@@ -681,10 +682,14 @@ export default function GeneradorReelsPage() {
                             } else {
                               return (
                                 <>
-                                  <img
+                                  <Image
                                     src={plan.image || '/logo-planazosbcn.png'}
                                     alt="Reel preview"
                                     className={styles.previewImage}
+                                    width={400}
+                                    height={711}
+                                    unoptimized
+                                    style={{ objectFit: 'cover' }}
                                   />
                                   <div className={styles.reelPlayOverlay}>
                                     <span>▶</span>
@@ -696,10 +701,14 @@ export default function GeneradorReelsPage() {
                           })()}
                         </div>
                       ) : (
-                        <img
+                        <Image
                           src={getSegmentMedia(script.segments[currentSegment]) || '/logo-planazosbcn.png'}
                           alt={`Segment ${currentSegment + 1}`}
                           className={styles.previewImage}
+                          width={400}
+                          height={711}
+                          unoptimized
+                          style={{ objectFit: 'cover' }}
                         />
                       )}
 
@@ -756,7 +765,7 @@ export default function GeneradorReelsPage() {
                   </>
                 ) : plan ? (
                   <div className={styles.previewEmpty}>
-                    <img src={plan.image || '/logo-planazosbcn.png'} alt={plan.title} className={styles.previewImage} />
+                    <Image src={plan.image || '/logo-planazosbcn.png'} alt={plan.title} className={styles.previewImage} width={400} height={711} unoptimized style={{ objectFit: 'cover' }} />
                     <div className={styles.previewGradient} />
                     <div className={styles.previewOverlay}>
                       <p className={styles.previewHint}>

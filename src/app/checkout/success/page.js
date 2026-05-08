@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import QRCode from 'qrcode';
 import styles from './success.module.css';
 
@@ -143,10 +144,14 @@ function SuccessContent() {
               {/* ── Plan Detail Card ── */}
               <div className={styles.planCard}>
                 {plan?.image ? (
-                  <img
+                  <Image
                     src={plan.image}
                     alt={plan.title}
                     className={styles.planImage}
+                    width={400}
+                    height={300}
+                    unoptimized
+                    style={{ objectFit: 'cover' }}
                   />
                 ) : (
                   <div className={styles.planImagePlaceholder}>🎉</div>
@@ -207,7 +212,7 @@ function SuccessContent() {
               {qrDataUrl && (
                 <div className={styles.qrSection}>
                   <div className={styles.qrContainer}>
-                    <img src={qrDataUrl} alt="QR de entrada" className={styles.qrImage} />
+                    <Image src={qrDataUrl} alt="QR de entrada" className={styles.qrImage} width={240} height={240} unoptimized />
                   </div>
                   <p className={styles.qrLabel}>Presenta este QR en el recinto</p>
                 </div>

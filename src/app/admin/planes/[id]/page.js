@@ -121,7 +121,7 @@ export default function EditPlanPage({ params }) {
     }
 
     load();
-  }, [params, router]);
+  }, [params, router, supabase]);
 
   function updateForm(field, value) {
     setForm((prev) => {

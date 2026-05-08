@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../../admin.module.css';
 
@@ -353,12 +354,13 @@ export default function AdminRestaurantUsersPage() {
                 <td data-label="Usuario">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {user.logo_url ? (
-                      <img
+                      <Image
                         src={user.logo_url}
                         alt=""
+                        width={32}
+                        height={32}
+                        unoptimized
                         style={{
-                          width: 32,
-                          height: 32,
                           borderRadius: '8px',
                           objectFit: 'cover',
                         }}

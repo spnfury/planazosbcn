@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import styles from './ReviewsSection.module.css';
 
@@ -21,6 +22,7 @@ export default function ReviewsSection({ planId }) {
   useEffect(() => {
     loadReviews();
     checkUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]);
 
   async function loadReviews() {
@@ -183,7 +185,13 @@ export default function ReviewsSection({ planId }) {
               <div className={styles.reviewHeader}>
                 <div className={styles.reviewerAvatar}>
                   {review.profiles?.avatar_url ? (
-                    <img src={review.profiles.avatar_url} alt={review.profiles.full_name} />
+                    <Image
+                      src={review.profiles.avatar_url}
+                      alt={review.profiles.full_name || 'Avatar'}
+                      width={40}
+                      height={40}
+                      unoptimized
+                    />
                   ) : (
                     <span>{getInitials(review.profiles?.full_name)}</span>
                   )}

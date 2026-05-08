@@ -68,6 +68,7 @@ export default function RestaurantMenusPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restaurantId]);
 
   async function loadData() {

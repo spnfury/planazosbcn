@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import styles from '../admin.module.css';
 
 export default function AdminUsuariosPage() {
@@ -105,12 +106,13 @@ export default function AdminUsuariosPage() {
                 <td data-label="Usuario">
                   <div className={styles.planRow}>
                     {user.avatar_url ? (
-                      <img
+                      <Image
                         src={user.avatar_url}
                         alt=""
+                        width={36}
+                        height={36}
+                        unoptimized
                         style={{
-                          width: 36,
-                          height: 36,
                           borderRadius: '50%',
                           objectFit: 'cover',
                         }}

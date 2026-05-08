@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import AdminAssistant from '@/components/AdminAssistant/AdminAssistant';
@@ -139,7 +140,7 @@ export default function AdminLayout({ children }) {
       {/* Mobile top header — compact */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileLogoGroup}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+          <Image src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} width={140} height={40} priority />
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
         <button
@@ -191,7 +192,7 @@ export default function AdminLayout({ children }) {
       {/* Desktop sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+          <Image src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} width={140} height={40} priority />
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
 

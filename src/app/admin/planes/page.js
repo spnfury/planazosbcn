@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
 
@@ -106,10 +107,14 @@ export default function AdminPlanesPage() {
                   <td data-label="Plan">
                     <div className={styles.planRow}>
                       {plan.image && (
-                        <img
+                        <Image
                           src={plan.image}
                           alt=""
                           className={styles.planThumb}
+                          width={64}
+                          height={64}
+                          unoptimized
+                          style={{ objectFit: 'cover' }}
                         />
                       )}
                       <div>

@@ -49,7 +49,7 @@ export default function AdminTasksPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterStatus, search]);
+  }, [filterStatus, search, supabase]);
 
   useEffect(() => {
     loadTasks();

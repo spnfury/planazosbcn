@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import InstagramReels from '@/components/InstagramReels/InstagramReels';
 
@@ -76,7 +77,7 @@ export default async function DetalleRestaurante({ params }) {
       <div style={{ textAlign: 'center', marginBottom: '5rem', position: 'relative' }}>
         {restaurant.logo_url && (
             <div style={{ width: '120px', height: '120px', margin: '0 auto 1.5rem', borderRadius: '50%', overflow: 'hidden', border: '5px solid #fff', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-               <img src={restaurant.logo_url} alt={`${restaurant.nombre} Logo`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+               <Image src={restaurant.logo_url} alt={`${restaurant.nombre} Logo`} width={120} height={120} style={{ objectFit: 'cover' }} unoptimized />
             </div>
         )}
         <span style={{ display: 'inline-block', background: 'rgba(230, 57, 70, 0.1)', color: '#e63946', padding: '0.6rem 1.5rem', borderRadius: '40px', fontSize: '0.95rem', fontWeight: 'bold', marginBottom: '1.5rem', border: '1px solid rgba(230, 57, 70, 0.2)' }}>

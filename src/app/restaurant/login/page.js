@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../restaurant.module.css';
 
@@ -62,10 +63,13 @@ export default function RestaurantLoginPage() {
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-          <img
+          <Image
             src="/logo-planazosbcn.png"
             alt="PlanazosBCN"
             className={styles.loginLogo}
+            width={140}
+            height={40}
+            priority
           />
         </div>
         <h1 className={styles.loginTitle}>PlanazosBCN</h1>

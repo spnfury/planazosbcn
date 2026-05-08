@@ -14,6 +14,7 @@ export default function AdminResenasPage() {
 
   useEffect(() => {
     loadReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadReviews() {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import QRCode from 'qrcode';
@@ -96,7 +97,7 @@ export default function EntradaPage({ params }) {
           <div className={styles.ticketHeader}>
             <div className={styles.ticketHeaderBg} />
             <div className={styles.ticketHeaderContent}>
-              <span className={styles.ticketBrand}><img src="/logo-planazosbcn.png" alt="" style={{ height: '20px', width: 'auto', filter: 'brightness(0) invert(1)', verticalAlign: 'middle', marginRight: '6px' }} />PlanazosBCN</span>
+              <span className={styles.ticketBrand}><Image src="/logo-planazosbcn.png" alt="" width={70} height={20} style={{ filter: 'brightness(0) invert(1)', verticalAlign: 'middle', marginRight: '6px' }} />PlanazosBCN</span>
               <h1 className={styles.ticketTitle}>{plan?.title || 'Entrada'}</h1>
               <div className={styles.ticketMeta}>
                 {plan?.date && <span>🗓️ {plan.date}</span>}
@@ -136,10 +137,13 @@ export default function EntradaPage({ params }) {
             ) : qrDataUrl ? (
               <>
                 <div className={styles.qrWrapper}>
-                  <img
+                  <Image
                     src={qrDataUrl}
                     alt="QR de entrada"
                     className={styles.qrImage}
+                    width={240}
+                    height={240}
+                    unoptimized
                   />
                 </div>
                 {reservation.localizador && (

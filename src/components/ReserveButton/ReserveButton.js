@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import styles from "./ReserveButton.module.css";
 
@@ -232,10 +233,13 @@ export default function ReserveButton({
               {/* Plan summary */}
               <div className={styles.planSummary}>
                 {plan.image && (
-                  <img
+                  <Image
                     src={plan.image}
                     alt={plan.title}
                     className={styles.planSummaryImg}
+                    width={120}
+                    height={120}
+                    unoptimized
                   />
                 )}
                 <div className={styles.planSummaryInfo}>
