@@ -3,40 +3,46 @@
 import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import QRCode from 'qrcode';
 import styles from './success.module.css';
 
 /* ── Confetti generator ── */
 function Confetti() {
-  const colors = ['#22C55E', '#16A34A', '#C8102E', '#F59E0B', '#8B5CF6', '#3B82F6', '#EC4899', '#FFD700'];
-  const pieces = Array.from({ length: 50 }, (_, i) => {
-    const color = colors[i % colors.length];
-    const left = Math.random() * 100;
-    const delay = Math.random() * 2.5;
-    const duration = 2.5 + Math.random() * 2;
-    const size = 6 + Math.random() * 8;
-    const rotation = Math.random() * 360;
-    const shape = i % 3 === 0 ? '50%' : i % 3 === 1 ? '0' : '2px';
-
-    return (
-      <div
-        key={i}
-        className={styles.confettiPiece}
-        style={{
-          left: `${left}%`,
-          width: `${size}px`,
-          height: `${size * (i % 2 === 0 ? 1 : 0.6)}px`,
-          backgroundColor: color,
-          borderRadius: shape,
-          animationDelay: `${delay}s`,
-          animationDuration: `${duration}s`,
-          transform: `rotate(${rotation}deg)`,
-        }}
-      />
-    );
+  const [pieces] = useState(() => {
+    const colors = ['#22C55E', '#16A34A', '#C8102E', '#F59E0B', '#8B5CF6', '#3B82F6', '#EC4899', '#FFD700'];
+    return Array.from({ length: 50 }, (_, i) => ({
+      i,
+      color: colors[i % colors.length],
+      left: Math.random() * 100,
+      delay: Math.random() * 2.5,
+      duration: 2.5 + Math.random() * 2,
+      size: 6 + Math.random() * 8,
+      rotation: Math.random() * 360,
+      shape: i % 3 === 0 ? '50%' : i % 3 === 1 ? '0' : '2px',
+    }));
   });
 
-  return <div className={styles.confettiContainer}>{pieces}</div>;
+  return (
+    <div className={styles.confettiContainer} aria-hidden="true">
+      {pieces.map(({ i, color, left, delay, duration, size, rotation, shape }) => (
+        <div
+          key={i}
+          className={styles.confettiPiece}
+          style={{
+            left: `${left}%`,
+            width: `${size}px`,
+            height: `${size * (i % 2 === 0 ? 1 : 0.6)}px`,
+            backgroundColor: color,
+            borderRadius: shape,
+            animationDelay: `${delay}s`,
+            animationDuration: `${duration}s`,
+            transform: `rotate(${rotation}deg)`,
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /* ── Main Content ── */
@@ -45,57 +51,52 @@ function SuccessContent() {
   const sessionId = searchParams.get('session_id');
   const [reservation, setReservation] = useState(null);
   const [qrDataUrl, setQrDataUrl] = useState('');
-  const [loading, setLoading] = useState(true);
+  // Skip the loading screen if there's no session_id to fetch.
+  const [loading, setLoading] = useState(() => Boolean(sessionId));
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const fetchReservation = useCallback(async (attempt = 1) => {
-    try {
-      const res = await fetch(`/api/checkout/reservation?session_id=${encodeURIComponent(sessionId)}`);
-      if (!res.ok) {
-        // Webhook may not have processed yet — retry
-        if (attempt < 5) {
-          setTimeout(() => fetchReservation(attempt + 1), 2000);
+  const fetchReservation = useCallback(async () => {
+    // Webhook may not have processed yet — retry up to 5 times.
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        const res = await fetch(`/api/checkout/reservation?session_id=${encodeURIComponent(sessionId)}`);
+        if (res.ok) {
+          const { reservation: data } = await res.json();
+          setReservation(data);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 5000);
+
+          if (data.qr_code) {
+            try {
+              const baseUrl = window.location.origin;
+              const qrUrl = `${baseUrl}/api/admin/validate-qr?code=${data.qr_code}`;
+              const dataUrl = await QRCode.toDataURL(qrUrl, {
+                width: 240,
+                margin: 2,
+                color: { dark: '#1A1A1A', light: '#FFFFFF' },
+              });
+              setQrDataUrl(dataUrl);
+            } catch (err) {
+              console.error('Error generating QR', err);
+            }
+          }
+
+          setLoading(false);
           return;
         }
-        setLoading(false);
-        return;
+      } catch (err) {
+        console.error('Error fetching reservation:', err);
       }
 
-      const { reservation: data } = await res.json();
-      setReservation(data);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 5000);
-
-      // Generate QR
-      if (data.qr_code) {
-        try {
-          const baseUrl = window.location.origin;
-          const qrUrl = `${baseUrl}/api/admin/validate-qr?code=${data.qr_code}`;
-          const dataUrl = await QRCode.toDataURL(qrUrl, {
-            width: 240,
-            margin: 2,
-            color: { dark: '#1A1A1A', light: '#FFFFFF' },
-          });
-          setQrDataUrl(dataUrl);
-        } catch (err) {
-          console.error('Error generating QR', err);
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching reservation:', err);
       if (attempt < 5) {
-        setTimeout(() => fetchReservation(attempt + 1), 2000);
-        return;
+        await new Promise((r) => setTimeout(r, 2000));
       }
     }
     setLoading(false);
   }, [sessionId]);
 
   useEffect(() => {
-    if (!sessionId) {
-      setLoading(false);
-      return;
-    }
+    if (!sessionId) return;
     // Small delay for webhook to process
     const timer = setTimeout(() => fetchReservation(), 800);
     return () => clearTimeout(timer);
@@ -143,10 +144,14 @@ function SuccessContent() {
               {/* ── Plan Detail Card ── */}
               <div className={styles.planCard}>
                 {plan?.image ? (
-                  <img
+                  <Image
                     src={plan.image}
                     alt={plan.title}
                     className={styles.planImage}
+                    width={400}
+                    height={300}
+                    unoptimized
+                    style={{ objectFit: 'cover' }}
                   />
                 ) : (
                   <div className={styles.planImagePlaceholder}>🎉</div>
@@ -207,7 +212,7 @@ function SuccessContent() {
               {qrDataUrl && (
                 <div className={styles.qrSection}>
                   <div className={styles.qrContainer}>
-                    <img src={qrDataUrl} alt="QR de entrada" className={styles.qrImage} />
+                    <Image src={qrDataUrl} alt="QR de entrada" className={styles.qrImage} width={240} height={240} unoptimized />
                   </div>
                   <p className={styles.qrLabel}>Presenta este QR en el recinto</p>
                 </div>

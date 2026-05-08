@@ -54,7 +54,7 @@ export default function ReservarRestaurantePage() {
       setLoading(false);
     }
     loadData();
-  }, [restaurantId, menuId]);
+  }, [restaurantId, menuId, supabase]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

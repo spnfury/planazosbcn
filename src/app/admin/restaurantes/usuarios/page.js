@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../../admin.module.css';
 
@@ -26,30 +27,30 @@ export default function AdminRestaurantUsersPage() {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    let cancelled = false;
+    (async () => {
+      try {
+        const usersRes = await fetch('/api/admin/restaurant-users');
+        if (!cancelled && usersRes.ok) {
+          const data = await usersRes.json();
+          setUsers(data);
+        }
 
-  async function loadData() {
-    try {
-      // Load restaurant users
-      const usersRes = await fetch('/api/admin/restaurant-users');
-      if (usersRes.ok) {
-        const data = await usersRes.json();
-        setUsers(data);
+        const { data: rests, error: restErr } = await supabase
+          .from('restaurants')
+          .select('id, nombre')
+          .order('nombre');
+
+        if (!cancelled && !restErr) setRestaurants(rests || []);
+      } catch (err) {
+        console.error('Load error:', err);
       }
-
-      // Load restaurants for dropdown
-      const { data: rests, error: restErr } = await supabase
-        .from('restaurants')
-        .select('id, nombre')
-        .order('nombre');
-
-      if (!restErr) setRestaurants(rests || []);
-    } catch (err) {
-      console.error('Load error:', err);
-    }
-    setLoading(false);
-  }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -353,12 +354,13 @@ export default function AdminRestaurantUsersPage() {
                 <td data-label="Usuario">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {user.logo_url ? (
-                      <img
+                      <Image
                         src={user.logo_url}
                         alt=""
+                        width={32}
+                        height={32}
+                        unoptimized
                         style={{
-                          width: 32,
-                          height: 32,
                           borderRadius: '8px',
                           objectFit: 'cover',
                         }}

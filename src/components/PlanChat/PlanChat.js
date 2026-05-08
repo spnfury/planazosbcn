@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from './PlanChat.module.css';
 
@@ -75,7 +76,7 @@ export default function PlanChat({ planId }) {
     }
 
     init();
-  }, [planId]);
+  }, [planId, supabase]);
 
   // Subscribe to realtime updates
   useEffect(() => {
@@ -115,7 +116,7 @@ export default function PlanChat({ planId }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [hasAccess, user, planId, isOpen]);
+  }, [hasAccess, user, planId, isOpen, supabase]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -297,7 +298,14 @@ export default function PlanChat({ planId }) {
             <div key={m.id} className={styles.memberItem}>
               <div className={styles.memberAvatar}>
                 {m.avatar ? (
-                  <img src={m.avatar} alt={m.name} className={styles.memberAvatarImg} />
+                  <Image
+                    src={m.avatar}
+                    alt={m.name || 'Avatar'}
+                    className={styles.memberAvatarImg}
+                    width={36}
+                    height={36}
+                    unoptimized
+                  />
                 ) : (
                   <span className={styles.memberAvatarInitial}>
                     {m.name?.[0]?.toUpperCase() || '?'}
@@ -385,7 +393,7 @@ export default function PlanChat({ planId }) {
                         {visibleMembers.map((m, i) => (
                           <span key={m.id} className={styles.headerMiniAvatar} style={{ zIndex: 5 - i }}>
                             {m.avatar ? (
-                              <img src={m.avatar} alt="" />
+                              <Image src={m.avatar} alt="" width={24} height={24} unoptimized />
                             ) : (
                               <span>{m.name?.[0]?.toUpperCase() || '?'}</span>
                             )}
@@ -460,7 +468,14 @@ export default function PlanChat({ planId }) {
                         {!item.isOwn && (
                           <div className={styles.messageAvatar}>
                             {item.authorAvatar ? (
-                              <img src={item.authorAvatar} alt="" className={styles.messageAvatarImg} />
+                              <Image
+                                src={item.authorAvatar}
+                                alt=""
+                                className={styles.messageAvatarImg}
+                                width={32}
+                                height={32}
+                                unoptimized
+                              />
                             ) : (
                               <span className={styles.messageAvatarInitial}>
                                 {item.authorName?.[0]?.toUpperCase() || '?'}

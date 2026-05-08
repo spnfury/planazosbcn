@@ -138,6 +138,7 @@ export default function AdminAssistant() {
 
     recognitionRef.current = recognition;
     return recognition;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Cleanup on unmount

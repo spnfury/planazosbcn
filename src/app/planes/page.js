@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import PlanCard from "@/components/PlanCard/PlanCard";
 import PlansFilters from "./PlansFilters";
 import { supabase } from "@/lib/supabase";
@@ -141,13 +142,13 @@ export default async function PlanesPage({ searchParams }) {
               <p className={styles.emptyDesc}>
                 Prueba con otra categoría o busca algo diferente
               </p>
-              <a
+              <Link
                 href="/planes"
                 className="btn btn--secondary"
                 id="reset-filters"
               >
                 Ver todos los planes
-              </a>
+              </Link>
             </div>
           )}
         </div>

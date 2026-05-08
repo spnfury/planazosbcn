@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
@@ -32,6 +33,7 @@ export default function QrCodesPage() {
 
   useEffect(() => {
     loadQrCodes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function getToken() {
@@ -377,7 +379,7 @@ export default function QrCodesPage() {
             </p>
             {qrDataUrl && (
               <div className={styles.modalQrContainer}>
-                <img src={qrDataUrl} alt={`QR: ${qrModalCode.label}`} />
+                <Image src={qrDataUrl} alt={`QR: ${qrModalCode.label}`} width={300} height={300} unoptimized />
               </div>
             )}
             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '1.5rem', wordBreak: 'break-all' }}>

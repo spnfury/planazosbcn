@@ -26,6 +26,7 @@ export default function RestaurantScannerPage() {
       } catch { /* ignore */ }
     }
     loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadHistory() {
@@ -69,6 +70,7 @@ export default function RestaurantScannerPage() {
     }
 
     await lookupCode(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function startScanner() {

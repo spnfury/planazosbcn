@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
 // Force dynamic rendering so admin changes appear instantly
@@ -6,8 +7,25 @@ export const dynamic = 'force-dynamic';
 
 
 export const metadata = {
-  title: 'Restaurantes | PlanazosBCN',
-  description: 'Descubre los mejores restaurantes y menús en Barcelona.',
+  title: 'Restaurantes en Barcelona',
+  description:
+    'Reserva mesa en los mejores restaurantes de Barcelona con menús exclusivos seleccionados por la comunidad de PlanazosBCN.',
+  alternates: { canonical: '/restaurantes' },
+  openGraph: {
+    title: 'Restaurantes en Barcelona — PlanazosBCN',
+    description:
+      'Reserva mesa en los mejores restaurantes de Barcelona con menús exclusivos.',
+    url: '/restaurantes',
+    siteName: 'PlanazosBCN',
+    locale: 'es_ES',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Restaurantes en Barcelona — PlanazosBCN',
+    description:
+      'Reserva mesa en los mejores restaurantes de Barcelona con menús exclusivos.',
+  },
 };
 
 export default async function RestaurantesPage() {
@@ -55,7 +73,7 @@ export default async function RestaurantesPage() {
             <div className="restaurant-card">
               <div style={{ height: '220px', background: 'linear-gradient(145deg, #2a2a2a, #161616)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
                  {rest.logo_url ? (
-                    <img src={rest.logo_url} alt={rest.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.5, position: 'absolute' }} />
+                    <Image src={rest.logo_url} alt={rest.nombre} fill sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit: 'cover', opacity: 0.5 }} unoptimized />
                  ) : (
                     <span style={{ fontSize: '5rem', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.5))' }}>🍽️</span>
                  )}
@@ -64,7 +82,7 @@ export default async function RestaurantesPage() {
                  </div>
                  {rest.logo_url && (
                    <div style={{position: 'absolute', bottom: '-2px', left: '2rem', width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', border: '4px solid #1a1a1a', background: '#1a1a1a', zIndex: 2}}>
-                     <img src={rest.logo_url} alt={`${rest.nombre} Logo`} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                     <Image src={rest.logo_url} alt={`${rest.nombre} Logo`} width={80} height={80} style={{objectFit: 'cover'}} unoptimized />
                    </div>
                  )}
               </div>

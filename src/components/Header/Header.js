@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import styles from './Header.module.css';
@@ -17,8 +18,13 @@ const NAV_LINKS = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [profileAvatar, setProfileAvatar] = useState({ userId: null, url: null });
   const { user, loading } = useAuth();
+  // Derive avatarUrl from user; only show the fetched avatar when it matches
+  // the current user, so logging out/in clears the previous avatar without
+  // a synchronous setState in an effect (React 19 strict).
+  const avatarUrl =
+    user && profileAvatar.userId === user.id ? profileAvatar.url : null;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -27,25 +33,34 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setAvatarUrl(null); return; }
+    if (!user) return;
+    let cancelled = false;
     supabase
       .from('profiles')
       .select('avatar_url')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
-        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+        if (!cancelled && data?.avatar_url) {
+          setProfileAvatar({ userId: user.id, url: data.avatar_url });
+        }
       });
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       <div className={`container ${styles.inner}`}>
         <Link href="/" className={styles.logo}>
-          <img
+          <Image
             src="/logo-planazosbcn.png"
             alt="PlanazosBCN"
             className={styles.logoImg}
+            width={140}
+            height={40}
+            priority
           />
         </Link>
 
@@ -130,7 +145,14 @@ export default function Header() {
             user ? (
               <Link href="/cuenta" className={styles.userBtn} id="desktop-account">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className={styles.userAvatarImg} />
+                  <Image
+                    src={avatarUrl}
+                    alt=""
+                    className={styles.userAvatarImg}
+                    width={36}
+                    height={36}
+                    unoptimized
+                  />
                 ) : (
                   <span className={styles.userAvatar}>
                     {(user.user_metadata?.full_name || user.email)?.[0]?.toUpperCase() || '?'}

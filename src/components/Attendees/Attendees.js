@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import styles from './Attendees.module.css';
 
 export default function Attendees({ planId }) {
@@ -51,10 +52,13 @@ export default function Attendees({ planId }) {
               title={attendee.name}
             >
               {attendee.avatar ? (
-                <img
+                <Image
                   src={attendee.avatar}
                   alt={attendee.name}
                   className={styles.avatarImg}
+                  width={36}
+                  height={36}
+                  unoptimized
                 />
               ) : (
                 <span className={styles.avatarInitial}>

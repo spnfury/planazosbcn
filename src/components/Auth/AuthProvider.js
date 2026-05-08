@@ -49,7 +49,7 @@ export default function AuthProvider({ children }) {
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -75,7 +75,7 @@ export default function AuthProvider({ children }) {
       }
     }, 4 * 60 * 1000); // Refresh every 4 minutes (JWT default expiry is 1 hour)
     return () => clearInterval(interval);
-  }, [session]);
+  }, [session, supabase]);
 
   return (
     <AuthContext.Provider value={{ user, session, loading, signOut }}>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from './eventos.module.css';
 import adminStyles from '../admin.module.css';
@@ -47,19 +48,20 @@ export default function EventosRapidosPage() {
 
   // Load recent events on mount
   useEffect(() => {
-    loadRecentEvents();
-  }, []);
-
-  async function loadRecentEvents() {
-    const { data } = await supabase
-      .from('plans')
-      .select('id, title, image, date, venue, slug, created_at')
-      .eq('type', 'evento')
-      .order('created_at', { ascending: false })
-      .limit(6);
-
-    if (data) setRecentEvents(data);
-  }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('plans')
+        .select('id, title, image, date, venue, slug, created_at')
+        .eq('type', 'evento')
+        .order('created_at', { ascending: false })
+        .limit(6);
+      if (!cancelled && data) setRecentEvents(data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   // ---- Step 1: Image handling ----
   function handleImageSelect(file) {
@@ -114,6 +116,8 @@ export default function EventosRapidosPage() {
     }
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
+    // handleImageSelect is stable for the lifetime of the component.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---- Step 2: AI Analysis ----
@@ -476,7 +480,7 @@ export default function EventosRapidosPage() {
           </div>
           {imagePreview && (
             <div className={styles.imagePreviewLarge}>
-              <img src={imagePreview} alt="Evento" className={styles.imagePreviewImg} />
+              <Image src={imagePreview} alt="Evento" className={styles.imagePreviewImg} width={400} height={300} unoptimized style={{ objectFit: 'contain' }} />
             </div>
           )}
           <div className={styles.analyzeLoader}>
@@ -495,10 +499,14 @@ export default function EventosRapidosPage() {
           {(imagePreview || eventData.image) && (
             <div className={styles.section}>
               <div className={styles.imagePreviewLarge}>
-                <img
+                <Image
                   src={eventData.image || imagePreview}
                   alt="Evento"
                   className={styles.imagePreviewImg}
+                  width={400}
+                  height={300}
+                  unoptimized
+                  style={{ objectFit: 'contain' }}
                 />
                 <div className={styles.imagePreviewOverlay}>
                   <button
@@ -904,10 +912,14 @@ export default function EventosRapidosPage() {
                 className={styles.recentCard}
               >
                 {event.image && (
-                  <img
+                  <Image
                     src={event.image}
                     alt={event.title}
                     className={styles.recentCardImage}
+                    width={300}
+                    height={200}
+                    unoptimized
+                    style={{ objectFit: 'cover' }}
                   />
                 )}
                 <div className={styles.recentCardBody}>

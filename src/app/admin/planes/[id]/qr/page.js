@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../../../admin.module.css';
@@ -46,6 +47,8 @@ export default function PlanQrCodesPage({ params }) {
     }
 
     load();
+    // loadQrCodes is referenced inside `load` (defined below) and is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   async function loadQrCodes(id, tokenOverride) {
@@ -336,7 +339,7 @@ export default function PlanQrCodesPage({ params }) {
             </p>
             {qrDataUrl && (
               <div className={styles.modalQrContainer}>
-                <img src={qrDataUrl} alt={`QR: ${qrModalCode.label}`} />
+                <Image src={qrDataUrl} alt={`QR: ${qrModalCode.label}`} width={300} height={300} unoptimized />
               </div>
             )}
             <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', wordBreak: 'break-all' }}>

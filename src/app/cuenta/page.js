@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import styles from './cuenta.module.css';
@@ -84,7 +85,7 @@ export default function CuentaPage() {
         <div className={styles.profileHeader}>
           <div className={styles.profileAvatar}>
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className={styles.profileAvatarImg} />
+              <Image src={profile.avatar_url} alt="" className={styles.profileAvatarImg} width={80} height={80} unoptimized />
             ) : (
               (profile?.full_name || user.email)?.[0]?.toUpperCase() || '?'
             )}
@@ -178,7 +179,7 @@ export default function CuentaPage() {
                   <div key={res.id} className={styles.reservationCard}>
                     {res.plans?.image && (
                       <div className={styles.reservationImage}>
-                        <img src={res.plans.image} alt={res.plans?.title || 'Plan'} />
+                        <Image src={res.plans.image} alt={res.plans?.title || 'Plan'} width={120} height={90} unoptimized style={{ objectFit: 'cover' }} />
                       </div>
                     )}
                     <div className={styles.reservationInfo}>

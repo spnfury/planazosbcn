@@ -64,7 +64,7 @@ export default function AdminLogsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, filterEntity, filterStatus, search]);
+  }, [page, filterEntity, filterStatus, search, supabase]);
 
   useEffect(() => {
     loadLogs();

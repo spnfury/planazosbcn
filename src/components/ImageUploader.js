@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '@/app/admin/admin.module.css';
 
@@ -82,7 +83,15 @@ export default function ImageUploader({ value, onChange, label, id }) {
       <div className={styles.formGroup}>
         <label className={styles.formLabel}>{label}</label>
         <div className={styles.imagePreview}>
-          <img src={value} alt={label} className={styles.imagePreviewImg} />
+          <Image
+            src={value}
+            alt={label}
+            className={styles.imagePreviewImg}
+            width={400}
+            height={300}
+            unoptimized
+            style={{ objectFit: 'cover' }}
+          />
           <div className={styles.imagePreviewActions}>
             <button
               type="button"

@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import styles from './registro.module.css';
 
@@ -120,7 +121,7 @@ export default function RegistroPage() {
     <div className={styles.authPage}>
       <div className={styles.authCard}>
         <div className={styles.authHeader}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.authIcon} />
+          <Image src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.authIcon} width={140} height={40} priority />
           <h1 className={styles.authTitle}>Crear cuenta</h1>
           <p className={styles.authSubtitle}>
             Únete a PlanazosBCN y gestiona tus reservas y entradas
@@ -140,7 +141,7 @@ export default function RegistroPage() {
               disabled={uploadingAvatar}
             >
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Tu foto" className={styles.avatarPreviewImg} />
+                <Image src={avatarPreview} alt="Tu foto" className={styles.avatarPreviewImg} width={120} height={120} unoptimized />
               ) : (
                 <div className={styles.avatarPlaceholder}>
                   <span className={styles.avatarPlaceholderIcon}>📷</span>

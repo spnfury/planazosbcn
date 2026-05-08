@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
 
@@ -11,18 +12,20 @@ export default function AdminPlanesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadPlans();
-  }, []);
-
-  async function loadPlans() {
-    const { data, error } = await supabase
-      .from('plans')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error) setPlans(data || []);
-    setLoading(false);
-  }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('plans')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      if (!error) setPlans(data || []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   async function togglePublished(plan) {
     const newVal = !plan.published;
@@ -104,10 +107,14 @@ export default function AdminPlanesPage() {
                   <td data-label="Plan">
                     <div className={styles.planRow}>
                       {plan.image && (
-                        <img
+                        <Image
                           src={plan.image}
                           alt=""
                           className={styles.planThumb}
+                          width={64}
+                          height={64}
+                          unoptimized
+                          style={{ objectFit: 'cover' }}
                         />
                       )}
                       <div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../admin.module.css';
 
@@ -55,7 +56,7 @@ export default function AdminLoginPage() {
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
         <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" style={{ height: '70px', width: 'auto', objectFit: 'contain', borderRadius: '12px' }} />
+          <Image src="/logo-planazosbcn.png" alt="PlanazosBCN" width={245} height={70} style={{ objectFit: 'contain', borderRadius: '12px', width: 'auto', height: '70px' }} priority />
         </div>
         <h1 className={styles.loginTitle}>PlanazosBCN</h1>
         <p className={styles.loginSubtitle}>Panel de Administración</p>

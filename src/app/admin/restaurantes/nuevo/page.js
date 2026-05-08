@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import styles from '../../admin.module.css';
 
@@ -236,7 +237,7 @@ export default function NuevoRestaurantePage() {
               <div className={`${styles.formGroup} ${styles.formGridFull}`}>
                 <label className={styles.formLabel}>Logo Importado</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px' }}>
-                  <img src={formData.logo_url} alt="Logo" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
+                  <Image src={formData.logo_url} alt="Logo" width={64} height={64} unoptimized style={{ borderRadius: '50%', objectFit: 'cover' }} />
                   <div>
                     <span style={{ fontSize: '0.9rem', color: '#A78BFA' }}>✓ Logo obtenido correctamente</span>
                     <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem', wordBreak: 'break-all' }}>{formData.logo_url}</div>

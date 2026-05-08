@@ -12,8 +12,12 @@ import ShareButtons from "./ShareButtons";
 import ReviewsSection from "@/components/Reviews/ReviewsSection";
 import InstagramReels from "@/components/InstagramReels/InstagramReels";
 import { getEtiqueta, getAgeGroup } from "@/data/planConstants";
-import { formatDate, isPastEvent } from "@/lib/formatDate";
+import { formatDate, isPastEvent, parsePlanDate } from "@/lib/formatDate";
 import styles from "./page.module.css";
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://planazosbcn.com";
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
 
 // ISR: regenerate every 60s for fast cached pages (critical for SEO)
 export const revalidate = 60;
@@ -42,20 +46,38 @@ export async function generateMetadata({ params }) {
 
   const { data: plan } = await supabase
     .from("plans")
-    .select("title, excerpt, image")
+    .select("title, excerpt, image, slug")
     .ilike("slug", slug)
     .eq("published", true)
     .single();
 
   if (!plan) return {};
 
+  const canonical = `${SITE_URL}/planes/${plan.slug}`;
+  const ogImage = plan.image
+    ? plan.image.startsWith("http")
+      ? plan.image
+      : `${SITE_URL}${plan.image.startsWith("/") ? "" : "/"}${plan.image}`
+    : `${SITE_URL}/hero-planazosbcn.jpg`;
+
   return {
     title: `${plan.title} — PlanazosBCN`,
     description: plan.excerpt,
+    alternates: { canonical },
     openGraph: {
       title: plan.title,
       description: plan.excerpt,
-      images: [plan.image],
+      url: canonical,
+      siteName: "PlanazosBCN",
+      locale: "es_ES",
+      type: "article",
+      images: [{ url: ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: plan.title,
+      description: plan.excerpt,
+      images: [ogImage],
     },
   };
 }
@@ -157,29 +179,56 @@ export default async function PlanDetailPage({ params }) {
     .eq("category", plan.category)
     .eq("published", true)
     .neq("id", plan.id)
-    .limit(3);
+    .limit(6);
 
-  const relatedPlans = (relatedPlansData || []).map(mapPlanData);
+  const relatedPlans = (relatedPlansData || [])
+    .map(mapPlanData)
+    .filter((p) => !isPastEvent(p.date))
+    .slice(0, 3);
 
-  // Generate JSON-LD
-  let parsedDate;
-  if (plan.date && !plan.date.includes("SÁB") && plan.date !== "Gratis") {
-    // Basic attempt to parse if possible, or fallback to current date for schema validation
-    parsedDate = new Date();
-  }
+  // Generate JSON-LD. Use the real plan date when parseable; otherwise omit
+  // startDate so schema.org doesn't get a misleading "now" timestamp.
+  const parsedStart = parsePlanDate(plan.date);
+  const planUrl = `${SITE_URL}/planes/${plan.slug}`;
+  const ogImage = plan.image
+    ? plan.image.startsWith("http")
+      ? plan.image
+      : `${SITE_URL}${plan.image.startsWith("/") ? "" : "/"}${plan.image}`
+    : undefined;
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Event",
     name: plan.title,
     description: plan.excerpt || plan.description,
-    image: plan.image,
-    startDate: new Date().toISOString(), // Google requires valid ISO
+    url: planUrl,
+    eventStatus: isPast
+      ? "https://schema.org/EventPostponed"
+      : "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {
       "@type": "Place",
       name: plan.venue || plan.zone || "Barcelona",
       address: plan.address || plan.zone || "Barcelona, España",
     },
+  };
+
+  if (ogImage) jsonLd.image = ogImage;
+  if (parsedStart) jsonLd.startDate = parsedStart.toISOString();
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Planes",
+        item: `${SITE_URL}/planes`,
+      },
+      { "@type": "ListItem", position: 3, name: plan.title, item: planUrl },
+    ],
   };
 
   if (plan.price) {
@@ -190,8 +239,10 @@ export default async function PlanDetailPage({ params }) {
           ? "0"
           : String(plan.price).replace(/[^0-9.]/g, ""),
       priceCurrency: "EUR",
-      availability: "https://schema.org/InStock",
-      url: `https://planazosbcn.com/planes/${plan.slug}`,
+      availability: isPast
+        ? "https://schema.org/SoldOut"
+        : "https://schema.org/InStock",
+      url: planUrl,
     };
   }
 
@@ -200,6 +251,10 @@ export default async function PlanDetailPage({ params }) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className={styles.page}>
         {/* Breadcrumb */}
@@ -562,17 +617,29 @@ export default async function PlanDetailPage({ params }) {
                 </>
               )}
 
-              <p className={styles.ctaNote}>
-                ¿Tienes dudas?{" "}
-                <a
-                  href={`https://wa.me/34600000000?text=${encodeURIComponent('Hola! Tengo dudas sobre el plan "' + plan.title + '"')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ textDecoration: "underline" }}
-                >
-                  Escríbenos por WhatsApp
-                </a>
-              </p>
+              {WHATSAPP_NUMBER ? (
+                <p className={styles.ctaNote}>
+                  ¿Tienes dudas?{" "}
+                  <a
+                    href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('Hola! Tengo dudas sobre el plan "' + plan.title + '"')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ textDecoration: "underline" }}
+                  >
+                    Escríbenos por WhatsApp
+                  </a>
+                </p>
+              ) : (
+                <p className={styles.ctaNote}>
+                  ¿Tienes dudas?{" "}
+                  <Link
+                    href="/contacto"
+                    style={{ textDecoration: "underline" }}
+                  >
+                    Contáctanos
+                  </Link>
+                </p>
+              )}
             </div>
 
             <div className={styles.shareCard}>

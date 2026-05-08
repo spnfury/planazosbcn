@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import Image from 'next/image';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { Download, TrendingUp, Users, Video, MapPin, CheckCircle, Smartphone, Camera, BarChart3, Percent, Star, Zap, Globe, MessageCircle } from 'lucide-react';
@@ -117,7 +118,7 @@ export default function DossierClient() {
           {/* Header del Dossier */}
           <div className={styles.dHeader}>
             <div className={styles.dLogoBox}>
-              <img src="/logo-planazosbcn.png" alt="Planazos BCN" style={{ height: '60px', objectFit: 'contain', marginBottom: '0.5rem' }} />
+              <Image src="/logo-planazosbcn.png" alt="Planazos BCN" width={210} height={60} style={{ objectFit: 'contain', marginBottom: '0.5rem', width: 'auto' }} />
               <p className={styles.dLogoSub}>La guía definitiva de Barcelona</p>
             </div>
           </div>

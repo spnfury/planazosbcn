@@ -38,7 +38,7 @@ export default function FeedScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.card}>
       {item.image_url ? (
-        <Image source={{ uri: item.image_url }} style={styles.image} />
+        <Image source={{ uri: item.image_url }} style={styles.image} alt={item.title || ''} />
       ) : (
         <View style={[styles.image, styles.imagePlaceholder]} />
       )}

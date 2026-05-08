@@ -1,20 +1,49 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import LayoutShell from '@/components/LayoutShell';
 import AuthProvider from '@/components/Auth/AuthProvider';
 import './globals.css';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://planazosbcn.com';
+
+// Search engine ownership verification. Codes pegados en variables de entorno
+// (Vercel) — aparecen como meta tags. Si no se setean, no se renderizan.
+const verification = {};
+if (process.env.GOOGLE_SITE_VERIFICATION) {
+  verification.google = process.env.GOOGLE_SITE_VERIFICATION;
+}
+if (process.env.YANDEX_VERIFICATION) {
+  verification.yandex = process.env.YANDEX_VERIFICATION;
+}
+if (process.env.BING_SITE_VERIFICATION || process.env.YAHOO_VERIFICATION) {
+  verification.other = {};
+  if (process.env.BING_SITE_VERIFICATION) {
+    verification.other['msvalidate.01'] = process.env.BING_SITE_VERIFICATION;
+  }
+  if (process.env.YAHOO_VERIFICATION) {
+    verification.other['y_key'] = process.env.YAHOO_VERIFICATION;
+  }
+}
 
 export const viewport = {
   themeColor: '#0f0f1a',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export const metadata = {
-  title: 'PlanazosBCN — Los mejores planes de Barcelona',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'PlanazosBCN — Los mejores planes de Barcelona',
+    template: '%s — PlanazosBCN',
+  },
   description:
     'Descubre los mejores planes, experiencias y actividades en Barcelona. Gastronomía, naturaleza, ocio, cultura y mucho más. ¡Tu próximo planazo te espera!',
-  keywords: 'planes Barcelona, actividades Barcelona, qué hacer Barcelona, experiencias Barcelona, rutas Barcelona, restaurantes Barcelona',
+  keywords: ['planes Barcelona', 'actividades Barcelona', 'qué hacer Barcelona', 'experiencias Barcelona', 'rutas Barcelona', 'restaurantes Barcelona'],
   manifest: '/manifest.webmanifest',
+  alternates: {
+    canonical: '/',
+  },
   appleWebApp: {
     capable: true,
     title: 'PlanazosBCN',
@@ -33,16 +62,37 @@ export const metadata = {
   openGraph: {
     title: 'PlanazosBCN — Los mejores planes de Barcelona',
     description: 'Descubre los mejores planes, experiencias y actividades en Barcelona.',
-    url: 'https://planazosbcn.com',
+    url: SITE_URL,
     siteName: 'PlanazosBCN',
     locale: 'es_ES',
     type: 'website',
+    images: [
+      {
+        url: '/hero-planazosbcn.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'PlanazosBCN — Los mejores planes de Barcelona',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'PlanazosBCN — Los mejores planes de Barcelona',
     description: 'Descubre los mejores planes y experiencias en Barcelona.',
+    images: ['/hero-planazosbcn.jpg'],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  ...(Object.keys(verification).length > 0 ? { verification } : {}),
 };
 
 export default function RootLayout({ children }) {
@@ -50,10 +100,11 @@ export default function RootLayout({ children }) {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'PlanazosBCN',
-    url: 'https://planazosbcn.com',
+    url: SITE_URL,
+    inLanguage: 'es-ES',
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://planazosbcn.com/planes?q={search_term_string}',
+      target: `${SITE_URL}/planes?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   };
@@ -70,6 +121,8 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <LayoutShell>{children}</LayoutShell>
         </AuthProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

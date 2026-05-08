@@ -116,28 +116,30 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadDashboard();
-  }, []);
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
 
-  async function loadDashboard() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+        const res = await fetch('/api/admin/dashboard-stats', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
 
-      const res = await fetch('/api/admin/dashboard-stats', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
+        if (!cancelled && res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (err) {
-      console.error('Error loading dashboard:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   if (loading) {
     return (

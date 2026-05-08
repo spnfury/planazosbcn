@@ -45,14 +45,41 @@ const faqs = [
 ];
 
 export const metadata = {
-  title: 'Preguntas Frecuentes — PlanazosBCN',
+  title: 'Preguntas Frecuentes',
   description:
     'Resolvemos tus dudas sobre PlanazosBCN: cómo reservar planes, cancelaciones, colaboraciones y más.',
+  alternates: { canonical: '/faq' },
+  openGraph: {
+    title: 'Preguntas Frecuentes — PlanazosBCN',
+    description:
+      'Resolvemos tus dudas sobre PlanazosBCN: cómo reservar planes, cancelaciones, colaboraciones y más.',
+    url: '/faq',
+    siteName: 'PlanazosBCN',
+    locale: 'es_ES',
+    type: 'website',
+  },
 };
 
 export default function FaqPage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({
+      '@type': 'Question',
+      name: f.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: f.answer,
+      },
+    })),
+  };
+
   return (
     <main className={styles.faqPage}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="container">
         <div className={styles.header}>
           <h1 className={styles.title}>Preguntas Frecuentes</h1>

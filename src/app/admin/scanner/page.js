@@ -20,6 +20,7 @@ export default function ScannerPage() {
   // Load validation history
   useEffect(() => {
     loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadHistory() {
@@ -56,6 +57,7 @@ export default function ScannerPage() {
     }
 
     await lookupCode(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Start camera scanner

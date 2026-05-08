@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import styles from './restaurant.module.css';
@@ -21,6 +22,12 @@ export default function RestaurantLayout({ children }) {
   const [restaurantUser, setRestaurantUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const signOut = async () => {
+    sessionStorage.removeItem('restaurant_user');
+    await authSignOut();
+    router.push('/restaurant/login');
+  };
+
   useEffect(() => {
     if (pathname === '/restaurant/login') {
       setLoading(false);
@@ -29,26 +36,27 @@ export default function RestaurantLayout({ children }) {
 
     if (authLoading) return;
 
-    async function checkAuth() {
+    let cancelled = false;
+    (async () => {
       if (!session) {
         router.push('/restaurant/login');
         return;
       }
 
-      // Check sessionStorage first for speed
       const cached = sessionStorage.getItem('restaurant_user');
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
           if (parsed.auth_user_id === session.user.id) {
-            setRestaurantUser(parsed);
-            setLoading(false);
+            if (!cancelled) {
+              setRestaurantUser(parsed);
+              setLoading(false);
+            }
             return;
           }
         } catch { /* ignore */ }
       }
 
-      // Verify via API
       try {
         const res = await fetch('/api/restaurant/auth', {
           method: 'POST',
@@ -63,24 +71,23 @@ export default function RestaurantLayout({ children }) {
           return;
         }
 
-        setRestaurantUser(data.user);
-        sessionStorage.setItem('restaurant_user', JSON.stringify(data.user));
+        if (!cancelled) {
+          setRestaurantUser(data.user);
+          sessionStorage.setItem('restaurant_user', JSON.stringify(data.user));
+        }
       } catch {
         await signOut();
         return;
       }
 
-      setLoading(false);
-    }
+      if (!cancelled) setLoading(false);
+    })();
 
-    checkAuth();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, session, authLoading]);
-
-  async function signOut() {
-    sessionStorage.removeItem('restaurant_user');
-    await authSignOut();
-    router.push('/restaurant/login');
-  }
 
   function isActive(href) {
     if (href === '/restaurant') return pathname === '/restaurant';
@@ -109,10 +116,13 @@ export default function RestaurantLayout({ children }) {
       <header className={styles.portalHeader}>
         <div className={styles.portalBrand}>
           {restaurantUser?.logo_url ? (
-            <img
+            <Image
               src={restaurantUser.logo_url}
-              alt={restaurantUser.name}
+              alt={restaurantUser.name || 'Logo'}
               className={styles.portalLogo}
+              width={48}
+              height={48}
+              unoptimized
             />
           ) : (
             <div className={styles.portalLogoPlaceholder}>🍽️</div>

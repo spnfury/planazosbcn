@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import AdminAssistant from '@/components/AdminAssistant/AdminAssistant';
@@ -68,23 +69,20 @@ export default function AdminLayout({ children }) {
   const [supabase] = useState(() => createClient());
   const { session, user: authUser, loading: authLoading, signOut } = useAuth();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const loading = pathname !== '/admin/login' && !authChecked;
+  // Close menu on navigation: derive from pathname so route changes
+  // auto-close the dropdown without a setState-in-effect.
+  const [menuOpenPath, setMenuOpenPath] = useState({ open: false, path: pathname });
+  const menuOpen = menuOpenPath.open && menuOpenPath.path === pathname;
+  const setMenuOpen = (open) => setMenuOpenPath({ open, path: pathname });
 
-  // Close menu on navigation
   useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (pathname === '/admin/login') {
-      setLoading(false);
-      return;
-    }
-
+    if (pathname === '/admin/login') return;
     if (authLoading) return;
 
-    async function checkAuth() {
+    let cancelled = false;
+    (async () => {
       if (!session) {
         router.push('/admin/login');
         return;
@@ -95,7 +93,9 @@ export default function AdminLayout({ children }) {
         .select('*')
         .eq('id', session.user.id)
         .single();
-        
+
+      if (cancelled) return;
+
       if (!adminUser) {
         await signOut();
         router.push('/admin/login');
@@ -103,11 +103,13 @@ export default function AdminLayout({ children }) {
       }
 
       setUser(session.user);
-      setLoading(false);
-    }
+      setAuthChecked(true);
+    })();
 
-    checkAuth();
-  }, [pathname, router, session, authLoading, signOut]);
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, router, session, authLoading, signOut, supabase]);
 
   async function handleLogout() {
     await signOut();
@@ -138,7 +140,7 @@ export default function AdminLayout({ children }) {
       {/* Mobile top header — compact */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileLogoGroup}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+          <Image src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} width={140} height={40} priority />
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
         <button
@@ -190,7 +192,7 @@ export default function AdminLayout({ children }) {
       {/* Desktop sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+          <Image src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} width={140} height={40} priority />
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
 

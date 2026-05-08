@@ -11,18 +11,20 @@ export default function AdminReservasPage() {
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    loadReservations();
-  }, []);
-
-  async function loadReservations() {
-    const { data, error } = await supabase
-      .from("reservations")
-      .select("*, plans(title, slug)")
-      .order("created_at", { ascending: false });
-
-    if (!error) setReservations(data || []);
-    setLoading(false);
-  }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("reservations")
+        .select("*, plans(title, slug)")
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      if (!error) setReservations(data || []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   async function handleCancel(id) {
     if (

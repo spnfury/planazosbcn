@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { getSupabaseUrl, getSupabaseServiceRoleKey } from '@/lib/supabase-env';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy';
-
-// Server-side client with service role — bypasses RLS
-// Only use in API routes and server components
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Server-side client with service role — bypasses RLS.
+// Only use in API routes and server components.
+export const supabaseAdmin = createClient(
+  getSupabaseUrl(),
+  getSupabaseServiceRoleKey(),
+);
