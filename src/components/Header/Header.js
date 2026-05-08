@@ -17,8 +17,13 @@ const NAV_LINKS = [
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [profileAvatar, setProfileAvatar] = useState({ userId: null, url: null });
   const { user, loading } = useAuth();
+  // Derive avatarUrl from user; only show the fetched avatar when it matches
+  // the current user, so logging out/in clears the previous avatar without
+  // a synchronous setState in an effect (React 19 strict).
+  const avatarUrl =
+    user && profileAvatar.userId === user.id ? profileAvatar.url : null;
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -27,15 +32,21 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (!user) { setAvatarUrl(null); return; }
+    if (!user) return;
+    let cancelled = false;
     supabase
       .from('profiles')
       .select('avatar_url')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
-        if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+        if (!cancelled && data?.avatar_url) {
+          setProfileAvatar({ userId: user.id, url: data.avatar_url });
+        }
       });
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   return (

@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useIsClient } from '@/lib/useIsClient';
 import styles from './InstagramReels.module.css';
 
 export default function InstagramReels({ reels = [] }) {
-  const [mounted, setMounted] = useState(false);
-
   // Only render iframes on the client to avoid SSR/hydration issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsClient();
 
   if (!reels || reels.length === 0) return null;
 

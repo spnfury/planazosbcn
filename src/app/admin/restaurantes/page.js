@@ -11,18 +11,20 @@ export default function AdminRestaurantsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadRestaurants();
-  }, []);
-
-  async function loadRestaurants() {
-    const { data, error } = await supabase
-      .from('restaurants')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error) setRestaurants(data || []);
-    setLoading(false);
-  }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      if (!error) setRestaurants(data || []);
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   async function deleteRestaurant(restaurant) {
     if (!confirm(`¿Eliminar "${restaurant.nombre}" permanentemente? Se borrarán también sus menús.`)) return;

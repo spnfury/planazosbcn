@@ -13,31 +13,31 @@ export default function RestaurantReservasPage() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    loadReservations();
-  }, []);
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (cancelled || !session) return;
 
-  async function loadReservations() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+        const res = await fetch('/api/restaurant/reservations', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
 
-      const res = await fetch('/api/restaurant/reservations', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setReservations(data.reservations || []);
-        setStats(data.stats || { today: 0, total: 0 });
-        setRestaurantName(data.restaurant?.nombre || '');
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          setReservations(data.reservations || []);
+          setStats(data.stats || { today: 0, total: 0 });
+          setRestaurantName(data.restaurant?.nombre || '');
+        }
+      } catch (err) {
+        console.error('Error loading reservations:', err);
       }
-    } catch (err) {
-      console.error('Error loading reservations:', err);
-    }
-    setLoading(false);
-  }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   // Filter logic — for now filter by date range
   const today = new Date().toISOString().split('T')[0];

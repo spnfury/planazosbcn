@@ -588,7 +588,7 @@ export default function NuevoPlanPage() {
                   animation: "pulse 1s infinite",
                 }}
               />
-              Grabando audio... Pulsa "Parar" cuando termines.
+              Grabando audio... Pulsa &quot;Parar&quot; cuando termines.
             </div>
           )}
           <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>

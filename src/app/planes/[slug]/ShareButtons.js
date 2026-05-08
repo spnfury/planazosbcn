@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useIsClient } from '@/lib/useIsClient';
 import styles from './page.module.css';
 
 export default function ShareButtons({ planTitle }) {
   const [copied, setCopied] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsClient();
 
   const getUrl = () => mounted && typeof window !== 'undefined' ? window.location.href : '';
   const getText = () => `¡Mira este plan!: ${planTitle}\n${getUrl()}`;

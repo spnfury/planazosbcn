@@ -12,38 +12,40 @@ export default function RestaurantDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get restaurant user from sessionStorage
-    const cached = sessionStorage.getItem('restaurant_user');
-    if (cached) {
-      try {
-        setRestaurantUser(JSON.parse(cached));
-      } catch { /* ignore */ }
-    }
+    let cancelled = false;
 
-    loadData();
-  }, []);
-
-  async function loadData() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const res = await fetch('/api/restaurant/reservations', {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data.stats);
-        setRecentValidations(data.reservations.slice(0, 5));
+    (async () => {
+      // Hydrate from sessionStorage asynchronously so we don't trigger a
+      // synchronous setState in the effect body (React 19 strict).
+      const cached = sessionStorage.getItem('restaurant_user');
+      if (cached) {
+        try {
+          if (!cancelled) setRestaurantUser(JSON.parse(cached));
+        } catch { /* ignore */ }
       }
-    } catch (err) {
-      console.error('Dashboard load error:', err);
-    }
-    setLoading(false);
-  }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (cancelled || !session) return;
+
+        const res = await fetch('/api/restaurant/reservations', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          setStats(data.stats);
+          setRecentValidations(data.reservations.slice(0, 5));
+        }
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase]);
 
   const greeting = () => {
     const hour = new Date().getHours();

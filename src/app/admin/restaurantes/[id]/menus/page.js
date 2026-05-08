@@ -514,7 +514,7 @@ export default function RestaurantMenusPage() {
                         <span style={{ color: '#666', fontSize: '0.75rem' }}>{d.categoria}{d.precio ? ` · ${d.precio}€` : ''}</span>
                       </div>
                     ))}
-                    {dishes.length > 10 && <div style={{textAlign: 'center', padding: '0.5rem', fontStyle: 'italic'}}>... y {dishes.length - 10} más. Pulsa "Gestionar Platos" para ver todos.</div>}
+                    {dishes.length > 10 && <div style={{textAlign: 'center', padding: '0.5rem', fontStyle: 'italic'}}>... y {dishes.length - 10} más. Pulsa &quot;Gestionar Platos&quot; para ver todos.</div>}
                   </div>
                 ) : (
                   /* Full Dish Manager */
