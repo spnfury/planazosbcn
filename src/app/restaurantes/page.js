@@ -6,8 +6,25 @@ export const dynamic = 'force-dynamic';
 
 
 export const metadata = {
-  title: 'Restaurantes | PlanazosBCN',
-  description: 'Descubre los mejores restaurantes y menús en Barcelona.',
+  title: 'Restaurantes en Barcelona',
+  description:
+    'Reserva mesa en los mejores restaurantes de Barcelona con menús exclusivos seleccionados por la comunidad de PlanazosBCN.',
+  alternates: { canonical: '/restaurantes' },
+  openGraph: {
+    title: 'Restaurantes en Barcelona — PlanazosBCN',
+    description:
+      'Reserva mesa en los mejores restaurantes de Barcelona con menús exclusivos.',
+    url: '/restaurantes',
+    siteName: 'PlanazosBCN',
+    locale: 'es_ES',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Restaurantes en Barcelona — PlanazosBCN',
+    description:
+      'Reserva mesa en los mejores restaurantes de Barcelona con menús exclusivos.',
+  },
 };
 
 export default async function RestaurantesPage() {

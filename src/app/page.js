@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import PlanCard from "@/components/PlanCard/PlanCard";
 import Newsletter from "@/components/Newsletter/Newsletter";
 import { CATEGORIES } from "@/data/plans";
@@ -56,10 +57,13 @@ export default async function Home() {
         <div className={`container ${styles.heroContent}`}>
           <div className={styles.heroText}>
             <span className={styles.heroBadge}>
-              <img
+              <Image
                 src="/logo-planazosbcn.png"
                 alt=""
+                width={24}
+                height={24}
                 className={styles.heroBadgeIcon}
+                aria-hidden="true"
               />
               Tu guía de planes en Barcelona
             </span>
@@ -93,10 +97,14 @@ export default async function Home() {
 
           {/* Hero Banner Image */}
           <div className={styles.heroBanner}>
-            <img
+            <Image
               src="/hero-planazosbcn.jpg"
               alt="Los mejores planazos en Barcelona"
               className={styles.heroBannerImg}
+              width={1200}
+              height={800}
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         </div>
