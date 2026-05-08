@@ -25,9 +25,23 @@ yarn-error.log*
 # env files
 .env*.local
 .env
+.env.vercel
+.env.vercel.*
 
 # vercel
 .vercel
+
+# local helper / one-off scripts (developer tooling, not part of the app)
+/check-*.js
+/tmp-*.js
+/ig.html
+/ig_test.js
+/test-*.js
+/test-*.mjs
+/insert-*.js
+/recover-session.js
+/setup-db.js
+/setup-storage.js
 
 # typescript
 *.tsbuildinfo
