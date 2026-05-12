@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx --no-install next lint --file src/app/page.js --file src/app/checkout/success/page.js --file src/components/WhatsAppCTA/WhatsAppCTA.js --file src/components/WhatsAppCTA/WhatsAppGroupSection.js)",
+      "Bash(npx --no-install next lint --dir src/components/WhatsAppCTA --dir src/app/checkout/success)",
+      "Bash(npx next *)",
+      "Bash(npx --no-install eslint src/components/WhatsAppCTA/WhatsAppCTA.js src/components/WhatsAppCTA/WhatsAppGroupSection.js src/app/checkout/success/page.js src/app/page.js)",
+      "Bash(npx --no-install eslint src/components/WhatsAppCTA/WhatsAppCTA.js src/components/WhatsAppCTA/WhatsAppGroupSection.js)"
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import PlanCard from '@/components/PlanCard/PlanCard';
 import Newsletter from '@/components/Newsletter/Newsletter';
+import WhatsAppGroupSection from '@/components/WhatsAppCTA/WhatsAppGroupSection';
 import { CATEGORIES } from '@/data/plans';
 import { supabase } from '@/lib/supabase';
 import styles from './page.module.css';
@@ -218,6 +219,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* WHATSAPP GROUP */}
+      <WhatsAppGroupSection />
 
       {/* NEWSLETTER */}
       <Newsletter />

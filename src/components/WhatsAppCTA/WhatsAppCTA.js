@@ -3,26 +3,56 @@
 import { useState, useEffect } from 'react';
 import styles from './WhatsAppCTA.module.css';
 
+const DISMISS_KEY = 'planazos_wa_dismissed_until';
+const DISMISS_DAYS = 7;
+
+export const WHATSAPP_GROUP_URL =
+  process.env.NEXT_PUBLIC_WHATSAPP_CHANNEL_URL ||
+  'https://chat.whatsapp.com/GDiYK6fC7OhHbAu2XipW9z';
+
 export default function WhatsAppCTA() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  const whatsappLink = "https://chat.whatsapp.com/GDiYK6fC7OhHbAu2XipW9z";
+  const [hidden, setHidden] = useState(true);
+  const whatsappLink = WHATSAPP_GROUP_URL;
 
   useEffect(() => {
-    // Show the tooltip after 3 seconds so users notice it
-    const timer = setTimeout(() => {
-      setShowTooltip(true);
-      // Hide tooltip after 5 seconds to not be too annoying
-      setTimeout(() => setShowTooltip(false), 5000);
-    }, 3000);
+    let tooltipTimer;
+    let hideTooltipTimer;
+    const decideTimer = setTimeout(() => {
+      try {
+        const dismissedUntil = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
+        if (dismissedUntil > Date.now()) return;
+      } catch {}
+      setHidden(false);
+      tooltipTimer = setTimeout(() => {
+        setShowTooltip(true);
+        hideTooltipTimer = setTimeout(() => setShowTooltip(false), 5000);
+      }, 3000);
+    }, 0);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(decideTimer);
+      clearTimeout(tooltipTimer);
+      clearTimeout(hideTooltipTimer);
+    };
   }, []);
+
+  const dismissForDays = () => {
+    try {
+      const until = Date.now() + DISMISS_DAYS * 24 * 60 * 60 * 1000;
+      localStorage.setItem(DISMISS_KEY, String(until));
+    } catch {}
+    setHidden(true);
+    setIsOpen(false);
+  };
 
   const toggleModal = () => {
     setIsOpen(!isOpen);
     if (!isOpen) setShowTooltip(false);
   };
+
+  if (hidden) return null;
 
   return (
     <>
@@ -46,7 +76,7 @@ export default function WhatsAppCTA() {
       {isOpen && (
         <div className={styles.modalOverlay} onClick={toggleModal}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
-            <button className={styles.closeButton} onClick={toggleModal}>
+            <button className={styles.closeButton} onClick={dismissForDays} aria-label="Cerrar y no mostrar durante 7 días">
               &times;
             </button>
             <div className={styles.header}>
@@ -75,7 +105,7 @@ export default function WhatsAppCTA() {
               >
                 Unirme al grupo
               </a>
-              <button className={styles.cancelBtn} onClick={toggleModal}>
+              <button className={styles.cancelBtn} onClick={dismissForDays}>
                 Quizás más tarde
               </button>
             </div>

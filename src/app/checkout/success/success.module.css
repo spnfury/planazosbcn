@@ -432,6 +432,70 @@
   text-decoration: underline;
 }
 
+/* ===== WHATSAPP NOTICE ===== */
+.waNotice {
+  display: flex;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #ECFDF5, #DCFCE7);
+  border: 1px solid #86EFAC;
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.5s ease-out 1.1s both;
+}
+
+.waNoticeIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.waNoticeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.waNoticeTitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #065F46;
+}
+
+.waNoticeText {
+  font-size: 0.82rem;
+  color: #047857;
+  line-height: 1.4;
+}
+
+.waNoticeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: #25D366;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  align-self: flex-start;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.waNoticeLink:hover {
+  background: #1AAE54;
+  transform: translateY(-1px);
+}
+
 /* ===== ACTION BUTTONS ===== */
 .actions {
   display: flex;

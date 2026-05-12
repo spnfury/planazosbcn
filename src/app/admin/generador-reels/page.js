@@ -211,6 +211,7 @@ export default function GeneradorReelsPage() {
         }
       }
     } catch (err) {
+      setRenderError(err.message);
       setError(err.message);
     } finally {
       setRendering(false);
