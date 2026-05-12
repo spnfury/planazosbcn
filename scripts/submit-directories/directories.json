@@ -1,0 +1,54 @@
+{
+  "_README": "Lista de directorios y endpoints de submission. Cada uno tiene una 'submitUrl' (página del formulario) y un mapping 'selectors' (best-effort). Si selectors está vacío, el script usa autofill genérico por etiquetas. Para mejorar tasa de éxito en un site concreto, llena los selectors con DevTools.",
+  "sites": [
+    {
+      "id": "whatsgrouplinks",
+      "label": "whatsgrouplinks.com",
+      "submitUrl": "https://whatsgrouplinks.com/submit-whatsapp-group-link/",
+      "needsCaptcha": true,
+      "selectors": {}
+    },
+    {
+      "id": "groupslor",
+      "label": "groupslor.com",
+      "submitUrl": "https://groupslor.com/submit-group",
+      "needsCaptcha": true,
+      "selectors": {}
+    },
+    {
+      "id": "whatsgrouplink",
+      "label": "whatsgrouplink.com",
+      "submitUrl": "https://whatsgrouplink.com/submit-group/",
+      "needsCaptcha": true,
+      "selectors": {}
+    },
+    {
+      "id": "chatlinks",
+      "label": "chatlinks.app",
+      "submitUrl": "https://chatlinks.app/submit",
+      "needsCaptcha": false,
+      "selectors": {}
+    },
+    {
+      "id": "grouplinks",
+      "label": "grouplinks.app",
+      "submitUrl": "https://grouplinks.app/submit-group",
+      "needsCaptcha": true,
+      "selectors": {}
+    },
+    {
+      "id": "grupo-whatsapp",
+      "label": "grupo-whatsapp.com",
+      "submitUrl": "https://grupo-whatsapp.com/agregar-grupo",
+      "needsCaptcha": true,
+      "selectors": {}
+    },
+    {
+      "id": "invitacionalgrupo",
+      "label": "invitacionalgrupo.com",
+      "submitUrl": "https://invitacionalgrupo.com/anadir-grupo",
+      "needsCaptcha": true,
+      "selectors": {}
+    }
+  ]
+}

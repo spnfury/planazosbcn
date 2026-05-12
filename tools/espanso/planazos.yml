@@ -1,0 +1,101 @@
+# ============================================
+# Planazos BCN — Espanso text expansions
+# ============================================
+#
+# Cómo instalar:
+#   1. Instala Espanso: https://espanso.org/install/
+#   2. Abre la carpeta de matches:  espanso path
+#   3. Copia este archivo (planazos.yml) ahí
+#   4. Recarga Espanso (System tray → Reload)
+#
+# Cómo se usa:
+#   En cualquier campo de texto, teclea uno de los triggers
+#   (ej. :planazos-corta) y se expandirá automáticamente.
+#
+# Triggers disponibles:
+#   :planazos-title       → Título
+#   :planazos-corta       → Descripción corta (~150 chars)
+#   :planazos-media       → Descripción media
+#   :planazos-larga       → Descripción larga
+#   :planazos-reddit      → Post Reddit / Facebook
+#   :planazos-tags        → Tags / keywords
+#   :planazos-link        → URL del grupo de WhatsApp
+#   :planazos-link-utm    → URL con UTM (pide source)
+#   :planazos-web         → URL de planazosbcn.com
+#   :planazos-email       → Email de contacto
+# ============================================
+
+matches:
+  # ── Título ─────────────────────────────────
+  - trigger: ":planazos-title"
+    replace: "Planazos BCN — Planes y eventos en Barcelona"
+
+  # ── Descripción corta ─────────────────────
+  - trigger: ":planazos-corta"
+    replace: "¡Únete al grupo oficial de PlanazosBCN! Los mejores planes, eventos y descuentos secretos de Barcelona cada semana."
+
+  # ── Descripción media ─────────────────────
+  - trigger: ":planazos-media"
+    replace: |-
+      🌆 Grupo oficial de PlanazosBCN
+
+      Los mejores planes, eventos y descuentos secretos de Barcelona cada semana.
+
+      🔥 Planes exclusivos antes que nadie
+      🤫 Descuentos solo para miembros
+      🎟️ Sorteos de entradas
+
+      Web: https://planazosbcn.com
+
+  # ── Descripción larga ─────────────────────
+  - trigger: ":planazos-larga"
+    replace: |-
+      🌆 ¿Vives en Barcelona o vienes de visita?
+
+      Únete al grupo oficial de PlanazosBCN, la guía de los mejores planes de la ciudad:
+
+      🔥 Planes exclusivos antes que nadie
+      🤫 Descuentos secretos solo para miembros
+      🎟️ Sorteos de entradas y experiencias
+      🍽️ Gastronomía, ocio, naturaleza, cultura
+      📍 Recomendaciones reales, no publi
+
+      Web: https://planazosbcn.com
+
+      ¡Te esperamos!
+
+  # ── Post Reddit / Facebook ────────────────
+  - trigger: ":planazos-reddit"
+    replace: |-
+      **Monté una guía de planes en Barcelona y un grupo de WhatsApp donde compartimos los mejores eventos cada semana**
+
+      Hola gente! Llevo unos meses con PlanazosBCN (planazosbcn.com), una web donde recojo los mejores planes de la ciudad — desde restaurantes secretos hasta eventos del finde, naturaleza cerca de BCN, descuentos, etc.
+
+      Para no estar revisando la web, hicimos un grupo de WhatsApp donde mando 2-3 planes top a la semana. Si os interesa: [link]
+
+      ¿Algún plan favorito vuestro que recomendéis añadir? Acepto feedback.
+
+  # ── Tags ──────────────────────────────────
+  - trigger: ":planazos-tags"
+    replace: "barcelona, planes barcelona, eventos barcelona, qué hacer barcelona, ocio barcelona, gastronomía barcelona, planazos, bcn"
+
+  # ── Link al grupo ─────────────────────────
+  - trigger: ":planazos-link"
+    replace: "https://chat.whatsapp.com/GDiYK6fC7OhHbAu2XipW9z"
+
+  # ── Link con UTM (form que pide source) ───
+  - trigger: ":planazos-link-utm"
+    replace: "https://planazosbcn.com/wa?utm_source={{source}}&utm_medium=directory&utm_campaign=launch"
+    vars:
+      - name: source
+        type: form
+        params:
+          layout: "Source: [[source]]"
+
+  # ── Web ───────────────────────────────────
+  - trigger: ":planazos-web"
+    replace: "https://planazosbcn.com"
+
+  # ── Email contacto ────────────────────────
+  - trigger: ":planazos-email"
+    replace: "hola@planazosbcn.com"

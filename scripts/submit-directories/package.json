@@ -1,0 +1,15 @@
+{
+  "name": "planazos-submit-directories",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "install:browsers": "playwright install chromium",
+    "run": "node run.mjs",
+    "run:headed": "HEADED=1 node run.mjs",
+    "run:dry": "DRY_RUN=1 node run.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

@@ -13,6 +13,7 @@ import {
   BANNERS,
   buildWaLink,
 } from '@/data/promoKit';
+import AutofillBookmarklet from '@/components/PromoKit/AutofillBookmarklet';
 import styles from './promo-kit.module.css';
 
 const STORAGE_KEY = 'planazos_promo_kit_v1';
@@ -222,6 +223,46 @@ export default function PromoKitPage() {
         ) : (
           <div className={styles.statsError}>No se pudieron cargar las estadísticas.</div>
         )}
+      </section>
+
+      {/* ── BOOKMARKLET ── */}
+      <AutofillBookmarklet />
+
+      {/* ── PLAYWRIGHT SUBMITTER ── */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>🤖 Submitter automático (Playwright)</h2>
+        <p className={styles.cardSubtitle}>
+          Script Node que abre cada directorio en Chromium, pre-rellena los campos detectados, y pausa para que resuelvas captcha. Mismo motor que el bookmarklet, pero recorre varios sites en orden.
+        </p>
+        <pre className={styles.fieldPre} style={{ background: 'rgba(0,0,0,0.4)', padding: '0.85rem', borderRadius: '8px' }}>
+{`cd scripts/submit-directories
+npm install
+npm run install:browsers   # solo primera vez
+npm run run:headed         # con UI visible (recomendado)`}
+        </pre>
+        <p className={styles.cardSubtitle} style={{ marginTop: '0.5rem' }}>
+          Más opciones y guía completa en <code>scripts/submit-directories/README.md</code>.
+        </p>
+      </section>
+
+      {/* ── ESPANSO ── */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>⌨️ Atajos de texto (Espanso)</h2>
+        <p className={styles.cardSubtitle}>
+          Instala <a href="https://espanso.org/install/" target="_blank" rel="noopener noreferrer" style={{ color: '#4ADE80' }}>Espanso</a> y
+          copia el archivo <code>tools/espanso/planazos.yml</code> a la carpeta de matches
+          (<code>espanso path</code> en terminal). Luego en cualquier campo de texto teclea:
+        </p>
+        <ul className={styles.tipsList} style={{ marginTop: '0.5rem' }}>
+          <li><code>:planazos-corta</code> → descripción corta (~150 chars)</li>
+          <li><code>:planazos-media</code> → descripción media con emojis</li>
+          <li><code>:planazos-larga</code> → descripción larga completa</li>
+          <li><code>:planazos-reddit</code> → post Reddit / Facebook</li>
+          <li><code>:planazos-tags</code> → tags / keywords</li>
+          <li><code>:planazos-link</code> → link al grupo de WhatsApp</li>
+          <li><code>:planazos-link-utm</code> → pide source, genera link UTM</li>
+          <li><code>:planazos-web</code> → planazosbcn.com</li>
+        </ul>
       </section>
 
       {/* ── COPYS ── */}
