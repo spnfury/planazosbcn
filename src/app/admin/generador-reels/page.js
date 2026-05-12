@@ -35,6 +35,8 @@ export default function GeneradorReelsPage() {
 
   const [publishingIg, setPublishingIg] = useState(false);
   const [publishingTiktok, setPublishingTiktok] = useState(false);
+  const [autoPublishIg, setAutoPublishIg] = useState(false);
+  const [autoPublishTiktok, setAutoPublishTiktok] = useState(false);
   const intervalRef = useRef(null);
   const previewRef = useRef(null);
 
@@ -202,12 +204,19 @@ export default function GeneradorReelsPage() {
           const pubData = await pubRes.json();
           if (!pubRes.ok) throw new Error(pubData.error || 'Error al interactuar con el Bot de Telegram');
           
-          // Verifica si hubo un grace error
           if (pubData.results?.telegram?.status === 'error') {
               throw new Error(pubData.results?.telegram?.error || 'Error interno en tokens de Telegram');
           }
           
           setPublishStatus('success');
+        }
+
+        // Auto-publish social if checkboxes are checked
+        if (autoPublishIg) {
+          autoPublishToIg(data.url);
+        }
+        if (autoPublishTiktok) {
+          autoPublishToTiktok(data.url);
         }
       }
     } catch (err) {
@@ -218,15 +227,14 @@ export default function GeneradorReelsPage() {
     }
   }
 
-  async function handlePublishIg() {
-    if (!renderUrl) return;
+  async function autoPublishToIg(url) {
     setPublishingIg(true);
     try {
       const res = await fetch('/api/social/instagram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          videoUrl: renderUrl,
+          videoUrl: url,
           caption: script?.caption || plan?.title || '',
           coverUrl: plan?.image || ''
         }),
@@ -241,15 +249,14 @@ export default function GeneradorReelsPage() {
     }
   }
 
-  async function handlePublishTiktok() {
-    if (!renderUrl) return;
+  async function autoPublishToTiktok(url) {
     setPublishingTiktok(true);
     try {
       const res = await fetch('/api/social/tiktok', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          videoUrl: renderUrl,
+          videoUrl: url,
           caption: script?.caption || plan?.title || ''
         }),
       });
@@ -261,6 +268,16 @@ export default function GeneradorReelsPage() {
     } finally {
       setPublishingTiktok(false);
     }
+  }
+
+  function handlePublishIg() {
+    if (!renderUrl) return;
+    autoPublishToIg(renderUrl);
+  }
+
+  function handlePublishTiktok() {
+    if (!renderUrl) return;
+    autoPublishToTiktok(renderUrl);
   }
 
   function getInstagramEmbedUrl(url) {
@@ -548,13 +565,15 @@ export default function GeneradorReelsPage() {
                   <input type="checkbox" checked={sendTelegram} onChange={e => setSendTelegram(e.target.checked)} />
                   📱 Enviar al móvil por Bot de Telegram automáticamente
                 </label>
-                <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled={true} />
-                  Auto-publicar en Instagram Reels (Mejor publicarlo manual abajo)
+                <label className={styles.checkboxLabel} style={{ cursor: 'pointer' }}>
+                  <input type="checkbox" checked={autoPublishIg} onChange={(e) => setAutoPublishIg(e.target.checked)} disabled={rendering} />
+                  📸 Auto-publicar en Instagram Reels
+                  {publishingIg && <span style={{ marginLeft: '8px', color: '#f09433' }}>⏳ Publicando...</span>}
                 </label>
-                <label className={styles.checkboxLabel}>
-                  <input type="checkbox" disabled={true} />
-                  Auto-publicar en TikTok (Mejor publicarlo manual abajo)
+                <label className={styles.checkboxLabel} style={{ cursor: 'pointer' }}>
+                  <input type="checkbox" checked={autoPublishTiktok} onChange={(e) => setAutoPublishTiktok(e.target.checked)} disabled={rendering} />
+                  🎵 Auto-publicar en TikTok
+                  {publishingTiktok && <span style={{ marginLeft: '8px', color: '#fff' }}>⏳ Publicando...</span>}
                 </label>
               </div>
               <button 

@@ -1,11 +1,12 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import PlanCard from '@/components/PlanCard/PlanCard';
-import { ETIQUETAS, getEtiqueta } from '@/data/planConstants';
-import { supabase } from '@/lib/supabase';
-import styles from './page.module.css';
-import fs from 'fs';
-import path from 'path';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import PlanCard from "@/components/PlanCard/PlanCard";
+import { ETIQUETAS, getEtiqueta } from "@/data/planConstants";
+import { supabase } from "@/lib/supabase";
+import { filterIncompletePlans } from "@/lib/filterIncompletePlans";
+import styles from "./page.module.css";
+import fs from "fs";
+import path from "path";
 
 // ISR: regenerate every 10 minutes
 export const revalidate = 600;
@@ -38,9 +39,9 @@ export async function generateMetadata({ params }) {
       title,
       description,
       url: `https://planazosbcn.com/planes/tag/${tag.id}`,
-      siteName: 'PlanazosBCN',
-      locale: 'es_ES',
-      type: 'website',
+      siteName: "PlanazosBCN",
+      locale: "es_ES",
+      type: "website",
     },
     alternates: {
       canonical: `https://planazosbcn.com/planes/tag/${tag.id}`,
@@ -56,37 +57,50 @@ export default async function TagPage({ params }) {
   // Load SEO content if available
   let seoData = null;
   try {
-    const seoFilePath = path.join(process.cwd(), 'src', 'data', 'seoContent.json');
-    const seoContentFile = fs.readFileSync(seoFilePath, 'utf8');
+    const seoFilePath = path.join(
+      process.cwd(),
+      "src",
+      "data",
+      "seoContent.json",
+    );
+    const seoContentFile = fs.readFileSync(seoFilePath, "utf8");
     const parsed = JSON.parse(seoContentFile);
     if (parsed && parsed.tags && parsed.tags[hashtag]) {
       seoData = parsed.tags[hashtag];
     }
   } catch (err) {
-    console.error('Error loading seo content', err.message);
+    console.error("Error loading seo content", err.message);
   }
 
   // Fetch all plans to filter by JSONB array (most reliable approach for various postgres array configurations)
   // or use contains if properly configured. We fallback to JS filter for safety in MVP if array structure varies.
   const { data: plansData, error } = await supabase
-    .from('plans')
-    .select('*')
-    .eq('published', true)
-    .order('date', { ascending: true });
+    .from("plans")
+    .select("*")
+    .eq("published", true)
+    .order("date", { ascending: true });
 
   if (error) {
-    console.error('Error fetching plans for tag:', error);
+    console.error("Error fetching plans for tag:", error);
   }
 
   let plans = (plansData || []).map(mapPlanData);
-  plans = plans.filter(p => p.etiquetas && Array.isArray(p.etiquetas) && p.etiquetas.includes(hashtag));
+  plans = plans.filter(
+    (p) =>
+      p.etiquetas &&
+      Array.isArray(p.etiquetas) &&
+      p.etiquetas.includes(hashtag),
+  );
+  plans = await filterIncompletePlans(plans);
 
   // JSON-LD Structured Data
   const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
     name: `Planes de ${tagInfo.label} en Barcelona`,
-    description: seoData?.description || `Los mejores planes de ${tagInfo.label} de la ciudad condal.`,
+    description:
+      seoData?.description ||
+      `Los mejores planes de ${tagInfo.label} de la ciudad condal.`,
     url: `https://planazosbcn.com/planes/tag/${tagInfo.id}`,
   };
 
@@ -102,15 +116,25 @@ export default async function TagPage({ params }) {
           <div className="container">
             <ol className={styles.breadcrumbList}>
               <li>
-                <Link href="/" className={styles.crumb}>Inicio</Link>
-                <span className={styles.crumbSep} aria-hidden="true">›</span>
+                <Link href="/" className={styles.crumb}>
+                  Inicio
+                </Link>
+                <span className={styles.crumbSep} aria-hidden="true">
+                  ›
+                </span>
               </li>
               <li>
-                <Link href="/planes" className={styles.crumb}>Planes</Link>
-                <span className={styles.crumbSep} aria-hidden="true">›</span>
+                <Link href="/planes" className={styles.crumb}>
+                  Planes
+                </Link>
+                <span className={styles.crumbSep} aria-hidden="true">
+                  ›
+                </span>
               </li>
               <li>
-                <span className={styles.crumbActive} aria-current="page">#{tagInfo.label}</span>
+                <span className={styles.crumbActive} aria-current="page">
+                  #{tagInfo.label}
+                </span>
               </li>
             </ol>
           </div>
@@ -120,12 +144,16 @@ export default async function TagPage({ params }) {
         <section className={styles.hero}>
           <div className="container">
             <div className={styles.heroEmoji}>{tagInfo.emoji}</div>
-            <h1 className={styles.heroTitle}>Planes de {tagInfo.label} en Barcelona</h1>
+            <h1 className={styles.heroTitle}>
+              Planes de {tagInfo.label} en Barcelona
+            </h1>
             <h2 className={styles.heroSubtitle}>
-              {seoData?.heroSubtitle || `Todo lo relacionado con ${tagInfo.label}`}
+              {seoData?.heroSubtitle ||
+                `Todo lo relacionado con ${tagInfo.label}`}
             </h2>
             <p className={styles.heroDescription}>
-              {seoData?.heroDescription || `Explora nuestra selección de planes etiquetados como ${tagInfo.label}.`}
+              {seoData?.heroDescription ||
+                `Explora nuestra selección de planes etiquetados como ${tagInfo.label}.`}
             </p>
           </div>
         </section>
@@ -134,7 +162,9 @@ export default async function TagPage({ params }) {
         <section className="section section--compact">
           <div className="container">
             <p className={styles.resultCount}>
-              {plans.length} {plans.length === 1 ? 'plan encontrado' : 'planes encontrados'} con #{hashtag}
+              {plans.length}{" "}
+              {plans.length === 1 ? "plan encontrado" : "planes encontrados"}{" "}
+              con #{hashtag}
             </p>
 
             {plans.length > 0 ? (
@@ -146,7 +176,9 @@ export default async function TagPage({ params }) {
             ) : (
               <div className={styles.empty}>
                 <span className={styles.emptyEmoji}>👀</span>
-                <h3 className={styles.emptyTitle}>Aún no hay planes con esta etiqueta</h3>
+                <h3 className={styles.emptyTitle}>
+                  Aún no hay planes con esta etiqueta
+                </h3>
                 <p className={styles.emptyDesc}>
                   Vuelve pronto, siempre estamos añadiendo planes nuevos.
                 </p>
@@ -162,7 +194,7 @@ export default async function TagPage({ params }) {
         {seoData && seoData.seoText && (
           <section className={styles.seoContent}>
             <div className="container">
-              <div 
+              <div
                 className={styles.seoContentInner}
                 dangerouslySetInnerHTML={{ __html: seoData.seoText }}
               />

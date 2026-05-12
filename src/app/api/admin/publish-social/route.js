@@ -22,14 +22,16 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { videoUrl, caption, telegram } = body;
+    const { videoUrl, imageUrl, caption, telegram, whatsapp, type = 'video' } = body;
 
-    if (!videoUrl) {
-      return NextResponse.json({ error: 'Falta la URL del vídeo a publicar' }, { status: 400 });
+    const mediaUrl = videoUrl || imageUrl;
+    if (!mediaUrl) {
+      return NextResponse.json({ error: 'Falta la URL del medio a publicar' }, { status: 400 });
     }
 
     let results = {
-      telegram: { status: 'skipped' }
+      telegram: { status: 'skipped' },
+      whatsapp: { status: 'skipped' },
     };
 
     // PUBLICACIÓN VIA TELEGRAM BOT
@@ -44,16 +46,28 @@ export async function POST(req) {
         };
       } else {
         try {
-          console.log("Enviando Reel generado al teléfono vía Telegram...");
-          const telegramCmd = await fetch(`https://api.telegram.org/bot${botToken}/sendVideo`, {
+          console.log(`Enviando ${type} al teléfono vía Telegram...`);
+          
+          // Choose between sendVideo and sendPhoto based on type
+          const endpoint = type === 'image' ? 'sendPhoto' : 'sendVideo';
+          const mediaField = type === 'image' ? 'photo' : 'video';
+          
+          const telegramPayload = {
+            chat_id: chatId,
+            [mediaField]: mediaUrl,
+            caption: caption || '',
+            parse_mode: 'HTML',
+          };
+
+          // Video-specific options
+          if (type === 'video') {
+            telegramPayload.supports_streaming = true;
+          }
+
+          const telegramCmd = await fetch(`https://api.telegram.org/bot${botToken}/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              video: videoUrl,
-              caption: caption,
-              supports_streaming: true
-            })
+            body: JSON.stringify(telegramPayload)
           });
           
           const tgData = await telegramCmd.json();
@@ -65,6 +79,53 @@ export async function POST(req) {
         } catch (tgErr) {
           console.error("Error enviando por Telegram:", tgErr);
           results.telegram = { status: 'error', error: tgErr.message };
+        }
+      }
+    }
+
+    // PUBLICACIÓN VIA WHATSAPP BUSINESS API
+    if (whatsapp) {
+      const waToken = process.env.WHATSAPP_TOKEN;
+      const waPhoneId = process.env.WHATSAPP_PHONE_ID;
+      const waGroupId = process.env.WHATSAPP_GROUP_ID;
+
+      if (!waToken || !waPhoneId) {
+        // Fallback: If no WhatsApp API configured, try Telegram as channel
+        results.whatsapp = { 
+          status: 'skipped', 
+          note: 'WhatsApp Business API no configurada. Usa Telegram como alternativa.' 
+        };
+      } else {
+        try {
+          console.log("Enviando evento a WhatsApp Business...");
+          
+          // Send image with caption via WhatsApp Cloud API
+          const waRes = await fetch(`https://graph.facebook.com/v19.0/${waPhoneId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${waToken}`,
+            },
+            body: JSON.stringify({
+              messaging_product: 'whatsapp',
+              to: waGroupId,
+              type: 'image',
+              image: {
+                link: mediaUrl,
+                caption: caption || '',
+              }
+            }),
+          });
+
+          const waData = await waRes.json();
+          if (!waRes.ok) {
+            throw new Error(waData.error?.message || JSON.stringify(waData));
+          }
+
+          results.whatsapp = { status: 'success', message_id: waData.messages?.[0]?.id };
+        } catch (waErr) {
+          console.error("Error enviando por WhatsApp:", waErr);
+          results.whatsapp = { status: 'error', error: waErr.message };
         }
       }
     }

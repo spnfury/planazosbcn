@@ -121,11 +121,17 @@
   overflow: hidden;
 }
 
+.contentBottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: auto;
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border-light);
 }
@@ -150,7 +156,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  padding-top: var(--space-2);
   position: relative;
   z-index: 2;
 }

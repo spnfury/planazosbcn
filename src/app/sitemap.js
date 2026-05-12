@@ -1,34 +1,35 @@
-import { CATEGORIES } from '@/data/plans';
-import { ETIQUETAS } from '@/data/planConstants';
-import { supabase } from '@/lib/supabase';
+import { CATEGORIES } from "@/data/plans";
+import { ETIQUETAS } from "@/data/planConstants";
+import { supabase } from "@/lib/supabase";
+import { filterIncompletePlans } from "@/lib/filterIncompletePlans";
 
 export default async function sitemap() {
-  const baseUrl = 'https://planazosbcn.com';
+  const baseUrl = "https://planazosbcn.com";
 
   // Static pages
   const staticPages = [
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${baseUrl}/planes`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/contacto`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${baseUrl}/colaboradores`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.5,
     },
   ];
@@ -37,7 +38,7 @@ export default async function sitemap() {
   const categoryPages = CATEGORIES.map((cat) => ({
     url: `${baseUrl}/planes/categoria/${cat.slug}`,
     lastModified: new Date(),
-    changeFrequency: 'daily',
+    changeFrequency: "daily",
     priority: 0.8,
   }));
 
@@ -45,7 +46,7 @@ export default async function sitemap() {
   const tagPages = ETIQUETAS.map((tag) => ({
     url: `${baseUrl}/planes/tag/${tag.id}`,
     lastModified: new Date(),
-    changeFrequency: 'daily',
+    changeFrequency: "daily",
     priority: 0.8,
   }));
 
@@ -53,17 +54,19 @@ export default async function sitemap() {
   let planPages = [];
   try {
     const { data: plans } = await supabase
-      .from('plans')
-      .select('slug, updated_at, created_at');
+      .from("plans")
+      .select("id, slug, updated_at, created_at");
 
-    planPages = (plans || []).map((plan) => ({
+    const validPlans = await filterIncompletePlans(plans || []);
+
+    planPages = validPlans.map((plan) => ({
       url: `${baseUrl}/planes/${plan.slug}`,
       lastModified: new Date(plan.updated_at || plan.created_at || Date.now()),
-      changeFrequency: 'weekly',
+      changeFrequency: "weekly",
       priority: 0.7,
     }));
   } catch (err) {
-    console.error('Error fetching plans for sitemap:', err);
+    console.error("Error fetching plans for sitemap:", err);
   }
 
   return [...staticPages, ...categoryPages, ...tagPages, ...planPages];

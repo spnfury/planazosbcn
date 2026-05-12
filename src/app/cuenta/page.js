@@ -152,6 +152,18 @@ export default function CuentaPage() {
           </button>
         </div>
 
+        {/* Referidos CTA */}
+        <Link href="/cuenta/referidos" className={styles.referralBanner} id="account-referidos-cta">
+          <span className={styles.referralBannerEmoji}>🎁</span>
+          <div className={styles.referralBannerContent}>
+            <strong className={styles.referralBannerTitle}>Invita amigos y gana</strong>
+            <span className={styles.referralBannerDesc}>
+              Cada amigo que invites = participación en el sorteo mensual
+            </span>
+          </div>
+          <span className={styles.referralBannerArrow}>→</span>
+        </Link>
+
         {/* Reservations */}
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>

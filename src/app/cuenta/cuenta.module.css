@@ -390,3 +390,58 @@
   }
 }
 
+
+
+/* ===== REFERRAL BANNER ===== */
+.referralBanner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #128C7E, #25D366);
+  color: white;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 24px rgba(37, 211, 102, 0.22);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.referralBanner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(37, 211, 102, 0.3);
+}
+
+.referralBannerEmoji {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.referralBannerContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.referralBannerTitle {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.referralBannerDesc {
+  font-size: 0.82rem;
+  opacity: 0.92;
+}
+
+.referralBannerArrow {
+  font-size: 1.4rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.referralBanner:hover .referralBannerArrow {
+  transform: translateX(4px);
+}

@@ -1,0 +1,313 @@
+.page {
+  padding: 2rem 0 4rem;
+  min-height: 60vh;
+}
+
+.loadingPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 50vh;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #25D366;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.crumbRow {
+  margin-bottom: 1rem;
+}
+
+.crumb {
+  color: var(--color-text-muted, #6B7280);
+  font-size: 0.88rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.crumb:hover {
+  color: var(--color-primary, #C8102E);
+}
+
+/* HERO */
+.heroCard {
+  background: linear-gradient(135deg, #128C7E, #25D366);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  color: white;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 15px 35px rgba(37, 211, 102, 0.25);
+}
+
+.heroEmoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  font-size: 1rem;
+  opacity: 0.92;
+  margin: 0;
+  max-width: 480px;
+  margin-inline: auto;
+  line-height: 1.55;
+}
+
+/* LINK CARD */
+.card {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.cardLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6B7280;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.linkBox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.linkValue {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92rem;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.copyBtn {
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  background: #25D366;
+}
+
+.codeChip {
+  display: inline-block;
+  background: rgba(37, 211, 102, 0.12);
+  color: #065F46;
+  border: 1px solid rgba(37, 211, 102, 0.25);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.codeChip strong {
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.shareRow {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.shareWa {
+  flex: 1;
+  min-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #25D366;
+  color: white;
+  text-decoration: none;
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.3);
+}
+
+.shareWa:hover {
+  background: #1AAE54;
+  transform: translateY(-1px);
+}
+
+.shareNative {
+  background: white;
+  border: 1.5px solid #E5E7EB;
+  color: #111827;
+  padding: 0.85rem 1.2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.shareNative:hover {
+  border-color: #25D366;
+  color: #128C7E;
+}
+
+/* STATS */
+.statsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.statCard {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.statValue {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #128C7E;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.statLabel {
+  font-size: 0.88rem;
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.statHint {
+  font-size: 0.72rem;
+  color: #9CA3AF;
+}
+
+/* RAFFLE */
+.raffleCard {
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.raffleHeader {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.raffleEmoji {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.raffleTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #78350F;
+  margin: 0 0 0.3rem 0;
+}
+
+.raffleDesc {
+  font-size: 0.92rem;
+  color: #92400E;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rafflePrize {
+  font-size: 0.88rem;
+  color: #78350F;
+  margin: 0.5rem 0 0 0;
+  font-weight: 600;
+}
+
+/* RULES */
+.rulesCard {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.rulesTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.85rem 0;
+}
+
+.rulesList {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #374151;
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.rulesList li {
+  margin-bottom: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: 1.6rem;
+  }
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+  .shareWa, .shareNative {
+    width: 100%;
+  }
+}

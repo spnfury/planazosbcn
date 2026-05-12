@@ -167,6 +167,13 @@ export default function AdminPlanesPage() {
                         ✏️ Editar
                       </Link>
                       <Link
+                        href={`/admin/planes/${plan.id}/qr`}
+                        className={styles.actionBtn}
+                        style={{background: 'rgba(59, 130, 246, 0.2)', color: '#93c5fd'}}
+                      >
+                        📱 QR
+                      </Link>
+                      <Link
                         href={`/admin/generador-reels?id=${plan.id}`}
                         className={styles.actionBtn}
                         style={{background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe'}}
