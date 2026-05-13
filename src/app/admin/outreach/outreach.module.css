@@ -260,6 +260,114 @@
   background: rgba(239, 68, 68, 0.1);
 }
 
+.sectionHint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-left: auto;
+}
+
+/* WA content copy box */
+.contentBox {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.contentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+}
+
+.contentLabel {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+  min-width: 80px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.contentValue {
+  color: rgba(255, 255, 255, 0.65);
+  flex: 1;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.copyInline {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.68rem;
+  padding: 0.15rem 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.copyInline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Card action buttons */
+.cardActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: auto;
+}
+
+.openBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: all 0.15s;
+  display: block;
+}
+
+.openBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.markBtnRun {
+  background: rgba(255, 69, 0, 0.1);
+  border-color: rgba(255, 69, 0, 0.3);
+  color: #ff6b35;
+}
+
+.markBtnRun:hover {
+  background: rgba(255, 69, 0, 0.2);
+  border-color: rgba(255, 69, 0, 0.5);
+  color: #ff8c5a;
+}
+
+.targetCooldown {
+  font-size: 0.72rem;
+  color: rgba(255, 200, 0, 0.7);
+}
+
+.targetError {
+  font-size: 0.7rem;
+  color: #ef4444;
+  word-break: break-word;
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 1rem;

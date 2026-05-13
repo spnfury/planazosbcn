@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer-core";
 import { GROUP, logPost } from "./content.js";
+import { shouldPost } from "./db.js";
 
 async function connectChrome() {
   const res = await fetch("http://127.0.0.1:9222/json/version");
@@ -250,6 +251,13 @@ async function run() {
   const results = [];
 
   for (const dir of DIRECTORIES) {
+    const ok = await shouldPost("whatsapp_directory", dir.name, 30);
+    if (!ok) {
+      console.log(
+        `⏭  ${dir.name} — cooldown activo (posteado en últimos 30 días)`,
+      );
+      continue;
+    }
     const page = await browser.newPage();
     console.log(`→ Procesando ${dir.name}...`);
     try {

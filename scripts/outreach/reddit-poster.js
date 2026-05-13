@@ -19,6 +19,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { REDDIT_POSTS, pick, logPost } from "./content.js";
+import { shouldPost } from "./db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
@@ -118,6 +119,11 @@ async function run() {
   const results = [];
 
   for (const sub of subreddits) {
+    const ok = await shouldPost("reddit", sub, 30);
+    if (!ok) {
+      console.log(`⏭  ${sub} — cooldown activo (posteado en últimos 30 días)`);
+      continue;
+    }
     const post = REDDIT_POSTS[sub];
     const title = pick(post.title);
     const body = pick(post.body);

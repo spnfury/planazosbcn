@@ -11,6 +11,7 @@
 
 import puppeteer from "puppeteer-core";
 import { FACEBOOK_POSTS, pick, logPost } from "./content.js";
+import { shouldPost } from "./db.js";
 
 // IDs/slugs de los grupos de Facebook (extraídos de la URL del grupo)
 // Formato: facebook.com/groups/<GROUP_SLUG_OR_ID>
@@ -150,6 +151,15 @@ async function run() {
     const url = GROUP_URLS[group];
     if (!url) {
       results.push({ group, status: "⏭️ SKIP", error: "Sin URL configurada" });
+      continue;
+    }
+
+    const ok = await shouldPost("facebook", group, 14);
+    if (!ok) {
+      console.log(
+        `⏭  "${group}" — cooldown activo (posteado en últimos 14 días)`,
+      );
+      results.push({ group, status: "⏭️ COOLDOWN" });
       continue;
     }
 
