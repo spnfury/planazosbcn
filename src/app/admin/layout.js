@@ -1,53 +1,58 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/components/Auth/AuthProvider';
-import AdminAssistant from '@/components/AdminAssistant/AdminAssistant';
-import styles from './admin.module.css';
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/Auth/AuthProvider";
+import AdminAssistant from "@/components/AdminAssistant/AdminAssistant";
+import styles from "./admin.module.css";
 
 // Grouped navigation sections
 const NAV_SECTIONS = [
   {
     label: null, // No label for the primary section
+    items: [{ href: "/admin", icon: "📊", label: "Estadísticas" }],
+  },
+  {
+    label: "Contenido",
     items: [
-      { href: '/admin', icon: '📊', label: 'Estadísticas' },
+      { href: "/admin/planes", icon: "📋", label: "Planes" },
+      { href: "/admin/eventos", icon: "🎉", label: "Eventos Rápidos" },
+      { href: "/admin/restaurantes", icon: "🍽️", label: "Restaurantes" },
     ],
   },
   {
-    label: 'Contenido',
+    label: "Operaciones",
     items: [
-      { href: '/admin/planes', icon: '📋', label: 'Planes' },
-      { href: '/admin/eventos', icon: '🎉', label: 'Eventos Rápidos' },
-      { href: '/admin/restaurantes', icon: '🍽️', label: 'Restaurantes' },
+      { href: "/admin/reservas", icon: "🎟️", label: "Reservas" },
+      { href: "/admin/scanner", icon: "📱", label: "Scanner QR" },
+      { href: "/admin/tareas", icon: "✅", label: "Tareas" },
     ],
   },
   {
-    label: 'Operaciones',
+    label: "Usuarios",
     items: [
-      { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
-      { href: '/admin/scanner', icon: '📱', label: 'Scanner QR' },
-      { href: '/admin/tareas', icon: '✅', label: 'Tareas' },
+      { href: "/admin/usuarios", icon: "👥", label: "Usuarios" },
+      { href: "/admin/restaurantes/usuarios", icon: "🏪", label: "Comercios" },
+      { href: "/admin/resenas", icon: "⭐", label: "Reseñas" },
+      { href: "/admin/referidos", icon: "🎁", label: "Referidos" },
     ],
   },
   {
-    label: 'Usuarios',
+    label: "Comunidad",
     items: [
-      { href: '/admin/usuarios', icon: '👥', label: 'Usuarios' },
-      { href: '/admin/restaurantes/usuarios', icon: '🏪', label: 'Comercios' },
-      { href: '/admin/resenas', icon: '⭐', label: 'Reseñas' },
-      { href: '/admin/referidos', icon: '🎁', label: 'Referidos' },
+      { href: "/admin/outreach", icon: "📣", label: "Outreach" },
+      { href: "/admin/campanas", icon: "🚀", label: "Campañas DM" },
     ],
   },
   {
-    label: 'Herramientas',
+    label: "Herramientas",
     items: [
-      { href: '/admin/qr-codes', icon: '🔗', label: 'QR Tracking' },
-      { href: '/admin/generador-reels', icon: '🎬', label: 'Reels IA' },
-      { href: '/admin/promo-kit', icon: '📣', label: 'Promo Kit' },
-      { href: '/admin/logs', icon: '📝', label: 'Logs' },
+      { href: "/admin/qr-codes", icon: "🔗", label: "QR Tracking" },
+      { href: "/admin/generador-reels", icon: "🎬", label: "Reels IA" },
+      { href: "/admin/promo-kit", icon: "📣", label: "Promo Kit" },
+      { href: "/admin/logs", icon: "📝", label: "Logs" },
     ],
   },
 ];
@@ -57,11 +62,11 @@ const ALL_NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
 
 // Mobile bottom bar: only show the most important items
 const MOBILE_TAB_ITEMS = [
-  { href: '/admin', icon: '📊', label: 'Inicio' },
-  { href: '/admin/planes', icon: '📋', label: 'Planes' },
-  { href: '/admin/reservas', icon: '🎟️', label: 'Reservas' },
-  { href: '/admin/scanner', icon: '📱', label: 'Scanner' },
-  { href: '/admin/tareas', icon: '✅', label: 'Tareas' },
+  { href: "/admin", icon: "📊", label: "Inicio" },
+  { href: "/admin/planes", icon: "📋", label: "Planes" },
+  { href: "/admin/reservas", icon: "🎟️", label: "Reservas" },
+  { href: "/admin/scanner", icon: "📱", label: "Scanner" },
+  { href: "/admin/tareas", icon: "✅", label: "Tareas" },
 ];
 
 export default function AdminLayout({ children }) {
@@ -79,7 +84,7 @@ export default function AdminLayout({ children }) {
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname === '/admin/login') {
+    if (pathname === "/admin/login") {
       setLoading(false);
       return;
     }
@@ -88,19 +93,19 @@ export default function AdminLayout({ children }) {
 
     async function checkAuth() {
       if (!session) {
-        router.push('/admin/login');
+        router.push("/admin/login");
         return;
       }
 
       const { data: adminUser } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('id', session.user.id)
+        .from("admin_users")
+        .select("*")
+        .eq("id", session.user.id)
         .single();
-        
+
       if (!adminUser) {
         await signOut();
-        router.push('/admin/login');
+        router.push("/admin/login");
         return;
       }
 
@@ -117,18 +122,18 @@ export default function AdminLayout({ children }) {
 
   // Check if a nav item is active (exact match or starts with for sub-pages)
   function isActive(href) {
-    if (href === '/admin') return pathname === '/admin';
+    if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   }
 
-  if (pathname === '/admin/login') {
+  if (pathname === "/admin/login") {
     return <>{children}</>;
   }
 
   if (loading) {
     return (
       <div className={styles.loginPage}>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
+        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>
           Cargando...
         </div>
       </div>
@@ -140,7 +145,11 @@ export default function AdminLayout({ children }) {
       {/* Mobile top header — compact */}
       <header className={styles.mobileHeader}>
         <div className={styles.mobileLogoGroup}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+          <img
+            src="/logo-planazosbcn.png"
+            alt="PlanazosBCN"
+            className={styles.sidebarLogoImg}
+          />
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
         <button
@@ -161,13 +170,15 @@ export default function AdminLayout({ children }) {
             {NAV_SECTIONS.map((section, idx) => (
               <div key={idx}>
                 {section.label && (
-                  <div className={styles.mobileDropdownLabel}>{section.label}</div>
+                  <div className={styles.mobileDropdownLabel}>
+                    {section.label}
+                  </div>
                 )}
                 {section.items.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`${styles.mobileDropdownItem} ${isActive(item.href) ? styles.mobileDropdownItemActive : ''}`}
+                    className={`${styles.mobileDropdownItem} ${isActive(item.href) ? styles.mobileDropdownItemActive : ""}`}
                   >
                     <span>{item.icon}</span> {item.label}
                   </Link>
@@ -175,7 +186,11 @@ export default function AdminLayout({ children }) {
               </div>
             ))}
             <div className={styles.mobileDropdownDivider} />
-            <Link href="/" className={styles.mobileDropdownItem} target="_blank">
+            <Link
+              href="/"
+              className={styles.mobileDropdownItem}
+              target="_blank"
+            >
               🌐 Ver web pública
             </Link>
             <button
@@ -192,7 +207,11 @@ export default function AdminLayout({ children }) {
       {/* Desktop sidebar */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
-          <img src="/logo-planazosbcn.png" alt="PlanazosBCN" className={styles.sidebarLogoImg} />
+          <img
+            src="/logo-planazosbcn.png"
+            alt="PlanazosBCN"
+            className={styles.sidebarLogoImg}
+          />
           <span className={styles.sidebarBadge}>Admin</span>
         </div>
 
@@ -206,7 +225,7 @@ export default function AdminLayout({ children }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ''}`}
+                  className={`${styles.navItem} ${isActive(item.href) ? styles.navItemActive : ""}`}
                 >
                   <span className={styles.navIcon}>{item.icon}</span>
                   {item.label}
@@ -221,7 +240,11 @@ export default function AdminLayout({ children }) {
             <span className={styles.navIcon}>🌐</span>
             Ver web pública
           </Link>
-          <button className={styles.logoutBtn} onClick={handleLogout} id="admin-logout">
+          <button
+            className={styles.logoutBtn}
+            onClick={handleLogout}
+            id="admin-logout"
+          >
             <span className={styles.navIcon}>🚪</span>
             Cerrar sesión
           </button>
@@ -229,9 +252,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main */}
-      <main className={styles.mainContent}>
-        {children}
-      </main>
+      <main className={styles.mainContent}>{children}</main>
 
       {/* Mobile bottom tab bar — only key items */}
       <nav className={styles.bottomTabBar} id="bottom-tab-bar">
@@ -239,7 +260,7 @@ export default function AdminLayout({ children }) {
           <Link
             key={item.href}
             href={item.href}
-            className={`${styles.bottomTab} ${isActive(item.href) ? styles.bottomTabActive : ''}`}
+            className={`${styles.bottomTab} ${isActive(item.href) ? styles.bottomTabActive : ""}`}
           >
             <span className={styles.bottomTabIcon}>{item.icon}</span>
             <span className={styles.bottomTabLabel}>{item.label}</span>
@@ -252,4 +273,3 @@ export default function AdminLayout({ children }) {
     </div>
   );
 }
-
