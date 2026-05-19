@@ -29,10 +29,12 @@
   gap: 0.5rem;
 }
 
-.sidebarLogoImg {
-  height: 36px;
-  width: auto;
-  filter: brightness(0) invert(1);
+.sidebarBrand {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
 }
 
 .sidebarBadge {
