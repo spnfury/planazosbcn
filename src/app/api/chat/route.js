@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
+import { SITE_URL } from '@/lib/site-url';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -230,7 +231,7 @@ export async function POST(request) {
             .filter(email => email && email !== user.email))].slice(0, 49); // Resend BCC limit 50 total recipients
             
          if (emailsToNotify.length > 0) {
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+            const baseUrl = SITE_URL;
             const chatUrl = `${baseUrl}/planes/${plan.slug}?chat=true`;
             
             try {

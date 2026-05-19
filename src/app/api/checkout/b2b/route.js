@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
+import { SITE_URL } from '@/lib/site-url';
 
 export async function POST(req) {
   try {
@@ -9,7 +10,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Missing required configuration' }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
+    const baseUrl = SITE_URL;
 
     // Para evitar problemas de "Precios creados al vuelo" y modo suscripción,
     // en Stripe no puedes pasar price_data en mode="subscription" a no ser 

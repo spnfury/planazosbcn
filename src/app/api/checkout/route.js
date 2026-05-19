@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { Resend } from "resend";
 import { notifyAdmins } from "@/lib/notify-admins";
 import { isPastEvent } from "@/lib/formatDate";
+import { SITE_URL } from "@/lib/site-url";
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
@@ -171,8 +172,7 @@ export async function POST(request) {
         p_quantity: quantity,
       });
 
-      const baseUrl =
-        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+      const baseUrl = SITE_URL;
       const successUrl = `${baseUrl}/checkout/success?session_id=${reservation.stripe_session_id}`;
 
       // Send email for free reservation
@@ -242,7 +242,7 @@ export async function POST(request) {
     }
 
     // Create Stripe Checkout Session
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = SITE_URL;
 
     const lineItems = [
       {

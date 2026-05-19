@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 import { logActivity } from '@/lib/log';
 import { notifyAdmins } from '@/lib/notify-admins';
+import { SITE_URL } from '@/lib/site-url';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -128,7 +129,7 @@ export async function POST(request) {
 
       // Send confirmation email
       if (reservation.customer_email && plan) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const baseUrl = SITE_URL;
         const successUrl = `${baseUrl}/checkout/success?session_id=${reservation.stripe_session_id}`;
         
         try {

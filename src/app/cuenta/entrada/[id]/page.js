@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/components/Auth/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import QRCode from 'qrcode';
+import { SITE_URL } from '@/lib/site-url';
 import styles from './entrada.module.css';
 
 export default function EntradaPage({ params }) {
@@ -50,8 +51,7 @@ export default function EntradaPage({ params }) {
 
       // Generate QR code
       if (data.qr_code) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
-        const qrUrl = `${baseUrl}/api/admin/validate-qr?code=${data.qr_code}`;
+        const qrUrl = `${SITE_URL}/api/admin/validate-qr?code=${data.qr_code}`;
         const dataUrl = await QRCode.toDataURL(qrUrl, {
           width: 280,
           margin: 2,

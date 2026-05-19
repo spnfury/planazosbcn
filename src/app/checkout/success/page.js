@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import QRCode from 'qrcode';
 import { WHATSAPP_GROUP_URL } from '@/components/WhatsAppCTA/WhatsAppCTA';
+import { SITE_URL } from '@/lib/site-url';
 import styles from './success.module.css';
 
 /* ── Confetti generator ── */
@@ -70,8 +71,7 @@ function SuccessContent() {
       // Generate QR
       if (data.qr_code) {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
-          const qrUrl = `${baseUrl}/api/admin/validate-qr?code=${data.qr_code}`;
+          const qrUrl = `${SITE_URL}/api/admin/validate-qr?code=${data.qr_code}`;
           const dataUrl = await QRCode.toDataURL(qrUrl, {
             width: 240,
             margin: 2,

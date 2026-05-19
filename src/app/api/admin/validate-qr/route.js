@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Resend } from 'resend';
+import { SITE_URL } from '@/lib/site-url';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -40,7 +41,7 @@ async function sendValidationNotification(reservation, plan, validatorInfo) {
     || validatorInfo.restaurantUser?.name
     || 'PlanazosBCN';
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
+  const baseUrl = SITE_URL;
 
   try {
     await resend.emails.send({

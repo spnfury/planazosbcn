@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { SITE_URL } from '@/lib/site-url';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -14,7 +15,7 @@ export async function sendWelcomeEmail({ email, fullName }) {
 
   const firstName = fullName ? fullName.split(' ')[0] : '';
   const greeting = firstName ? `¡Hola ${firstName}!` : '¡Hola!';
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
+  const baseUrl = SITE_URL;
 
   try {
     await resend.emails.send({

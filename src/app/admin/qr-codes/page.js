@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { createClient } from '@/lib/supabase/client';
+import { SITE_URL } from '@/lib/site-url';
 import styles from '../admin.module.css';
 
 const TARGET_PRESETS = [
@@ -116,8 +117,7 @@ export default function QrCodesPage() {
 
   async function showQrModal(qr) {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
-      const fullUrl = `${baseUrl}/qr/${qr.code}`;
+      const fullUrl = `${SITE_URL}/qr/${qr.code}`;
       const dataUrl = await QRCode.toDataURL(fullUrl, {
         width: 400,
         margin: 2,
@@ -132,8 +132,7 @@ export default function QrCodesPage() {
   }
 
   function getQrUrl(code) {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
-    return `${baseUrl}/qr/${code}`;
+    return `${SITE_URL}/qr/${code}`;
   }
 
   function copyToClipboard(text) {
