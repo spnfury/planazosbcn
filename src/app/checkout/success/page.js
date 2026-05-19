@@ -70,7 +70,7 @@ function SuccessContent() {
       // Generate QR
       if (data.qr_code) {
         try {
-          const baseUrl = window.location.origin;
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
           const qrUrl = `${baseUrl}/api/admin/validate-qr?code=${data.qr_code}`;
           const dataUrl = await QRCode.toDataURL(qrUrl, {
             width: 240,

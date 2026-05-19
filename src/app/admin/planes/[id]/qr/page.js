@@ -122,7 +122,7 @@ export default function PlanQrCodesPage({ params }) {
 
   async function showQrModal(qr) {
     try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://planazosbcn.com';
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
       const fullUrl = `${baseUrl}/qr/${qr.code}`;
       const dataUrl = await QRCode.toDataURL(fullUrl, {
         width: 400,
@@ -138,7 +138,7 @@ export default function PlanQrCodesPage({ params }) {
   }
 
   function getQrUrl(code) {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://planazosbcn.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
     return `${baseUrl}/qr/${code}`;
   }
 
@@ -193,8 +193,8 @@ export default function PlanQrCodesPage({ params }) {
         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginBottom: '1rem' }}>
           Cada QR tiene una etiqueta para identificar de dónde viene el tráfico (ej: &quot;Mesas del restaurante&quot;, &quot;Flyer puerta&quot;, &quot;Story Instagram&quot;)
         </p>
-        <form onSubmit={handleCreate} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
-          <div className={styles.formGroup} style={{ flex: 1 }}>
+        <form onSubmit={handleCreate} className={styles.qrInlineForm}>
+          <div className={`${styles.formGroup} ${styles.qrInlineFormField}`}>
             <label className={styles.formLabel}>Etiqueta</label>
             <input
               type="text"

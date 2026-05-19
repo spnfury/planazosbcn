@@ -116,7 +116,7 @@ export default function QrCodesPage() {
 
   async function showQrModal(qr) {
     try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://planazosbcn.com';
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
       const fullUrl = `${baseUrl}/qr/${qr.code}`;
       const dataUrl = await QRCode.toDataURL(fullUrl, {
         width: 400,
@@ -132,7 +132,7 @@ export default function QrCodesPage() {
   }
 
   function getQrUrl(code) {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://planazosbcn.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://planazosbcn.com';
     return `${baseUrl}/qr/${code}`;
   }
 
